@@ -1,26 +1,28 @@
-import threading
+import math
+from overloads.overloads import overloads
 
 
-class SingletonType(type):
-    _instance_lock = threading.Lock()
-
-    def __call__(cls, *args, **kwargs):
-        __name__ = "zhang"
-        print("aaaa")
-        if not hasattr(cls, "_instance"):
-            with SingletonType._instance_lock:
-                if not hasattr(cls, "_instance"):
-                    cls._instance = super(SingletonType, cls).__call__(*args, **kwargs)
-        return cls._instance
+@overloads
+def area(l: int, w: int):
+    """计算长方形面积"""
+    return l * w
 
 
-class Foo(metaclass=SingletonType):
-    def __init__(self, name):
-        print("aa")
-        self.name = name
+@overloads
+def area(r: int):
+    """计算圆面积"""
+    return math.pi * r * 2
 
 
-obj1 = Foo('name')
-# print()
-# obj2 = Foo('name')
-print(Foo.__call__)
+@overloads
+def area():
+    """计算圆面积"""
+    return 36
+
+
+if __name__ == '__main__':
+    # 根据不同的参数个数，执行不同的函数
+    print(area(3, 4))
+    print(area(5))
+    print(area())
+    # print(area(5, "aa"))

@@ -2,30 +2,27 @@
 
 `__new__`： 对象的创建，是一个静态方法，第一个参数是cls，返回一个实例好的空对象。
 `__init__`： 对象的初始化， 是一个实例方法，第一个参数是self，为对象加载初始值。
-`__call__`： 对象可call，注意不是类，一定是对象。
+`__call__`： 对象是callable的，也就是可以被调用，注意不是类，一定是对象。对象被调用时，等同于由当前类调用元类中`__call__`函数。
 
 类：理解为是元类(type)的实例对象，所以当运行	类()  时，元类中的`__call__`函数将会被调用。
 
 type中`__call__`函数的实现逻辑：
 
-```python
-    def __call__(self, *args, **kwargs):
-        obj = self.__new__(self, *args, **kwargs)
+``` python
+    def __call__(cls, *args, **kwargs):
+        obj = cls.__new__(cls, *args, **kwargs)
         # 返回对象是类的实例才执行__init__
-        if isinstance(obj, self):
-            # self.__init__(obj, *args, **kwargs)
+        if isinstance(obj, cls):
             obj.__init__(*args, **kwargs)
         return obj
 ```
 
 
 
-有了上面的理解，那么实例化对象的逻辑就出来：
+有了上面的理解，那么实例化对象的逻辑就出来了：
 
 	- instance = class()
-	- class 作为元类的实例对象，运行class()时，即调用元类type中的`__call__`方法，依次调用class中`__new__`和`__init__`方法，最终返回一个当前class类的实例对象。
-
-
+	- class 作为元类的实例对象，运行class()时，即调用元类type中的__call__方法，依次调用class类中__new__和__init__方法，最终返回一个当前class类的实例对象。
 
 ### 2、 Python生成器send的应用场景
 
@@ -99,7 +96,7 @@ if __name__ == '__main__':
 5. 调用类对象的函数`api_instance.get_response(data)`
 '''
 
-# -------------type()函数动态创建类------------
+# -------------type内置类动态创建类------------
 # type()函数语法说明
 # 第一种语法格式用来查看某个变量（类对象）的具体类型，obj 表示某个变量或者类对象。
 # 第二种语法格式用来创建类:
@@ -152,7 +149,7 @@ type(name, bases, dict)
 '''
 理解类属性:
     - 类属性就相当与全局变量，实例对象共有的属性，实例对象的属性为实例对象自己私有。
-    - 类属性就是类对象（Tool）所拥有的属性，它被所有类对象的实例对象(实例方法)所共有，在内存中只存在一个副本，这个和C++中类的静态成员变量有点类似。
+    - 类属性就是类对象(class)所拥有的属性，它被所有类对象的实例对象(实例方法)所共有，在内存中只存在一个副本，这个和C++中类的静态成员变量有点类似。
     - 对于公有的类属性，在类外可以通过类对象和实例对象访问。
     
 调用类属性:
@@ -168,7 +165,11 @@ type(name, bases, dict)
 # lambda 动态创建匿名函数
 ```
 
-### 6、socket如何解决粘包问题（待解决）
+### 6、socket如何解决粘包问题
+
+**准备知识：**
+
+> ​		任何应用程序发送和接收数据，都是基于操作系统中转，应用有发送和接收数据时，直接对接操作系统，由操作系统来完成真正发送和接收的数据。在这个过程中，操作系统在拿到数据后，并不会立即将数据发送到互联网或者应用程序，而是存在一个缓冲区，将多次收到的数据一次发送出去，但这个缓冲时间是很短的，人为很难感知。同时，缓冲区也是有大小的，当缓冲区数据满了就直接发，不在继续缓冲。
 
 **A、为什么会发生TCP粘包、拆包**
 
@@ -190,7 +191,17 @@ type(name, bases, dict)
 
 
 
-### 7、socket断点续传如何实现（待解决）
+### 7、socket断点续传如何实现
+
+> 文件断点续传，是指文件在传输过程中因为某些原因程序停止运行文件终止传输，下一次重新传输文件的时候还能从上一次断开的位置开始传输，而不需要重新从头开始。
+
+**socket实现断点续传：**
+
+- 服务端总是保存文件的大小信息
+- 客户端进行上传或下载操作时，进行数据传输之前，先把要上传或者要下载的文件信息包括文件大小都上传服务器
+- 服务器根据操作类型，返回给客户端服务器端相同文件的信息
+- 如果是上传，服务器返回已经上传文件大小给客户端，客户端根据返回值作为字节起点开始上传
+- 下载则反过来
 
 
 
@@ -233,4 +244,521 @@ sys.path 系统导包路径列表说明：
 **.pyc文件的介绍：**
 
 > ​		导入时会产生一个.pyc的字节码文件，此文件是当第一次导入时python解释器会将被导入的模块预解释成字节码的文件，下次再导入时python解释器则不会做预解释而是直接拿.pyc文件使用，这样就不会每次导入时做解释的操作，节省时间，当修改模块文件的内容时，python解释器会根据.pyc文件和模块的修改时间判断有没有对模块做修改，如果模块的修改时间比.pyc文件的晚说明模块已经被修改  Python解释器会将模块重新解释成.pyc文件。
+
+
+
+### 9、python中`__gt__、__lt__`等富比较方法
+
+**运算符号与方法名称的对应关系：**
+
+​	x<y 调用 `x.__lt__(y)`、
+
+​	x<=y 调用` x.__le__(y)`、
+
+​	x==y 调用` x.__eq__(y)`、
+
+​	x!=y 调用` x.__ne__(y)`、
+
+​	x>y 调用` x.__gt__(y)`、
+
+​	x>=y 调用` x.__ge__(y)`
+
+```python
+class Car():
+   def __init__(self,carname,oilcostper100km, price):
+       self.carname,self.oilcostper100km,self.price = carname,oilcostper100km, price
+   def __lt__(self,other):
+       print("execute __lt__")
+       return self.price<other.price
+   def __le__(self,other):
+       print("execute __le__")
+       return self.price>other.price
+   def __gt__(self,other):
+       print("execute __gt__")
+       return self.oilcostper100km>other.oilcostper100km
+
+   def __ge__(self,other):
+       print("execute __ge__")
+       return self.oilcostper100km<other.oilcostper100km
+
+   def __repr__(self):  #重写__repr__方法输出repr信息
+       return  f"('{self.carname}',{self.oilcostper100km},{self.price})"
+
+car1,car2 = Car('爱丽舍',8,10),Car('凯美瑞',7,27)
+car1<car2,car1<=car2,car1>car2,car1>=car2
+# 输出结果
+execute __lt__
+execute __le__
+execute __gt__
+execute __ge__
+(True, False, True, False)
+
+```
+
+
+
+### 10、Python GC机制和GIL锁
+
+- **Python GC(Garbage Collection):**主要使用引用计数（reference counting）来跟踪和自动回收垃圾。在引用计数的基础上，通过“标记-清除”（mark and sweep）解决容器对象可能产生的循环引用问题，通过“分代回收”（generation collection）以空间换时间的方法提高垃圾回收效率。
+
+  > 注：数值类型和字符串类型的对象在Python中是不可变的，这意味着无法修改这个对象的值，每次对引用变量的修改，实际上都是新创建了一个对象重新赋值。
+
+  - **引用计数：**PyObject是每个对象必有的内容，其中ob_refcnt就是做为引用计数。当一个对象有新的引用时，它的ob_refcnt就会增加，当引用它的对象被删除，它的ob_refcnt就会减少.引用计数为0时，该对象生命就结束了。
+  - **标记-清除机制：**基本思路是先按需分配，等到没有空闲内存的时候从寄存器和程序栈上的引用出发，遍历以对象为节点、以引用为边构成的图，把所有可以访问到的对象打上标记，然后清扫一遍内存空间，把所有没标记的对象释放。
+  - **分代回收：**将系统中的所有内存块根据其存活时间划分为不同的集合，每个集合就成为一个“代”，垃圾收集频率随着“代”的存活时间的增大而减小，存活时间通常利用经过几次垃圾回收来度量。
+
+- **GIL  Global Interpreter Lock(全局解释器锁):**由于线程之间数据是共享的，也就意味着如果多个线程同时操作某一内存中的数据，就会有严重的数据安全问题。为了解决这个问题就有了GIL，本质上就是一个全局线程互斥锁。
+
+  - 在GIL的作用下，单进程下CPU同一时间只能执行一个线程。
+  - 多线程下，每个线程的执行方式：
+    - 获取GIL。
+    - 执行代码。
+    - 释放GIL。
+  - 释放GIL的条件：
+    - 执行python2虚拟机运行1000字节指令  或者  执行python3虚拟机运行时间15ms字节。
+    - 线程主动让出控制(遭遇sleep或者IO操作也将触发)。
+    - 把线程设置为睡眠状态(等待状态)。
+  - python下的多线程对CPU密集型代码(各种循环处理、计数等等)并不友好，对IO密集型代码(文件处理、网络爬虫等)比较友好。
+  - 每个进程有各自独立的GIL，互不干扰，所以CPU密集型代码在python中开启多进程更适合。
+
+
+
+### 11、Python 字节码分析 dis 模块
+
+> Python 代码是先被编译为字节码后，再由Python虚拟机来执行字节码， Python的字节码是一种类似汇编指令的中间语言，一个Python 语句会对应若干字节码指令，虚拟机一条一条执行字节码指令，从而完成程序执行。
+> Python dis 模块支持对Python代码进行反汇编，生成字节码指令。
+
+``` python
+import dis
+
+
+def func():
+    a = 10
+
+    while a > 0:
+        a -= 1
+
+    if a == 0:
+        print(a)
+
+        
+if __name__ == '__main__':
+  	# Disassemble classes, methods, functions, and other compiled objects.
+    dis.dis(func)
+    
+'''
+说明：
+	Python代码在编译过程中会生成CodeObject, CodeObject是在虚拟机中的抽象表示，在Python C源码中表示为PyCodeObject，而生成的.pyc文件则是字节码在磁盘中的表现形式。
+	第一列的数字（5）表示对应源代码的行数。
+	第二列的数字是字节码列表的索引，对象被编译会生成一个由字节码组成的列表(按执行顺序)。
+	第三列是指令本身对应的人类可读的名字，字节码对应的opname。
+	第四列表示指令的参数。
+	第五列则是计算后的实际参数。
+	其中的“>>" 表示跳转的目标。
+
+
+打印结果：
+  5           0 LOAD_CONST               1 (10)   # 加载一个常量10
+              2 STORE_FAST               0 (a)		# 保存到变量a中
+
+  7     >>    4 LOAD_FAST                0 (a)		# 跳转到循环目标；加载变量a
+              6 LOAD_CONST               2 (0)		# 加载常量0
+              8 COMPARE_OP               4 (>)		# 执行比较操作
+             10 POP_JUMP_IF_FALSE       22				# 判断条件，如果为false则跳出循环
+
+  8          12 LOAD_FAST                0 (a)		# 加载变量a
+             14 LOAD_CONST               3 (1)		# 加载常量1
+             16 INPLACE_SUBTRACT									# 就地执行减法操作
+             18 STORE_FAST               0 (a)		# 保存变量a
+             20 JUMP_ABSOLUTE            4				# 跳转到下一次循环
+
+ 10     >>   22 LOAD_FAST                0 (a)		# 跳转目标
+             24 LOAD_CONST               2 (0)
+             26 COMPARE_OP               2 (==)
+             28 POP_JUMP_IF_FALSE       38
+
+ 11          30 LOAD_GLOBAL              0 (print)# 加载全局函数print
+             32 LOAD_FAST                0 (a)		# 加载变量a
+             34 CALL_FUNCTION            1				# 执行print函数
+             36 POP_TOP														# 跳出print函数方法栈
+        >>   38 LOAD_CONST               0 (None)	# 加载常量None
+             40 RETURN_VALUE											# 返回None	- python中无返回值的函数，默认返回None	
+'''
+```
+
+``` python
+import dis
+
+
+def func():
+    a = 10
+
+    while a > 0:
+        a -= 1
+
+    if a == 0:
+        print(a)
+  
+ 
+  # 所有字节码共256个
+  code = dis.opname
+  print(code)
+  print(len(code))  # 256
+
+  # 对象的字节码序列
+  code_list = [i for i in list(func.__code__.co_code)]
+  print(code_list)    # [100, 1, 125, 0, 124, 0, 100, 2, 107, 4, 114, 22, 124, 0, 100, 3, 56, 0, 125, 0, 113, 												# 4, 124, 0, 100, 2, 107, 2, 114, 38, 116, 0, 124, 0, 131, 1, 1, 0, 100, 0, 83, 0]
+  print(code[100])   # LOAD_CONST
+```
+
+
+
+### 12、yield 和 yield from 用法
+
+> `yield from` 是在Python3.3才出现的语法。所以这个特性在Python2中是没有的。
+>
+> `yield from` 后面需要加的是可迭代对象，它可以是普通的可迭代对象，也可以是迭代器，甚至是生成器。
+
+**yield 和 yield from 用法比较**
+
+``` *python
+# 一个拼接可迭代对象的例子
+alist = [1, 2, 3, 4]
+astr = 'ABC'
+adict = {'key': 'value', 'key1': 'value1'}
+aiter = range(5)
+
+
+def gen1(*args, **kwargs):
+    """基于yield实现"""
+    for item in args:
+        for i in item:
+            yield i
+
+
+def gen2(*args, **kwargs):
+    """基于yield from实现"""
+    for item in args:
+        yield from item
+
+
+if __name__ == '__main__':
+    print(list(gen1(alist, astr, adict, aiter)))
+    print(list(gen2(alist, astr, adict, aiter)))
+
+
+'''
+输出结果：
+	[1, 2, 3, 4, 'A', 'B', 'C', 'key', 'key1', 0, 1, 2, 3, 4]
+	[1, 2, 3, 4, 'A', 'B', 'C', 'key', 'key1', 0, 1, 2, 3, 4]
+	
+结论：
+	yield from后面加上可迭代对象，他可以把可迭代对象里的每个元素一个一个的yield出来，对比yield来说代码更加简洁，结构更加清晰。
+	yield from item 等价于 for i in item: yield i
+'''
+```
+
+
+
+**yield from 高级使用**
+
+> 相关术语：
+>
+> `调用方`：调用委托生成器的客户端（调用方）代码
+>
+> `委托生成器`：包含yield from表达式的生成器函数
+>
+> `子生成器`：yield from后面加的生成器函数
+
+``` python
+# 一个求平均数的例子
+
+# 子生成器
+def average_gen():
+    total = 0
+    count = 0
+    average = 0
+
+    while True:
+        current_value = yield average
+        if not current_value:
+            break
+
+        total += current_value
+        count += 1
+        average = total / count
+
+    # 当执行return时，代表当前协程结束
+    return total, count, average
+
+
+# 委托生成器
+def proxy_gen():
+    while True:
+        # 只有子生成器要结束（return）了，yield from左边的变量才会被赋值，后面的代码才会执行。
+        total, count, average = yield from average_gen()
+        print("计算完毕！！\n总共传入 {} 个数值， 总和：{}，平均数：{}".format(count, total, average))
+
+
+# 调用方
+def main():
+    pgen = proxy_gen()
+    next(pgen)  # 激活协程
+    print(pgen.send(10))
+    print(pgen.send(20))
+    print(pgen.send(None))  # 关闭当前协程协程
+
+
+if __name__ == '__main__':
+    # # -------------直接调用子生成器-------------
+    # a = average_gen()
+    # next(a)  # 激活协程
+    # print(a.send(10))
+    # print(a.send(20))
+    # print(a.send(None))  # 关闭协程，生成器跑出结束迭代异常，结束迭代。如果使用for循环，for循环会自动处理该异常。
+    #
+    # '''
+    # 输出结果：
+    # 10.0
+    # 15.0
+    # Traceback (most recent call last):
+    #   File "/Users/zhangjian/PycharmProjects/Practice/demo.py", line 45, in <module>
+    #     print(a.send(None))  # 关闭协程
+    # StopIteration: (30, 2, 15.0)
+    # '''
+    # # -------------直接调用子生成器-------------
+
+    # # -------------通过委托生成器调用-------------
+    main()
+
+    '''
+    输出结果：
+    10.0
+    15.0
+    计算完毕！！
+    总共传入 2 个数值， 总和：30，平均数：15.0
+    0  # 这里yield from 又马上开启了下一个协程
+    '''
+    # # -------------通过委托生成器调用-------------
+    
+		'''
+		总结：
+			- 包含yield from 关键字的委托生成器，在调用方和子生成器之间充当管道的作用，不对传输的数据做任何的加工处理
+			- 委托生成器可以自动处理子生成器抛出的异常，使开发者把精力更多的集中在业务逻辑，而无需关注异常的处理
+			- 委托生成器可以获取到子生成器 return 的返回值，而直接调用子生成器则无法获取
+		'''
+```
+
+
+
+### 13、Python 实现函数重载
+
+> 函数重载：
+>
+> - 在java中， 定义几个名字相同的函数，但是他们的参数类型或者数量不同，从而实现不同的代码逻辑。
+>
+> 	- 在python中，如果定义相同的函数名，那么最后定义的将覆盖前面所有的同名函数。函数名只能是唯一的。
+>
+> python中实现重载的两种方式：
+>
+> - 使用默认值参数，在函数内部判断参数类型和有效参数的数量，来实现不同的逻辑。
+> - 使用`functools`模块里面的`singledispatch`装饰器实现函数重载。
+> - 使用装饰器实现不同参数个数、不同参数类型的函数重载。
+
+**使用默认值参数：**
+
+``` python
+def demo(name, age=None, address=None):
+    if age:
+        print("%s : %s" % (name, age))
+    elif address:
+        if isinstance(address, str):
+            ip, port = address.split(":")
+        elif isinstance(address, tuple):
+            ip, port = address
+        else:
+            print("参数类型错误！")
+            return
+
+        print("%s: 网络地址信息 %s ： %s" % (name, ip, port))
+    else:
+        print("孤苦伶仃的名字：%s" % name)
+
+
+if __name__ == '__main__':
+    demo("zhangjian")
+    demo("zhangjian", 18)
+    demo("zhangjian", address="121.4.4.33:8808")
+    demo("zhangjian", address=('121.4.4.33', 8808))
+    demo("zhangjian", address=121)
+    
+    '''
+    总结：
+    	- 该方式可以为不同参数个数、参数类型的入参实现不同的逻辑，但是参数一旦比较多，函数内部就会有很多if-elif-else这样的语句
+    	- 这样既不符合python优雅的编程风格，更不利于后期维护代码逻辑
+    '''
+```
+
+**使用`singledispatch`装饰器：**
+
+> - 使用singledispatch装饰一个函数，那么这个函数就是我们将会调用的函数。
+>
+> - 这个函数在传入参数不同时的具体实现，通过下面注册的函数来实现。注册的时候使用@我们定义的函数名.register来注册。被注册的函数名叫什么无关紧要，所以这里我都直接使用下划线代替。
+>
+> - 被注册的函数的第一个参数，通过类型标注来确定它应该使用什么类型。当我们调用我们定义的函数时，如果参数类型符合某个被注册的函数，那么就会执行这个被注册的函数。如果参数类型不满足任何一个被注册的函数，那么就会执行我们的原函数。
+>
+> - 使用类型标注来指定参数类型是从 Python 3.7才引入的新特性。在 Python 3.6或之前的版本，我们需要通过@我们定义的函数名.register(类型)来指定类型。
+
+``` python
+from functools import singledispatch
+
+
+@singledispatch
+def connect(address, name):
+    print("参数类型错误，请检查")
+
+
+@connect.register
+def _(address: str, name: str):
+    print("第一个函数被调用")
+    ip, port = address.split(":")
+    print(name, ip, port)
+
+
+@connect.register
+def _(address: tuple, name: str):
+    print("第二个函数被调用")
+    ip, port = address
+    print(name, ip, port)
+
+
+@connect.register
+def _(address: str, name: int):
+    print("第三个函数被调用")
+    ip, port = address.split(":")
+    print(name, ip, port)
+
+
+if __name__ == '__main__':
+    connect("123.4.4.55:8808", "zhangjian")
+    connect(("123.4.4.55", 8808), "zhangjian")
+    connect("123.4.4.55:8808", 123)
+    connect(123, "zhangjian")
+
+    
+    '''
+    第三个函数被调用
+    zhangjian 123.4.4.55 8808
+    第二个函数被调用
+    zhangjian 123.4.4.55 8808
+    第三个函数被调用
+    123 123.4.4.55 8808
+    参数类型错误，请检查
+    '''
+		'''
+		结论：
+			- 只有第一个参数的不同类型会被重载。后面的参数的类型变化会被自动忽略。所以这里第三次注册函数把第一个注册的函数覆盖了。
+			- 根据第一个参数类型的不同，确实调用了不同参数类型逻辑。但只能判断第一个参数的类型在一些复杂场景可能就有局限性了。
+		'''
+```
+
+**使用装饰器：**
+
+``` python
+import math
+from functools import wraps
+from inspect import getfullargspec
+
+
+class Function:
+    _func_dict = None
+
+    def __init__(self, fn):
+        if not Function._func_dict:
+            Function._func_dict = {}
+            
+        self.fn = fn
+        Function._func_dict[self.key()] = fn
+
+    def __call__(self, *args, **kwargs):
+        # 获取入参的类型
+        args_type = list()
+        for param in args:
+            args_type.append(param.__class__)
+            
+        # 获取参数个数
+        args_count = len(args)
+
+        try:
+            fn = Function._func_dict[self.key(args_count, args_type)]
+        except KeyError:
+            raise KeyError("参数数量或类型错误")
+
+        return fn(*args, **kwargs)
+
+    def key(self, args_count=None, args_type=None):
+        # getfullargspec() 获取函数参数的名称和默认值，返回一个命名的元组
+        # FullArgSpec(args=['l', 'w'], varargs=None, varkw=None, defaults=None, kwonlyargs=[], kwonlydefaults=None, annotations={})
+        if args_count is None:
+            args_count = len(list(getfullargspec(self.fn).args))
+        if args_type is None:
+            args_type = list(getfullargspec(self.fn).annotations.values())
+
+        return str([self.fn.__module__, self.fn.__class__, self.fn.__name__, args_count, args_type])
+
+
+def override(fn):
+    @wraps(fn)  # 该装饰器是为了让被装饰之后的函数还具有装饰之前的部分属性，如__name__,__doc__等
+    def wrapper():
+        return Function(fn)
+    return wrapper()
+
+
+@override
+def area(l: int, w: int):
+    """计算长方形面积"""
+    return l * w
+
+
+@override
+def area(r: int):
+    """计算圆面积"""
+    return math.pi * r * 2
+
+
+@override
+def area():
+    """计算圆面积"""
+    return 36
+
+
+if __name__ == '__main__':
+    # 根据不同的参数个数，执行不同的函数
+    print(area(3, 4))
+    print(area(5))
+    print(area())
+    print(area(5, "aa"))
+
+    '''
+    打印结果说明：
+        装饰器执行  # 装饰器调用(@override)，在模块加载时就已经执行了装饰器内部的代码，此时的area函数，就是一个Function实例对象
+        装饰器执行  # 这里的装饰器和平时的装饰器稍有不同：通常装饰器函数返回内部函数本身，这里返回的是内部函数的实例对象
+        12        # 调用area，就是调用Function实例对象，此时 area(3, 4) 等价于 Function(3, 4)  等价于  Function().__call__(3, 4)
+        31.41592653589793   # 同上
+        36                  # 调用无参重载函数
+        Traceback (most recent call last):  # 第四个打印，参数类型错误抛出异常
+          File "/Users/zhangjian/PycharmProjects/Practice/demo.py", line 26, in __call__
+            fn = Function._func_dict[self.key(args_count, args_type)]
+        KeyError: "['__main__', <class 'function'>, 'area', 2, [<class 'int'>, <class 'str'>]]"
+        
+        During handling of the above exception, another exception occurred:
+        
+        Traceback (most recent call last):
+          File "/Users/zhangjian/PycharmProjects/Practice/demo.py", line 69, in <module>
+            print(area(5, "aa"))
+          File "/Users/zhangjian/PycharmProjects/Practice/demo.py", line 28, in __call__
+            raise KeyError("参数数量或类型错误")
+        KeyError: '参数数量或类型错误'
+    '''
+```
 

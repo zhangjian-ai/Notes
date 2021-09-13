@@ -1,0 +1,9 @@
+### .DS_Store 是Mac OS保存文件夹的自定义属性的隐藏文件，如文件的图标位置或背景色 ###
+.idea
+.pycahce
+.DS_Store
+
+venv
+
+
+

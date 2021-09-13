@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="UTF-8">
+    <title> JSONP </title>
+    <script type="text/javascript">
+        var flightHandler = function(data) {
+          if (data.price){
+             alert('你查询的航班结果是：票价 ' + data.price + ' 元，' + '余票 ' + data.tickets + ' 张。');
+          }else{
+            alert(data)
+          }
+        }
+        var url = "http://127.0.0.1:5000/jsonp?code=CA199302&callback=flightHandler";
+
+        // 创建一个script标签
+        var script = document.createElement('script');
+
+        // 设置标签属性
+        script.setAttribute('src', url);
+      	script.setAttribute('charset', "UTF-8");
+      	script.setAttribute('type', "text/javascript")
+
+      	// 把标签添加到head中
+      	document.getElementsByTagName('head')[0].appendChild(script);
+    </script>
+</head>
+<body>
+来了老弟
+</body>
+</html>
