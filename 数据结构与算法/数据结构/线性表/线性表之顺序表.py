@@ -6,7 +6,7 @@
     类名：
         - SequenceList
     构造方法：
-        - __init__(self): 创建SequenceList对象
+        - __init__(self): 创建SequenceList对象，初始化成员变量
     成员方法：
         - clear(): 置空线性表
         - isEmpty(): 判断线性表是否为空，是返回true，否返回false
@@ -56,7 +56,7 @@ class SequenceList:
         if not isinstance(i, int):
             raise TypeError
 
-        if i < 0 or i >= self.N:
+        if i < 0 or i > self.N:
             raise IndexError
 
         self.eles += [None]
@@ -121,12 +121,12 @@ class SequenceList:
 
 if __name__ == '__main__':
     seq = SequenceList()
-    seq.add("姚明")
-    seq.add("老张")
-    seq.add("朱晓明")
-    seq.add("好吧睡觉")
-    seq.add(1)
-    seq.add(2)
+    # seq.add("姚明")
+    # seq.add("老张")
+    # seq.add("朱晓明")
+    # seq.add("好吧睡觉")
+    # seq.add(1)
+    # seq.add(2)
 
     # print(seq)
     # print(seq.get(1))
@@ -137,12 +137,12 @@ if __name__ == '__main__':
     # print(seq.get(3))
     # print(seq.items)
     #
-    seq.insert(1, "悍匪")
+    seq.insert(0, "悍匪")
     # print(seq.items)
-    # print(seq.indexOf("姚明"))
-    # print(seq.length)
+    print(seq.indexOf("姚明"))
+    print(seq.length)
 
-    seq.clear()
+    # seq.clear()
     seq.add("调任新职")
 
     for i in seq:

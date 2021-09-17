@@ -1,28 +1,22 @@
-import math
-from overloads.overloads import overloads
+import sys
+import weakref
 
 
-@overloads
-def area(l: int, w: int):
-    """计算长方形面积"""
-    return l * w
+class A:
+    def __init__(self, name):
+        self.name = name
 
 
-@overloads
-def area(r: int):
-    """计算圆面积"""
-    return math.pi * r * 2
+# 创建 值是弱引用 的字典
+weak_dict = weakref.WeakValueDictionary()
+key = 'test1'
+value = A("zhangjian")  # value 强引用到实例对象上面
 
+weak_dict[key] = value  # 弱引用字典的赋值取值等操作和dict类一致。其本身就是dict的子类
 
-@overloads
-def area():
-    """计算圆面积"""
-    return 36
+print(weak_dict[key])  # <__main__.A object at 0x100a3c550>
 
-
-if __name__ == '__main__':
-    # 根据不同的参数个数，执行不同的函数
-    print(area(3, 4))
-    print(area(5))
-    print(area())
-    # print(area(5, "aa"))
+# 删除对象的唯一引用，那么字典里的键值对就被回收了
+del value
+# print(weak_dict[key])  # KeyError: 'test1'
+print(weak_dict.get(key, "default"))  # default

@@ -762,3 +762,513 @@ if __name__ == '__main__':
     '''
 ```
 
+
+
+### 14、Python 高效使用字典 dict
+
+- **用 in 关键字检查 key 是否存在**
+
+> Python2 中判断某个 key 是否存在字典中可使用 has_key 方法，另外一种方式是使用 in 关键字。但是强烈推荐使用后者，因为 in 的处理速度更快，另外一个原因是 has_key 这个方法在 Python3 被移除了，要想同时兼容py2和py3两个版本的代码，用 in 是最好的选择。
+
+``` python
+dic = {
+    "name": 'yang',
+    "age": 16,
+    "weight": "42kg"
+}
+
+if "name" in dic:
+    pass
+```
+
+- **用 get 获取字典中的值**
+
+> 关于获取字典中的值，一种简单的方式就是用d[x]访问该元素，但是这种情况在 key 不存在的情况下会报 KeyError 错误。
+
+``` python
+dic = {
+    "name": 'yang',
+    "age": 16,
+    "weight": "42kg"
+}
+
+# a = dic['sex']  # KeyError: 'sex'
+b = dic.get('sex', 'default')  # 当获取的key不存在时，则返回默认值。第二个参数就是默认值，不传则默认值为None
+print(b)  # default
+```
+
+- **用 setdefault 为字典中不存在的 key 设置缺省值**
+
+> 普通的方式就是先判断 key 是否已经存在，如果不存在则要先用列表对象进行初始化，再执行后续操作。而更好的方式就是使用字典中的 setdefault 方法。
+>
+> ```
+> setdefault 的作用：
+> 	1.如果 key 存在于字典中，那么直接返回对应的值，等效于 get 方法
+> 	2.如果 key 不存在字典中，则会创建该key，并用 setdefault 中的第二个参数作为该 key 的值，再返回该值
+> ```
+
+``` python
+groups = {}
+data = [('name', 'xiaozhang'), ('name', 'xiaoli'), ('name', 'xiaolong')]
+'''
+需求转换成字典 {'name': ['xiaozhang', 'xiaoli', 'xiaolong']}
+'''
+# 普通方式
+for (key, value) in data:
+    if key in groups:
+        groups[key].append(value)
+    else:
+        groups[key] = [value]
+        
+# setdefault
+for (key, value) in data:
+    groups.setdefault(key, []).append(value)
+```
+
+- **用 defaultdict 初始化字典对象**
+
+> 如果不希望 d[x] 在 x 不存在时报错，除了在获取元素时使用 get 方法之外，另外一种方式是用 collections 模块中的 defaultdict，在初始化字典的时候指定一个函数，其实 defaultdit 是 dict 的子类。
+
+``` python
+from collections import defaultdict
+
+data = [('name', 'xiaozhang'), ('name', 'xiaoli'), ('name', 'xiaolong'), ('age', 18), ('age', 20)]
+
+dic = defaultdict(list)  # 创建一个字典对象。当 key 不存在于字典中时，list 函数将被调用并返回一个空列表赋值给 d[key] 并返回
+
+for key, value in data:
+    dic[key].append(value)
+
+print(dic)  # defaultdict(<class 'list'>, {'name': ['xiaozhang', 'xiaoli', 'xiaolong'], 'age': [18, 20]})
+```
+
+- **用 fromkeys 将列表转换成字典**
+
+``` python
+# keys = {'a', 'e', 'i', 'o', 'u'}
+# keys = ['a', 'e', 'i', 'o', 'u']
+keys = 'aeiou'  
+value = 'value'
+d = dict.fromkeys(keys, value)
+print(d)  # {'u': 'value', 'e': 'value', 'i': 'value', 'a': 'value', 'o': 'value'}
+```
+
+- **用字典实现 switch … case 语句**
+
+> Python 中没有 switch … case 语句，这个问题Python之父龟叔表示这个语法过去没有，现在没有，以后也不会有。因为Python简洁的语法完全可以用 if … elif 实现。如果有太多的分支判断，还可以使用字典来代替。
+
+``` python
+# if...else...
+if arg == 0:
+    return 'zero'
+elif arg == 1:
+    return 'one'
+elif arg == 2:
+    return "two"
+else:
+    return "nothing"
+  
+# 字典
+data = {
+    0: "zero",
+    1: "one",
+    2: "two",
+}
+data.get(arg, "nothing")
+```
+
+- **使用 iteritems 迭代字典中的元素**
+
+> items 方法返回的时（key ,value）组成的列表对象，这种方式的弊端是迭代超大字典的时候，内存瞬间会扩大两倍，因为列表对象会一次性把所有元素加载到内存，更好的方式是使用 iteritems。
+>
+> iteritems 返回的是迭代器对象，迭代器对象具有惰性加载的特性，只有真正需要的时候才生成值，这种方式在迭代过程中不需要额外的内存来装载这些数据。**注意 Python3 中，只有 items 方法了，它等价于 Python2 中的 iteritems，而 iteritems 这个方法名被移除了。**
+
+``` python
+d = {
+    0: "zero",
+    1: "one",
+    2: "two",
+}
+
+for k, v in d.items():
+    print(k, v)
+```
+
+- **使用字典推导式**
+
+> 推导式是个绝妙的东西，列表推导式一出，map、filter等函数黯然失色，自 Python2.7以后的版本，此特性扩展到了字典和集合身上，构建字典对象无需调用 dict 方法。
+
+``` python
+# 字典推到式
+keys = ('a', 'b', 'c')
+values = [1, 2, 3]
+d = {key: value for key, value in zip(keys, values)}
+
+print(d)  # {'a': 1, 'b': 2, 'c': 3}
+```
+
+
+
+### 15、super 类 详解
+
+> super 是一个继承自 object 的类，调用 super() 函数其实就是 super 类的实例化。
+> 根据官方文档的解释 super() 函数返回的对象 —— super object，就是一个代理对象。
+> super() 有四种参数的组合形式。
+> super() 适用于类的静态方法。
+
+**语法格式：**
+
+- super([type[, object-or-type]])
+-  Python 3 可以使用直接使用 **super().xxx** 代替 **super(Class, self).xxx** 
+
+**函数描述：**
+
+- 返回一个代理对象，它会将方法调用委托给 type 的父类或兄弟类。
+
+**参数说明：**
+
+- **type：**类，可选参数，默认值是当前类。调用方法时，从当前类的MRO中找到传入的 type， 再从type后面的类中一次查找调用的方法。
+  - Method Resolution Order（方法解析顺序），即在调用方法时，会对当前类以及所有的基类进行一个搜索，以确定该方法之所在，而这个搜索的顺序就是MRO。只要搜索到调用的方法，便不在继续向后搜索。
+  - 一个类的 MRO 列表就是合并所有父类的 MRO 列表，并遵循以下三条原则：
+    - 子类永远在父类前面
+    - 如果有多个父类，会根据它们在列表中的顺序被检查
+    - 如果对下一个类存在两个合法的选择，选择第一个父类
+
+- **object-or-type：**被代理的对象或类，一般是 self，可选参数。super()返回值是一个代理对象，就是说 super().func() 调用函数时，其实是以 *<u>被代理的对象或类</u>*  的身份来调用 func 函数。func 函数体 是MRO中解析到对应类中的函数体。
+
+**返回值：**
+
+- **super object：** 代理对象。就是提供一个代理，让当前类或对象能够调用到父类(基类)中的方法。
+
+
+
+**<font size=5>示例一：单继承</font>**
+
+``` python
+class A:
+    def func(self):
+        print(self)  # <__main__.B object at 0x100f05d30>
+        print("show A func")
+
+    @classmethod
+    def func1(cls):
+        print(cls)  # <class '__main__.B'>
+        print('show A classmethod func1')
+
+
+class B(A):
+    def func(self):
+        print(B.mro())  # [<class '__main__.B'>, <class '__main__.A'>, <class 'object'>]
+        super().func()  # 等价于 super(B, self).func() 表示从mro列表中 类B 后面的类中去解析 func 函数执行。
+                        # 函数的第一个参数为self，即 类B 的实例对象
+
+        super(B, B).func1()  # 第二个参数传入 类B 调用父类的类方法 func1。这里也可以传入实例对象，那么func1处传入的类就是实例对象所属的类
+        print("show B func")
+
+
+b = B()
+b.func()
+
+'''
+打印结果：
+    [<class '__main__.B'>, <class '__main__.A'>, <class 'object'>]
+    <__main__.B object at 0x1049d4880>
+    show A func
+    <class '__main__.B'>
+    show A classmethod func1
+    show B func
+'''
+```
+
+**<font size=5>示例二：多继承</font>**
+
+``` python
+class A:
+    def __init__(self):
+        self.n = 2
+
+    def add(self, m):
+        # 第四步
+        # 来自 D.add 中的 super
+        # self == d, self.n == d.n == 5
+        print('self is {0} @A.add'.format(self))
+        self.n += m
+        # d.n == 7
+
+
+class B(A):
+    def __init__(self):
+        self.n = 3
+
+    def add(self, m):
+        # 第二步
+        # 来自 D.add 中的 super
+        # self == d, self.n == d.n == 5
+        print('self is {0} @B.add'.format(self))
+        # 等价于 suepr(B, self).add(m)
+        # D 的 MRO 是 [D, B, C, A, object]
+        # 从 B 之后的 [C, A, object] 中查找 add 方法
+        super().add(m)
+
+        # 第六步
+        # d.n = 11
+        self.n += 3
+        # d.n = 14
+
+
+class C(A):
+    def __init__(self):
+        self.n = 4
+
+    def add(self, m):
+        # 第三步
+        # 来自 B.add 中的 super
+        # self == d, self.n == d.n == 5
+        print('self is {0} @C.add'.format(self))
+        # 等价于 suepr(C, self).add(m)
+        # D 的 MRO 是 [D, B, C, A, object]
+        # 从 C 之后的 [A, object] 中查找 add 方法
+        super().add(m)
+
+        # 第五步
+        # d.n = 7
+        self.n += 4
+        # d.n = 11
+
+
+class D(B, C):
+    def __init__(self):
+        self.n = 5
+
+    def add(self, m):
+        # 第一步
+        print('self is {0} @D.add'.format(self))
+        # print(D.mro())  # [<class '__main__.D'>, <class '__main__.B'>, <class '__main__.C'>, <class '__main__.A'>, <class 'object'>]
+        # 等价于 super(D, self).add(m)
+        # D 的 MRO 是 [D, B, C, A, object]
+        # 从 D 之后的 [B, C, A, object] 中查找 add 方法
+        super().add(m)
+
+        # super(C, self).add(m)  # 从 C 之后的 [A, object] 中查找 add 方法
+
+        # 第七步
+        # d.n = 14
+        self.n += 5
+        # self.n = 19
+
+
+d = D()
+d.add(2)
+print(d.n)
+
+'''
+类D中父类调用代码为 super().add(m) 时： 打印结果：
+    self is <__main__.D object at 0x100be0af0> @D.add
+    self is <__main__.D object at 0x100be0af0> @B.add
+    self is <__main__.D object at 0x100be0af0> @C.add
+    self is <__main__.D object at 0x100be0af0> @A.add
+    19
+
+类D中父类调用代码为 super(C, self).add(m) 时： 打印结果：
+    self is <__main__.D object at 0x10149caf0> @D.add
+    self is <__main__.D object at 0x10149caf0> @A.add
+    12
+'''
+```
+
+
+
+### 16、Python 面向对象中 property、setter、getter、deleter 的使用
+
+-  **python中的 get 和 set方法**
+
+``` python
+class Person:
+    def __init__(self):
+        self._age = None
+
+    # 通过此方法可以获取到属性age
+    def get_age(self):
+        return self._age
+
+    # 通过此方法可以设置属性age
+    def set_age(self, age):
+        self._age = int(age)
+
+    # 通过此方法可以删除属性age
+    def delete_age(self):
+        del self._age
+
+    # 创建一个类属性age，将其与上面的操作方法关联
+    age = property(get_age, set_age, delete_age)
+
+
+p = Person()
+
+p.set_age(18)
+print(p.get_age())   # 18
+print(p.age)    # 18 Person有了一个age属性，结果和p.get_age()保持一致
+
+p.delete_age()
+print(p.age)  # AttributeError: 'Person' object has no attribute '_age'
+```
+
+- **property方法**
+
+``` python
+class Person:
+    def __init__(self):
+        # __为私有属性
+        self.__name = 'wusir'
+
+    # 通过property装饰器，将 方法name 转变为 属性name
+    @property
+    def name(self):
+        return self.__name
+
+    # 通过property就可以获取到name, 不需要这个了
+    # @name.getter
+    # def name(self):
+    #     return self.__name
+
+    # 对属性name赋值时调用的函数
+    @name.setter
+    def name(self, name):
+        self.__name = name
+
+    # 删除属性name调用的函数
+    @name.deleter
+    def name(self):
+        del self.__name
+
+
+p = Person()
+
+# 先通过property获取name属性
+print('property/getter-name:   {}'.format(p.name))  # property/getter-name:   wusir
+p.name = 'alex'  # 给属性name赋值
+print('setter-name:   {}'.format(p.name))  # setter-name:   alex
+del p.name  # 删除name属性
+print(p.name)  # AttributeError: 'Person' object has no attribute '_Person__name'
+```
+
+
+
+### 17、强引用、弱应用 及 weakref 模块
+
+- **强引用**
+  - 普通变量名和对象的关联是强引用的关系，会增加引用计数，进而影响目标对象的生命周期。
+-  **弱引用**
+  - 弱引用就是在保留引用的前提下，不增加引用计数，也不阻止目标被回收。
+  -  基本的 int 、 list 、 tuple 、string 、dict 实例不能作为弱引用的目标。
+  - set 实例可以作为所指对象。
+  - str 、 dict 、list 的子类实例 和 用户自定义的类型实例 可以作为弱引用所指对象。
+  - int 、 tuple 的子类实例 也不能作为弱引用对象.
+- **弱引用和强引用代码演示**
+
+``` python
+import sys
+import weakref
+
+
+class X:
+    def __init__(self):
+        self.name = "zhangjian"
+
+    def __del__(self):
+        print("实例对象删除")
+
+
+# 实例化一个对象，变量 a 与之 强引用关联 关联
+a = X()
+
+# 查看 变量a 引用的对象有几个引用
+print(sys.getrefcount(a))  # 2 当使用某个引用作为参数，传递给 getrefcount() 时，参数实际上创建了一个临时的引用。因此， getrefcount() 所得到的结果，会比期望的多 1 。
+
+print(sys.getrefcount(id(a)))  # 1 直接传入对象的id，就获取到了当前对象的真实引用数量
+
+# 创建两个弱引用
+ref = weakref.ref(a)
+proxy = weakref.proxy(a)
+
+print(ref().name)  # zhangjian  使用weakref.ref时，返回值ref，需要执行ref()才是弱引用的对象，ref() 相当于 c_obj
+print(proxy.name)  # zhangjian  weakref.proxy的返回值直接就是弱引用的对象，返回值proxy直接相当于c_obj
+
+print(sys.getrefcount(id(a)))  # 1 弱引用不增加引用计数，所以该对象的引用数量仍为 1
+
+'''
+输出打印：
+    2
+    1
+    zhangjian
+    zhangjian
+    1
+    实例对象删除  # 实例对象被GC回收时，调用魔法方法__del__
+'''
+```
+
+- **workref 模块**
+
+> 弱引用在缓存应用中很有用，因为不想仅因为被缓存引用着而始终保存缓存对象。
+>
+>  `weakref.ref` 实例可以获取所指对象。如果对象存在，调用弱引用可以获取对象；否则返回 `None` 。
+>
+> `weakref.ref` 类其实是低层接口，供高级用途使用，多数程序最好使用 **weakref 工具集** 和 `finalize` 。
+>
+> weakref 工具集合:
+>
+> - `WeakKeyDictionary`:
+> - `WeakValueDictionary`: 这是一种可变映射，里面的值是对象的弱引用。被引用的对象在程序中的其他地方被当作垃圾回收后，对应的键会自动从 `WeakValueDictionary` 中删除。因此，`WeakValueDictionary` 经常用于缓存。
+> - `WeakSet`: 保存元素弱引用的集合类。元素没有强引用时，集合会把它删除。
+> - `finalize` (内部使用弱引用)
+>
+> **示例一：普通集合**
+>
+> ``` python
+> import sys
+> import weakref
+> 
+> # 变量 a_set 强引用到一个集合
+> a_set = {1, 2, 'aa'}
+> 
+> # 创建弱引用
+> ref = weakref.ref(a_set)
+> 
+> print(ref)  # <weakref at 0x104fbd130; to 'set' at 0x104fc6740>
+> print(ref())  # {1, 2, 'aa'}  返回被引用的对象
+> 
+> print(sys.getrefcount(id(a_set)))  # 1
+> 
+> # a_set 强引用到另一个集合对象，那么原来的集合对象就没有了强引用，会被系统当作垃圾回收掉
+> a_set = {2, 3, 'bb'}
+> 
+> print(ref)  # <weakref at 0x105039130; dead>
+> print(ref())  # None
+> ```
+>
+> **示例二：值为弱引用的字典**
+>
+> ``` python
+> import weakref
+> 
+> 
+> class A:
+>     def __init__(self, name):
+>         self.name = name
+> 
+> 
+> # 创建 值是弱引用 的字典
+> weak_dict = weakref.WeakValueDictionary()
+> key = 'test1'
+> value = A("zhangjian")  # value 强引用到实例对象上面
+> 
+> weak_dict[key] = value  # 弱引用字典的赋值取值等操作和dict类一致。其本身就是dict的子类
+> 
+> print(weak_dict[key])  # <__main__.A object at 0x100a3c550>
+> 
+> # 删除对象的唯一引用，那么字典里的键值对就被回收了
+> del value
+> # print(weak_dict[key])  # KeyError: 'test1'
+> print(weak_dict.get(key, "default"))  # default
+> ```
+
