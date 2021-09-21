@@ -7,12 +7,14 @@ import gevent
 
 def func():
     print("开启新协程：")
+    print(gevent.getcurrent())
     gevent.sleep(1)
     print("关闭新协程：")
 
 
 def func2(name):
     print("开启新协程：", name)
+    print(gevent.getcurrent())
     gevent.sleep(2)
     print("关闭新协程：", name)
 

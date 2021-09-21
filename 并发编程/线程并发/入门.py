@@ -9,9 +9,9 @@ def consumer():
     global count
     count += 1
     # 获取当前线程对象
-    # t = current_thread()
-    # print(t.ident)
-    # print(t.getName())
+    t = current_thread()
+    print(t.ident)
+    print(t.getName())
 
 
 # 面上对象开启线程

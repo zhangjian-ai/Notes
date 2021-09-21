@@ -17,12 +17,17 @@ type中`__call__`函数的实现逻辑：
         return obj
 ```
 
-
-
 有了上面的理解，那么实例化对象的逻辑就出来了：
 
 	- instance = class()
 	- class 作为元类的实例对象，运行class()时，即调用元类type中的__call__方法，依次调用class类中__new__和__init__方法，最终返回一个当前class类的实例对象。
+
+> 扩展：
+>
+>  - 构造函数：python 中的通过构造函数`__new__`创建一个实例对象
+>  - 析构函数：python 中的析构函数`__del__`在对象被GC回收时调用，并不是通过执行`__del__`删除对象，而是删除时调用该函数。
+
+
 
 ### 2、 Python生成器send的应用场景
 
@@ -1078,81 +1083,145 @@ print(d.n)
 
 
 
-### 16、Python 面向对象中 property、setter、getter、deleter 的使用
+### 16、Python 面向对象中 property、setter、getter、deleter 、`__getattr__`、`__setattr__`的使用
 
 -  **python中的 get 和 set方法**
 
-``` python
-class Person:
-    def __init__(self):
-        self._age = None
+  ``` python
+  class Person:
+      def __init__(self):
+          self._age = None
+  
+      # 通过此方法可以获取到属性age
+      def get_age(self):
+          return self._age
+  
+      # 通过此方法可以设置属性age
+      def set_age(self, age):
+          self._age = int(age)
+  
+      # 通过此方法可以删除属性age
+      def delete_age(self):
+          del self._age
+  
+      # 创建一个类属性age，将其与上面的操作方法关联
+      age = property(get_age, set_age, delete_age)
+  
+  
+  p = Person()
+  
+  p.set_age(18)
+  print(p.get_age())   # 18
+  print(p.age)    # 18 Person有了一个age属性，结果和p.get_age()保持一致
+  
+  p.delete_age()
+  print(p.age)  # AttributeError: 'Person' object has no attribute '_age'
+  ```
 
-    # 通过此方法可以获取到属性age
-    def get_age(self):
-        return self._age
-
-    # 通过此方法可以设置属性age
-    def set_age(self, age):
-        self._age = int(age)
-
-    # 通过此方法可以删除属性age
-    def delete_age(self):
-        del self._age
-
-    # 创建一个类属性age，将其与上面的操作方法关联
-    age = property(get_age, set_age, delete_age)
-
-
-p = Person()
-
-p.set_age(18)
-print(p.get_age())   # 18
-print(p.age)    # 18 Person有了一个age属性，结果和p.get_age()保持一致
-
-p.delete_age()
-print(p.age)  # AttributeError: 'Person' object has no attribute '_age'
-```
+  
 
 - **property方法**
 
-``` python
-class Person:
-    def __init__(self):
-        # __为私有属性
-        self.__name = 'wusir'
+  ``` python
+  class Person:
+      def __init__(self):
+          # __为私有属性
+          self.__name = 'wusir'
+  
+      # 通过property装饰器，将 方法name 转变为 属性name
+      @property
+      def name(self):
+          return self.__name
+  
+      # 通过property就可以获取到name, 不需要这个了
+      # @name.getter
+      # def name(self):
+      #     return self.__name
+  
+      # 对属性name赋值时调用的函数
+      @name.setter
+      def name(self, name):
+          self.__name = name
+  
+      # 删除属性name调用的函数
+      @name.deleter
+      def name(self):
+          del self.__name
+  
+  
+  p = Person()
+  
+  # 先通过property获取name属性
+  print('property/getter-name:   {}'.format(p.name))  # property/getter-name:   wusir
+  p.name = 'alex'  # 给属性name赋值
+  print('setter-name:   {}'.format(p.name))  # setter-name:   alex
+  del p.name  # 删除name属性
+  print(p.name)  # AttributeError: 'Person' object has no attribute '_Person__name'
+  ```
 
-    # 通过property装饰器，将 方法name 转变为 属性name
-    @property
-    def name(self):
-        return self.__name
+  
 
-    # 通过property就可以获取到name, 不需要这个了
-    # @name.getter
-    # def name(self):
-    #     return self.__name
+- `__getattr__`、`__setattr__`方法
 
-    # 对属性name赋值时调用的函数
-    @name.setter
-    def name(self, name):
-        self.__name = name
+  - `__getattr__`、`__setattr__`方法基类已经默认实现，在开发中可根据需要修改。
 
-    # 删除属性name调用的函数
-    @name.deleter
-    def name(self):
-        del self.__name
+  - `__getattr__`
 
+    - 拦截点号运算。当对未定义的属性名称和实例进行点号运算时，就会用属性名作为字符串调用这个方法。如果继承树可以找到该属性，则不调用此方法。
 
-p = Person()
+      ``` python
+      class Person:
+          def __init__(self):
+              self.name = 'xiaozhang'
+      
+          def __getattr__(self, item):
+              print("被调用")
+              if item == 'age':
+                  return 18
+              return None
+      
+      
+      p = Person()
+      print(p.name)
+      print('----------')
+      print(p.age)  # 未定义属性，调用__getattr__
+      
+      '''
+      打印结果：
+          xiaozhang
+          ----------
+          被调用
+          18 
+      '''
+      ```
 
-# 先通过property获取name属性
-print('property/getter-name:   {}'.format(p.name))  # property/getter-name:   wusir
-p.name = 'alex'  # 给属性name赋值
-print('setter-name:   {}'.format(p.name))  # setter-name:   alex
-del p.name  # 删除name属性
-print(p.name)  # AttributeError: 'Person' object has no attribute '_Person__name'
-```
+  - `__setattr__`
 
+    - 会拦截所有属性的的赋值语句。当在`__setattr__`方法内对属性进行赋值时，不可使用self.attr = value，因为他会再次调用self.`__setattr__`("attr", value)，则会形成无穷递归循环，最后导致堆栈溢出异常。应该通过对属性字典做索引运算来赋值任何实例属性，也就是使用self.`__dict__`['name'] = value。
 
+      ``` python
+      class Person:
+          def __init__(self):
+              self.name = 'xiaozhang'
+      
+          def __setattr__(self, key, value):
+              self.__dict__[key] = value
+      
+      p = Person()
+      print(p.name)
+      p.name = 'xiaoli'
+      print(p.name)
+      p.age = 18
+      print(p.age)
+      '''
+      打印结果：
+          xiaozhang
+          xiaoli
+          18
+      '''
+      ```
+
+      
 
 ### 17、强引用、弱应用 及 weakref 模块
 
@@ -1271,4 +1340,455 @@ print(sys.getrefcount(id(a)))  # 1 弱引用不增加引用计数，所以该对
 > # print(weak_dict[key])  # KeyError: 'test1'
 > print(weak_dict.get(key, "default"))  # default
 > ```
+
+### 18、数据库连接池(开箱即用)
+
+``` python
+import pymysql
+from dbutils.pooled_db import PooledDB
+from pymysql.cursors import DictCursor
+
+
+class DbPool:
+    """
+    带参数的sql语句，需要使用占位符展位，param参数应是列表或者元组
+    """
+    _instance_dict = dict()
+
+    def __new__(cls, *args, **kwargs):
+        key = ''
+        for item in args:
+            key += str(item)
+        for item in kwargs.values():
+            key += str(item)
+
+        if key in cls._instance_dict:
+            return cls._instance_dict[key]
+        cls._instance_dict[key] = super().__new__(cls)
+
+        return cls._instance_dict[key]
+
+    def __init__(self, host, port, user, password, db=None):
+        self.pool = PooledDB(creator=pymysql,  # 指明创建链接的模块
+                             mincached=1,  # 池中最小保持的连接数
+                             maxcached=10,  # 池中最多存在的连接数
+                             ping=0,  # 不主动 ping
+                             host=host,
+                             port=port,
+                             user=user,
+                             passwd=password,
+                             db=db,
+                             use_unicode=False,
+                             charset="utf8",
+                             cursorclass=DictCursor  # fetch的结果 由默认的元组，改成字典形式
+                             )
+
+    def get_cursor(self):
+        conn = self.pool.connection()
+        cursor = conn.cursor()
+        return conn, cursor
+
+    def close_cursor(self, conn, cursor):
+        cursor.close()
+        conn.close()
+
+    def query_many(self, sql, param=None, size=None):
+        """
+        执行查询，并取出多条结果集
+        @param sql:查询ＳＱＬ，如果有查询条件，请只指定条件列表，并将条件值使用参数[param]传递进来
+        @param param: 可选参数，条件列表值（元组/列表）
+        @param size: 查询条数
+        @return: result list(字典对象)/boolean 查询到的结果集
+        """
+        conn, cursor = self.get_cursor()
+        if param is None:
+            count = cursor.execute(sql)
+        else:
+            count = cursor.execute(sql, param)
+        if count > 0:
+            if size:
+                result = cursor.fetchmany(size)
+            else:
+                result = cursor.fetchall()
+        else:
+            result = False
+
+        self.close_cursor(conn, cursor)
+        return result
+
+    def qyuery_one(self, sql, param=None):
+        """
+        执行查询，并取出第一条
+        @param sql:查询ＳＱＬ，如果有查询条件，请只指定条件列表，并将条件值使用参数[param]传递进来
+        @param param: 可选参数，条件列表值（元组/列表）
+        @return: result list/boolean 查询到的结果集
+        """
+        conn, cursor = self.get_cursor()
+        if param is None:
+            count = cursor.execute(sql)
+        else:
+            count = cursor.execute(sql, param)
+        if count > 0:
+            result = cursor.fetchone()
+        else:
+            result = False
+
+        self.close_cursor(conn, cursor)
+        return result
+
+    def execute_many(self, sql, values):
+        """
+        增删改操作多条数据
+        @param sql:要插入的ＳＱＬ格式
+        @param values:要插入的记录数据tuple(tuple)/list[list]
+        @return: count 受影响的行数
+        """
+        conn, cursor = self.get_cursor()
+        try:
+            count = cursor.executemany(sql, values)
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            count = False
+
+        self.close_cursor(conn, cursor)
+        return count
+
+    def execute_one(self, sql, param):
+        """
+        增删改操作单条数据
+        @param sql:要插入的ＳＱＬ格式
+        @param param:要插入的记录数据tuple/list
+        @return: count 受影响的行数
+        """
+        conn, cursor = self.get_cursor()
+
+        try:
+            count = cursor.execute(sql, param)
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            count = False
+
+        self.close_cursor(conn, cursor)
+        return count
+```
+
+
+
+### 19、上下文
+
+基于类实现：**在一个类里，实现了`__enter__`和`__exit__`的方法，这个类的实例就是一个上下文管理器。**
+
+``` 
+class context:
+    def __enter__(self):
+        return "aa"
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        print("close")
+        
+    def operation(self):
+    		print("do something")
+
+with context() as f:  # with 后面一定是一个对象， as 后面的值就是__enter__函数的返回值，通常返回self
+    print(f)  # 'aa'
+
+'''
+打印结果：
+    aa
+    close
+'''
+```
+
+基于装饰器：**在一个函数里面使用关键子yield，结合装饰器@contextlib.contextmanager，也可以创建一个上下文管理器。**
+
+``` python
+from contextlib import contextmanager
+
+@contextmanager  # 该装饰器原理同上面的类实现的上下文，就是把被装饰的函数 封装成了一个实现了__enter__\__exit__的类
+def context():
+    # 此部分的代码等同于 __enter__ 方法的内容
+    a = 10
+    b = 20
+    yield a + b  # yield 相当于__enter__的返回值
+
+    # 此部分相当于__exit__方法的内容
+    print("退出江湖")
+
+with context() as f:
+    print(f)  # 30
+
+'''
+打印结果：
+    30
+    退出江湖 
+'''
+```
+
+
+
+### 20、偏函数
+
+> 函数在执行时，要带上所有必要的参数进行调用。但是，有时参数可以在函数被调用之前提前获知。这种情况下，一个函数有一个或多个参数预先就能用上，以便函数能用更少的参数进行调用。
+>
+> 偏函数是将所要承载的函数作为partial()函数的第一个参数，原函数的各个参数依次作为partial()函数后续的参数，除非使用关键字参数。
+
+``` python
+from functools import partial
+
+print(type(partial))  # <class 'type'>  # partial 本身是一个 元类
+
+
+def get_sum(a, b):
+    print(a, b)
+    return a + b
+
+
+get_sum_by_a = partial(get_sum, 5)  # 通过位置参数，确认了 a 的值，get_sum_by_a被调用时只需要第一个参数，这个参数将会被 形参b 接收。
+
+sum1 = get_sum_by_a(10)  # 打印: 5 10
+print(sum1)  # 15
+
+get_sum_by_b = partial(get_sum, b=6)  # 通过关键字参数，确认了 b 的值。get_sum_by_b被调用时只需要传一个参数，将会被 a 接收。
+
+sum2 = get_sum_by_b(11)  # 11 6
+print(sum2)  # 17
+
+print(type(get_sum_by_b))  # <class 'functools.partial'>  partial 返回值是一个类
+
+'''
+实现原理：
+    在 paetial 被调用时，此时将 get_sum函数 及 已知参数 都保存到了 元类的实例对象，也就是 get_sum_by_b 类中。
+    get_sum_by_b 类被调用时，将执行其 元类 的 __call__ 函数。此时把 get_sum_by_b 自身 连同 后续入参 一同传给了 __call__ 函数；
+    __call__函数内部 将前后两波 入参 整合之后，再 调用函数get_sum，并传入整合好的参数完成调用。
+'''
+```
+
+
+
+### 21、threading.local 实现原理
+
+> threading.local()这个方法的特点用来保存一个全局变量，但是这个全局变量只有在当前线程才能访问，如果你在开发多线程应用的时候 需要每个线程保存一个单独的数据供当前线程操作，可以考虑使用这个方法，简单有效。
+
+- 使用threading.local()
+
+  ``` python
+  import random
+  import threading
+  from threading import local
+  import time
+  
+  obj = local()  # 定义全局对象 obj
+  
+  
+  def task(i):
+      obj.ref = i  # 在全局对象中添加 属性ref ，该属性 只属于当前线程。
+      time.sleep(random.random())
+      print(f"线程：{obj.ref}，我的入参是：{i}")
+  
+  
+  for i in range(10):
+      t = threading.Thread(target=task, args=(i,))
+      t.start()
+  ```
+
+- 实现原理
+
+  ``` python
+  import random
+  import time
+  import threading
+  
+  try:
+      # 这里是兼容了协程，在协程中亦可根据此原理隔离协程间的数据
+      import greenlet
+      get_ident = greenlet.getcurrent
+  except Exception as e:
+      get_ident = threading.get_ident
+  
+  
+  # Local 全局类的实现
+  # 保存属性时，根据线程id根类保存，获取属性时同样根据当前线程id来取，这样便将线程间的数据隔离开了。
+  class Local(object):
+      DIC = {}
+  
+      def __getattr__(self, item):
+          ident = get_ident()
+          if ident in self.DIC:
+              return self.DIC[ident].get(item)
+          return None
+  
+      def __setattr__(self, key, value):
+          ident = get_ident()
+          if ident in self.DIC:
+              self.DIC[ident][key] = value
+          else:
+              self.DIC[ident] = {key: value}
+  
+  
+  obj = Local()
+  
+  
+  def task(i):
+      obj.ref = i
+      time.sleep(random.random())
+      print(f"线程：{obj.ref}，我的入参是：{i}")
+  
+  
+  for i in range(10):
+      t = threading.Thread(target=task, args=(i,))
+      t.start()
+  ```
+
+
+
+### 22、`__dict__`、`__slots__`、dir()
+
+- `__dict__`
+
+  - `__dict__`函数是用来存储对象属性的一个字典，其键为属性名，值为属性的值。许多内建类型就没有`__dict__`属性，如list，此时就需要用dir()来列出对象的所有属性。
+
+    ``` python
+    class Apple(object):
+        'fruit'
+        color = 'red'
+    
+        def __init__(self):
+            self.weight = '300'
+            self.smell = 'good'
+    
+        @property
+        def price(self):
+            return self.weight * 10
+    
+        def taste(self):
+            pass
+    
+    
+    class GreenApple(Apple):
+        color = 'green'
+    
+        def __init__(self):
+            super().__init__()
+            self.origin = 'sichuan'
+    
+    
+    apple = Apple()
+    green_apple = GreenApple()
+    print(apple.__dict__)  # {'weight': '300', 'smell': 'good'}
+    print(
+        Apple.__dict__)  # {'__module__': '__main__', '__doc__': 'fruit', 'color': 'red', '__init__': <function Apple.__init__ at 0x10316d430>, 'price': <property object at 0x1031716d0>, 'taste': <function Apple.taste at 0x10321a310>, '__dict__': <attribute '__dict__' of 'Apple' objects>, '__weakref__': <attribute '__weakref__' of 'Apple' objects>}
+    
+    print(green_apple.__dict__)  # {'weight': '300', 'smell': 'good', 'origin': 'sichuan'}
+    print(GreenApple.__dict__)  # {'__module__': '__main__', 'color': 'green', '__init__': <function GreenApple.__init__ at 0x1029e63a0>, '__doc__': None}
+    ```
+
+  - 结论
+
+    - 实例的`__dict__`仅存储与该实例相关的实例属性，正是因为实例的`__dict__`属性，每个实例的实例属性才会互不影响。
+    - 类的`__dict__`存储所有实例共享的变量和函数(类属性，方法等)。
+    - 子类的`__dict__`并不包含其父类的属性。
+    - 实例的`__dict__`会继承父类的实例属性，因为子类实例实际上也拥有父类中相同的实例属性。
+
+- dir()
+
+  -  dir() 是 Python 提供的一个 API 函数，会自动寻找一个对象的所有属性。从第一节可知，一个实例对象的`__dict__`里只有实例属性，没有包含其他的有效属性。因此如果想获取一个对象所有有效属性，可以使用dir()。
+
+    ``` python
+    class Apple(object):
+        'fruit'
+        color = 'red'
+    
+        def __init__(self):
+            self.weight = '300'
+            self.smell = 'good'
+    
+        @property
+        def price(self):
+            return self.weight * 10
+    
+        def taste(self):
+            pass
+    
+    
+    class GreenApple(Apple):
+        color = 'green'
+    
+        def __init__(self):
+            super().__init__()
+            self.origin = 'sichuan'
+    
+    
+    apple = Apple()
+    green_apple = GreenApple()
+    
+    print(dir(apple))
+    print(dir(Apple))
+    print(dir(green_apple))
+    print(dir(GreenApple))
+    
+    '''
+    ['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'color', 'price', 'smell', 'taste', 'weight']
+    
+    ['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'color', 'price', 'taste']
+    
+    ['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'color', 'origin', 'price', 'smell', 'taste', 'weight']
+    
+    ['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'color', 'price', 'taste']
+    '''
+    ```
+
+  - 结论
+
+    - dir( )在对象中自动搜索到了 包括从父类中继承的所有属性（如：`__new__`）。
+    - dir(类) 不会收集`__init__`中定义的属性，因为这个属性只属于具体的实例。
+
+- `__slots__`
+
+  - 在一个类中定义了`__slots__`属性，那么这个类的实例将再不能添加实例属性，也不会拥有`__dict__`属性。`__slots__`的作用就是阻止类在实例化时为实例分配`__dict__`属性和 `__weakref__`，从而限制实例属性的添加，因此可以节约内存。
+
+  - 一个普通对象使用一个 `__dict__` 来保存它自己的属性，你可以动态地向其中添加或删除属性，但是如果使用 `__slots__ `属性，那么该对象用来保存其自身属性的结构一旦创建则不能再进行任何修改。
+
+  - 在缺少` __weakref__ `变量的情况下，定义了 `__slots__ `的类不支持对其实例的弱引用。如果需要，请将字符串 `__weakref__` 纳入 `__slots__ `声明中。（本条Python 2.3及其以后有效)。
+
+  - `__slots__`类变量可以是 string，iterable 或者是被实例使用的一连串 string。
+
+  - `__slots__ `声明只对它所处的类有效，因此，含有 `__slots__ `的类的子类会自动创建一个 `__dict__`，除非在子类中也声明一个 `__slots__ `（在这个 `__slots__` 声明应该只包含父类未声明的变量）。
+
+  - 当你事先知道class的attributes的时候，建议使用slots来节省memory以及获得更快的attribute access。
+
+    ``` python
+    class Apple(object):
+        __slots__ = ('color', 'weight', 'name')  # 静态类属性
+    
+        def __init__(self):
+            self.weight = '300'
+            object.__setattr__(self, 'name', 'hongfushi')  # 骚操作
+    
+        @property
+        def price(self):
+            return self.weight * 10
+    
+        def taste(self):
+            pass
+    
+    
+    apple = Apple()
+    print(apple.weight)  # 300
+    print(apple.name)  # hongfushi
+    # print(apple.color)  # AttributeError: color
+    
+    apple.color = 'red'
+    print(apple.color)  # red
+    
+    # 有__slots__ 属性的类，将不能动态添加属性
+    apple.origin = 'sichuan'  # AttributeError: 'Apple' object has no attribute 'origin'
+    ```
+
+    
+
+### 23、
+
+
 
