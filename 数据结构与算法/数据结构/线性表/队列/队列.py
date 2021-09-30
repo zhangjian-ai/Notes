@@ -10,7 +10,7 @@ API设计：
         - is_empty(): 判断栈是否为空，是返回True，否返回False
         - size(): 获取队列中的元素个数
         - dequeue(): 取出一个队列中的元素
-        - enqueue(node: Node): 向队列中插入一个元素
+        - enqueue(item): 向队列中插入一个元素
     成员变量：
        - head：记录首结点
        - last：记录尾结点

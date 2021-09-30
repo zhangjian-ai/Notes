@@ -29,7 +29,7 @@ type中`__call__`函数的实现逻辑：
 
 
 
-### 2、 Python生成器send的应用场景
+### 2、Python生成器send的应用场景
 
 ``` python
 # 生成器是一种使用普通函数语法定义(包含yield关键字即可)的迭代器，迭代器的有点是可以按需获取序列值，而不需要构建出一整个列表
@@ -299,6 +299,12 @@ execute __ge__
 (True, False, True, False)
 
 ```
+
+**字符串大小比较：**
+
+- 字符串按字符比较大小，先取两个字符串第一位字符的ascii码谁大，字符串就大，不再比较后面的；第一个字符相同就比第二个字符串，以此类推。
+  - 需要注意的是 空格 的ascii码是32，空（null）的ascii码是0。
+  - 如果两个字符串字符相同，但是一个字符串的字符多，则多的大。原理就是字符的ascii码都是大于0的，字符串少的就会取null的ascii码来与之比较。
 
 
 
@@ -1693,7 +1699,7 @@ print(type(get_sum_by_b))  # <class 'functools.partial'>  partial 返回值是�
 
 - dir()
 
-  -  dir() 是 Python 提供的一个 API 函数，会自动寻找一个对象的所有属性。从第一节可知，一个实例对象的`__dict__`里只有实例属性，没有包含其他的有效属性。因此如果想获取一个对象所有有效属性，可以使用dir()。
+  -  dir() 是 Python 提供的一个 API 函数，会自动寻找一个对象的所有属性，返回一个列表。从第一节可知，一个实例对象的`__dict__`里只有实例属性，没有包含其他的有效属性。因此如果想获取一个对象所有有效属性，可以使用dir()。
 
     ``` python
     class Apple(object):
@@ -1788,7 +1794,87 @@ print(type(get_sum_by_b))  # <class 'functools.partial'>  partial 返回值是�
 
     
 
-### 23、
+### 23、Python 元类 和 抽象基类
+
+> ## 理解元类
+>
+> 相信大家都有去五金店配钥匙的经历，我们要参照原来的钥匙（模具），再打造一把新的钥匙。**这里所说的模具，即是父类**，而打出来的**新钥匙即是子类**，我们可以在新钥匙（子类）上加一些装饰品，即子类自定属性或方法。那么在这里，什么是元类呢？**那部打造钥匙的机器就是元类**。
+
+``` python
+class MyType(type):  # 继承 内建元类type 创建一个自定义元类
+    def __new__(cls, name, bases, attrs):
+        t = super().__new__(cls, name, bases, attrs)
+        print("创建类")
+        return t
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        print("实例化类属性创建类")
+
+    def __call__(cls, *args, **kwargs):
+        obj = super().__call__(*args, **kwargs)
+        return obj
+
+
+class A(metaclass=MyType):  # 指定元类创建类
+    pass
+
+
+# 另一种创建类的方式。详情见 3、Python 动态创建类
+C = MyType('name', (object,), {})
+
+
+class B(object):  # 默认元类创建
+    pass
+
+
+# python中一切皆对象，类本身就是 元类(metaclass) 的对象。
+print(A.__class__)  # 类 A 的元类是我们指定的 自定义元类 MyType（继承 type），和内建元类 type 是同一级别
+print(C.__class__)  # 同 类 A
+print(B.__class__)  # 类 B 没有指定元类，那么就 使用 内建元类 type
+print(MyType.__class__)  # MyType 虽然继承 type，但同样没指定 元类。所以 他的 元类也是 内建元类 type
+print(type.__class__)  # type 的元类 就是 它自己。
+a = A()
+b = B()
+print(a.__class__)  # 实例a 由类A 创建，调用 A 的 元类MyType 的 __call__函数，完成对象创建，那么 a 的元类就是 A
+print(b.__class__)  # 实例b 由类B 创建，按照上面的逻辑，那么 b 的元类 就是 B
+
+'''
+打印输出：
+    创建类             # 前两步打印，就是 MyType 创建一个类的过程。其实本质上和 类实例化 创建一个对象是一样的。
+    实例化类属性创建类   # 这里 MyType 是元类 type 的实例。所以 MyType() 的执行，就是调用了 type 中的__call__函数，依次完成对__new__,__init__的调用。
+    创建类
+    实例化类属性创建类   # 同前两步
+    <class '__main__.MyType'>
+    <class '__main__.MyType'>
+    <class 'type'>
+    <class 'type'>
+    <class 'type'>
+    <class '__main__.A'>
+    <class '__main__.B'>
+'''
+```
+
+> ### 抽象基类：
+>
+> - 抽象基类是用来继承的，abc 模块提供一个元类（ABCMeta）和两个装饰器（@abstractmethod 、 @abstractproperty）来自定义抽象基类
+> - 使用了上面两个装饰器的基类不可实例化，并且被继承的时候必须在子类里覆盖这些抽象方法（非抽象方法、属性可以不用覆盖）
+> - 抽象基类可以通过继承、或者ABCMeta的.register()方法来注册：
+>
+> ```
+> >>> help(abc.ABCMeta.register)
+> Help on function register in module abc:
+> 
+> register(cls, subclass)
+>     Register a virtual subclass of an ABC.
+>     
+>     Returns the subclass, to allow usage as a class decorator.
+> ```
+>
+> - 容器和迭代器类被ABCs化，数值类型也被ABCs化了。这些基类可以在 collections 和 numbers 模块里找到。
+> - 基类的单继承和多继承 见 ** 15、super 类 详解 **
+
+
 
 
 

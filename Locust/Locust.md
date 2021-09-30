@@ -170,7 +170,7 @@ brotli, roundrobin, pyzmq, psutil, msgpack, geventhttpclient, Flask-Cors, Flask-
    locust -f testscript/locusttest.py --master --host=https://www.cnblogs.com 
    ```
 
-- 4、如果要启动任意数量的从属进程，可以通过-salve命令来启动locust文件：
+- 4、如果要启动任意数量的从属进程，可以通过--worker命令来启动locust文件：
 
   ``` 
   locust -f testscript/locusttest.py --worker --host=https://www.cnblogs.com 
@@ -210,7 +210,7 @@ brotli, roundrobin, pyzmq, psutil, msgpack, geventhttpclient, Flask-Cors, Flask-
 - **COOKIES**
   - locust中的client会自动帮我们处理cookies。类似request.session()，所以如果我们登陆的时候，只需要在on_start中登陆一次就可以了。
 - **多API问题**
-  - 在locust中，如果url是不需要统计的，则我们不要用clent去访问api，应该用request去访问，这样就locust就不会统计request库发起的请请求。
+  - 在locust中，如果url是不需要统计的，则我们不要用client去访问api，应该用request去访问，这样就locust就不会统计request库发起的请请求。
 
 
 
@@ -379,7 +379,7 @@ class Task(TaskSet):
 
 class WebSite(HttpUser):
     tasks = [Task, ]  # 新版本用列表指定任务类
-    host = 'http://121.4.47.229:8000'  # 这里写上host，在启动locust时就可以不写了
+    host = 'http://121.4.47.229:8000'  # 这里写上host，在启动 locust 时就可以不写了
     min_wait = 2000
     max_wait = 3000
 
@@ -411,7 +411,7 @@ if __name__ == '__main__':
 
 
 
-## 服务器监控 psutil（开箱即用）
+## 资源监控模块 psutil（开箱即用）
 
 > 服务器性能监控思路：
 >
