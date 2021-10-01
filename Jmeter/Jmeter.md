@@ -35,7 +35,7 @@
 - Jmeter安装包解压即可使用。为了cmd能够全局使用，将启动文件配置到环境变量。
 
   ``` shell
-  export JMETER_HOME=/usr/local/Jmeter_5.4.1  # jmeter解压后的目录
+  export JMETER_HOME=/var/local/apache-jmeter-5.4.1  # jmeter解压后的目录
   export PATH=${JMETER_HOME}/bin:$PATH
   export CLASSPATH=${JMETER_HOME}/lib/ext/ApacheJMeter_core.jar:${JMETER_HOME}/lib/jorphan.jar:${CLASSPATH}
   
@@ -55,7 +55,7 @@
 - Ant 安装包解压后即可使用，同Jmeter
 
   ``` shell
-  export JMETER_HOME=/usr/local/Ant  # jmeter解压后的目录
+  export JMETER_HOME=/var/local/apache-ant-1.10.11
   export PATH=${JMETER_HOME}/bin:$PATH
   
   # 添加脚本后，重新加载配置文件使其生效
@@ -171,4 +171,10 @@ jmeter -n -t jmx/boot-quick.jmx -l jmx/boot-quick.jtl -e -o jmx/report
     - 如果只能看到编译后的 .class 文件，可以借助反编译工具 JD-GUI(java decompile)，将 class 反编译成 java 文件。
 
     - 地址：**https://jd-gui.apponic.com/mac/**
+
+
+
+## Jenkins Jmeter Ant 持续集成
+
+> jenkins上面安装相关插件：ant、
 
