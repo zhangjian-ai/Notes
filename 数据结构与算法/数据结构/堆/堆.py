@@ -26,7 +26,7 @@ API设计：
 
 class Heap:
     def __init__(self, capacity):
-        self.items = [None] * capacity
+        self.items = [None] * (capacity + 1)
         self.N = 0
 
     def less(self, i, j):
@@ -89,7 +89,7 @@ class Heap:
                 # 交换值
                 self.exch(k, m)
                 # 迭代k
-                k = 2 * k
+                k = m
                 continue
 
             # 如果当前结点已经比子结点大了，那么就直接结束循环

@@ -142,10 +142,10 @@ class LinkList:
 
 if __name__ == '__main__':
     seq = LinkList()
-    # seq.add("姚明")
-    # seq.add("老张")
-    # seq.add("朱晓明")
-    # seq.add("好吧睡觉")
+    seq.add("姚明")
+    seq.add("老张")
+    seq.add("朱晓明")
+    seq.add("好吧睡觉")
     # seq.add(1)
     # seq.add(2)
 
@@ -155,7 +155,7 @@ if __name__ == '__main__':
     #
     # seq.remove(3)
     # print(seq.get(3))
-    # print(seq.items)
+    print(seq.head.item)
     #
     seq.insert(0, "悍匪")
     # # print(seq.items)
