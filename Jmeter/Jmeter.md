@@ -319,6 +319,35 @@
 
 
 
+#### JSON Extractor  JSON提取器
+
+> - **Apaaly to: 应用范围，选默认的 main sample only 就行了**
+> - **Named of created variables：保存的变量名，后面使用${Variable names}引用，多个变量用分号;隔开**
+> - **JSON Path expressions：调试通过的json path表达式，多个表达式用分号;隔开**
+> - **Match Numbers：匹配数字（0代表随机，1代表第一个，-1代表所有），多个用分号;隔开。和正则表达式一样，如果用-1匹配多个，那么需要用${变量名_坐标}的方式取值**
+> - **Default Values：找不到时默认值，一般设置为NOT FOUND，多个用分号;隔开**
+> - **Compute concatenation var(suffix_ALL)：是否统计所有，即将匹配到的所有值保存，名为“变量名_ALL”，多个值用逗号,隔开**
+
+**JSON Path 语法：**
+
+| **XPath** | **JSONPath**       | **Description**                                              |
+| --------- | ------------------ | :----------------------------------------------------------- |
+| /         | $                  | 表示根元素                                                   |
+| .         | @                  | 当前元素                                                     |
+| /         | . or []            | 子元素                                                       |
+| ..        | n/a                | 父元素                                                       |
+| //        | ..                 | 递归下降，JSONPath是从E4X借鉴的。                            |
+| *         | *                  | 通配符，表示所有的元素                                       |
+| @         | n/a                | 属性访问字符                                                 |
+| []        | []                 | 子元素操作符                                                 |
+| \|        | [,]                | 连接操作符在XPath 结果合并其它结点集合。JSONP允许name或者数组索引。 |
+| n/a       | [starte：end:step] | 数组分割操作从ES4借鉴。                                      |
+| []        | ?()                | 应用过滤表示式                                               |
+| n/a       | ()                 | 脚本表达式，使用在脚本引擎下面。                             |
+| ()        | n/a                | Xpath分组                                                    |
+
+
+
 ### 7、计时器
 
 #### Synchronizing Timer 同步计时器

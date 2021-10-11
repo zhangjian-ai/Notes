@@ -1,0 +1,10 @@
+{
+  "name": {
+    "sex": "${key1}",
+    "wife": "${key2}"
+  },
+  "name1": {
+    "sex1": "${key1}",
+    "wife1": "${key2}"
+  }
+}
