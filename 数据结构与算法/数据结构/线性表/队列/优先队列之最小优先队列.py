@@ -23,7 +23,7 @@ API设计：
 
 class MinPriorityQueue:
     def __init__(self, capacity):
-        self.items = [None] * (capacity + 1)
+        self.items = [None] * (capacity + 1)  # 索引0处保留不使用，所以长度加一
         self.N = 0
 
     def less(self, i, j):
@@ -91,7 +91,7 @@ class MinPriorityQueue:
 
 
 if __name__ == '__main__':
-    q = MinPriorityQueue(10)
+    q = MinPriorityQueue(8)
     q.insert("A")
     q.insert("B")
     q.insert("C")

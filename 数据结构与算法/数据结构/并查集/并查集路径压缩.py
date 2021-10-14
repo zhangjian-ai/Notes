@@ -9,8 +9,7 @@
 实现思路：
     引入另一个列表，来记录每个分组的元素个数。此时列表的索引表示分组标识，而结点记录的值标识分组中元素的个数
 '''
-
-from 并查集优化 import UF_Tree
+from 数据结构与算法.数据结构.并查集.并查集优化 import UF_Tree
 
 
 class UF_Tree_Weighted(UF_Tree):

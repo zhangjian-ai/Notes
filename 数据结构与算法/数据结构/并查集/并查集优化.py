@@ -18,8 +18,7 @@
     但是我们同时修改并掉了find方法，而find方法的时间复杂度是O(n)，所以整体合并的时间复杂度，仍然是O(n^2)
     所以我们继续优化，请见 并查集路径压缩
 '''
-
-from 并查集 import UF
+from 数据结构与算法.数据结构.并查集.并查集 import UF
 
 
 class UF_Tree(UF):

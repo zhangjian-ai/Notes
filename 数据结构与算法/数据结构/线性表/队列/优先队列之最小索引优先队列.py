@@ -10,7 +10,7 @@
         但是如果遍历列表，时间复杂度立马就变成了O(n)，所以我们再引入第二个辅助列表 s2。
     - s2 用来保存 s1 的逆序（把 s1 的值当作 s2 的索引，把 s1 的索引 当作 s2 的值），
         那么此时 s2 的索引就和 原始队列，一一对应。例如：修改了原始队列 索引0处的值，那么我们直接获取在s2中的索引0处的值，这个值
-        作为 s1 的索引，那么这个索引 对应的值 再作为原始队列的索引，我们就通过简单的两步，就找到了需要做上浮处理的元素。
+        作为 s1 的索引，那么这个索引 对应的值 再作为原始队列的索引，我们就通过简单的两步，就找到了s1中需要做上浮处理的元素。
         大大降低了时间复杂度，此时时间复杂度为O(1).
 
 API设计：
@@ -99,7 +99,6 @@ class IndexMinPriorityQueue:
         # 删除s2中的逆序
         self.s2[self.s1[self.N]] = None
         # 删除items中对应的值
-        min_value = self.items[min_ind]
         self.items[min_ind] = None
         # 删除s1中最大索引处的值，s1列表要最后删
         self.s1[self.N] = None
@@ -110,7 +109,7 @@ class IndexMinPriorityQueue:
         # 使用下沉算法使s1中索引1对应的值位于合适的位置
         self.sink(1)
 
-        return min_value
+        return min_ind
 
     def delete(self, i):
         # 找到i在s1中的索引
