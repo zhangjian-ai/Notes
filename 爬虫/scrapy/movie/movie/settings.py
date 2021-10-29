@@ -17,7 +17,7 @@ NEWSPIDER_MODULE = 'movie.spiders'
 # Configure levels of log output on console
 LOG_LEVEL = 'ERROR'
 
-# configure base directory
+# configure Base directory
 BASE_DIR = os.path.abspath(__file__).rsplit('/', 2)[0]
 
 # configure User-Agent list

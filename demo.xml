@@ -19,7 +19,7 @@
 -->
 
 <!--
-	Stylesheet for processing 3.0 output format test result files
+	Stylesheet for processing 3.0 output format tests result files
 	To uses this directly in a browser, add the following to the JTL file as line 2:
 	<?xml-stylesheet type="text/xsl" href="../extras/jmeter-results-detail-report_30.xsl"?>
 	and you can then view the JTL in a browser.Edit by ZHC
@@ -209,7 +209,7 @@
 			<!--
 			<xsl:attribute name="class">
 				<xsl:choose>
-					<xsl:when test="$allFailureCount &gt; 0">Failure</xsl:when>
+					<xsl:when tests="$allFailureCount &gt; 0">Failure</xsl:when>
 				</xsl:choose>
 			</xsl:attribute>
 			-->

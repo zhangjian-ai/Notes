@@ -45,6 +45,8 @@
   # 检查安装情况
   jmeter -v  # 打印jmeter版本信息
   ```
+  
+- 日志路径：
 
 
 
@@ -183,6 +185,11 @@
 > - Recycle on EOF?: 到了文件尾是否循环，True—再次从文件第一行开始读取，False—不再循环。 
 > - Stop thread on EOF? :到了文件尾是否停止线程，True—停止，False—不停止，注：当Recycle on EOF设置为True时，此项设置无效。
 > - Sharing mode: 共享模式，All threads –测试计划中的所有线程共享，一次迭代取值；Current thread group—当前线程组内的线程共享；Current thread—只有当前线程能调用变量取值。
+
+csv循环取值：
+
+1. sharing mode配置为 all threads时，只能通过增加线程数量，来取不同行的值。
+2. 单线程下，循环取值需要配置线程组中的循环次数，并且将csv的sharing mode 设置为Current thread。
 
 
 
@@ -626,7 +633,7 @@ jmeter -n -t jmx/boot-quick.jmx -l jmx/boot-quick.jtl -e -o jmx/report
     docker inspect --format '{{ .Name }} => {{ .NetworkSettings.IPAddress }}' $( docker ps -a -q)
     ```
 
-  - 构建slave镜像：docker build -t master:latest .
+  - 构建master镜像：docker build -t master:latest .
 
     ``` dockerfile
     FROM centos:centos7.5.1804
@@ -1093,3 +1100,97 @@ jmeter -n -t jmx/boot-quick.jmx -l jmx/boot-quick.jtl -e -o jmx/report
     - 如果只能看到编译后的 .class 文件，可以借助反编译工具 JD-GUI(java decompile)，将 class 反编译成 java 文件。
 
     - 地址：**https://jd-gui.apponic.com/mac/**
+
+
+
+### 三、搭建监控平台
+
+#### 1、influxDB
+
+> - influxdb是一个时序型数据库，定位于分布式数据监控作为数据存储用
+>
+> - influxdb数据存储方式是以时间为记录进行存储的
+>
+>   | 名次/概念   | ken.io 的解释               |
+>   | ----------- | --------------------------- |
+>   | database    | 数据库                      |
+>   | measurement | 度量，相当于table           |
+>   | tags        | 标签，相当于field，会被索引 |
+>   | field       | 字段，不会被索引            |
+
+- influxdb支持yum、docker、源码包安装方式，本文通过yum进行安装
+
+- 首先进入influxdb github网站下载对应的安装包：https://github.com/influxdata/influxdb/releases/tag/v1.8.2
+
+- 或者linux终端执行`wget https://dl.influxdata.com/influxdb/releases/influxdb-1.8.2.x86_64.rpm`
+
+- 下载到本地终端后执行`yum localinstall influxdb-1.8.2.x86_64.rpm` 安装influxdb安装包
+
+- 安装成功后执行`systemctl start influxdb` 启动influxdb服务
+
+- influxdb启动默认会开启8086端口，执行`netstat -tnpl|grep 8086` 出现如图所示表示服务启动成功
+
+  ```shell
+  [root@VM-0-10-centos influxdb]# netstat -tnpl | grep 8086
+  tcp6       0      0 :::8086                 :::*                    LISTEN      7109/influxd
+  ```
+
+基础语法：
+
+```shell
+# 进入influx终端
+influx
+
+#创建用户
+CREATE USER influx WITH PASSWORD 'influx' WITH ALL PRIVILEGES
+#查看用户
+SHOW USERS
+#创建数据库
+create database + name
+drop database + name
+#查看数据库
+show databases
+# 切换数据库
+use database + name
+#查看表
+show measurements
+drop measurement + name
+#插入数据
+#Insert的时候如果没有带时间戳，InfluxDB会自动添加本地的当前时间作为它的时间戳。
+INSERT cpu,host=192.168.1.1 load=0.1,usage=0.2
+#查看数据
+SELECT * FROM "cpu"
+SELECT "host","load","usage" FROM "cpu" WHERE "host" = '192.168.1.1'
+```
+
+
+
+#### 2、Grafana
+
+**工具安装**
+
+- 参考grafana官网下载地址：https://grafana.com/grafana/download
+- 终端执行`wget https://dl.grafana.com/oss/release/grafana-7.1.5-1.x86_64.rpm`，下载grafana rpm安装包
+- `sudo yum install grafana-7.1.5-1.x86_64.rpm` 安装grafana
+- `/etc/init.d/grafana-server restart` 启动grafana服务
+- 启动成功后通过 http://ip:3000 访问grafana控制台，初始账号密码admin/admin
+
+**数据源配置**
+
+- 在 configure 选项中选择 data sources，搜索 influxDB 并安装
+- 安装之后配置数据源的 url、database、user、password。这些信息需要提前在 influx 客户端创建好。
+- 下载jmeter监控模版。地址：https://grafana.com/grafana/dashboards?search=jmeter
+- 复制官网模版id，到 grafana 的中导入。在 dashboard中选择manage，即可使用。
+
+
+
+#### 3、jmeter配置
+
+- 在线程组中添加监听器-backend listener：org.apache.jmeter.visualizers.backend.influxdb.HttpMetricsSender
+- 配置监听器参数
+  - influxdbUrl：修改其中的host为influxdb服务器IP
+  - application：自定义应用名称，将随测试数据保存到数据库，与grafana面板的application一致
+  - measurement：默认值时jmeter，不必修改。
+  - testTitle：自定义测试名称，随便起一个即可。
+- 执行测试，在grafana查看数据
+
