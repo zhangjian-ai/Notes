@@ -51,7 +51,6 @@ class NewsSpider(CrawlSpider):
             self.file.write(cate + ': \n\n')
 
         for url in url_list:
-            print(url)
             yield scrapy.Request(url=url, callback=self.parse_content, meta={'cate': cate})
 
     def parse_content(self, response):
@@ -69,8 +68,8 @@ class NewsSpider(CrawlSpider):
 
         return item
 
-    def close(spider, reason):
+    def close(self, reason):
         # 关闭driver对象
-        spider.driver.quit()
+        self.driver.quit()
         # 关闭文件对象
-        spider.file.close()
+        self.file.close()

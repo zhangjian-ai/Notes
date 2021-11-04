@@ -1,14 +1,34 @@
-import hashlib
+class Solution(object):
+    def isMatch(self, s, p):
+        """
+        :type s: str
+        :type p: str
+        :rtype: bool
+        """
+        p1 = 0
+        p2 = 0
+        l1 = len(s)
+        l2 = len(p)
+        temp = []
 
-username = 'zhangjian'
-password = b"\xa1\xcf\x0c\xf8'V\xf6\xcf\x05-\xf26\xbf\xcf\xa2\xfe"
+        # 找出每个p中每个*号在对应的索引区间
+        while p1 < l1 and p2 < l2:
+            if p[p2] == ".":
+                p1 += 1
+                p2 += 1
+                continue
+            if p[p2] == '*':
+                head = p[p2 - 1]
+                start = p1
+                while p1 < l1 and p2 < l2:
+                    if s[p1] == p[p2 + 1]:
+                        end = p1
+                    p1 += 1
 
-# 把用户名字节码当作盐加到对象中，加强密码的安全性
-# 返回一个新的类
-md5 = hashlib.md5(username.encode('utf-8'))
-# 添加要加密的字节码
-md5.update(password)
-# 获得密文
-content = md5.digest()
 
-print(content)
+        return True
+
+
+if __name__ == '__main__':
+    s = Solution()
+    print(s.isMatch("aaa", "a*a"))

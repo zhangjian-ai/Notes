@@ -1,21 +1,79 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
-
+<html>
 <head>
     <meta charset="UTF-8">
-    <title> JSONP </title>
-    <script type="text/javascript">
-
-    </script>
+    <title> LazyLoad </title>
     <style>
-        body .foo:is(:hover) {
+        #xz {
+            height: 20em;
+            width: 30em;
+            border: 1px solid black;
+            overflow: auto;
+        }
+        #title {
+            height: 40em;
+            width: 30em;
+        }
+        #xz:is(:hover) {
             color: red
         }
     </style>
 </head>
 <body>
-<p rel="nofollow" class="foo">
-    大哥你好
-</p>
+<div id="xz">
+    <p id="title">
+        啦啦啦我是卖报的小行家
+    </p>
+    <img width="200" height="150" id="img" src="#" alt="demo" data-src="./ElasticSearch/20211101155841.jpg">
+</div>
+<script type="text/javascript">
+    var view = document.getElementById("xz");
+    var img = document.getElementById("img");
+
+    // 真实回调Handler
+    function lazyLoad() {
+        if (img.getAttribute("src") == "#") {
+            var clientHeight = view.clientHeight;
+            var scrollTop = view.scrollTop;
+
+            // offsetTop 表示当前元素到父级元素顶部的距离
+            // clientHeight 表示元素可视区域高度
+            // scrollTop 表示滚动出可视区域的高度
+            if (img.offsetTop < clientHeight + scrollTop){
+                    img.src = img.getAttribute("data-src");  // 属性 data-src 直接通过 .data-src 调用，-将被识别成运算符
+                }
+        }
+    }
+
+    // 节流函数
+    function throttle(func, delay, time) {
+      let timeout;
+      let starttime = new Date();
+
+      return function() {
+        // 获取this对象、入参，传递给func
+        let context = this;
+        let args = Array.prototype.slice.call(arguments);
+
+        let currenttime = new Date();
+
+        // 清除延时器
+        clearTimeout(timeout);
+
+        // 判断触发时间
+        if (currenttime - starttime >= time) {
+          func(context, args);
+          starttime = currenttime;
+        } else {
+          timeout = setTimeout(function() {
+            func(context, args);
+          }, delay);
+        }
+      };
+    }
+
+    // 监听事件
+    view.addEventListener("scroll", throttle(lazyLoad, 1000, 3000));
+</script>
 </body>
 </html>
