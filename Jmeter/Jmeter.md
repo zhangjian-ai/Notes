@@ -145,9 +145,14 @@
 
 - Variable Name：数据库连接池的名字，需要与JDBC Connection Configuration的Variable Name Bound Pool名字保持一致
 - Query：填写的sql语句，sql语句可以调用jmeter变量（${}），也可使用 ? 做占位符，执行时根据位置依次获取Parameter valus中的值。
+  - 使用？做占位符时，Query Type 需要选择为：Prepared Select Statement。
 - Parameter valus：参数值，为sql中占位符 ? 填充值，多个参数用英文逗号隔开。参数值本身也可以调用其他变量来获取参数值。
+  - 参数值，可以直接是常数或字符串，例如：29000,"car"....
+  - 也可以引用其他变量，方式与其他地方因用方式一样，例如：${id},...
 - Parameter types：参数类型，可参考：Javadoc for java.sql.Types。常用的有 integer、char、String等
 - Variable names：保存sql语句返回结果的变量名，需要按列来定义变量名，多列的多个变量用英文逗号隔开。
+  - 取值时，var_# 表示查询到的值的个数；var_1 表示取第一个；var_2 表示区第二个，以此类推
+  - 不需要的列可以不写变量名，像这样：`id,,name` 那么这里 id 取第一列，name取第三列，中间的第二列被抛弃
 - Result variable name：创建一个对象变量，保存所有返回的结果
 - Query timeout：查询超时时间
 - Handle result set：定义如何处理由callable statements语句返回的结果

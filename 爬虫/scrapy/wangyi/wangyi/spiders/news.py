@@ -25,7 +25,7 @@ class NewsSpider(CrawlSpider):
     rules = (
         # follow 取值说明
         # - True: 表示链接提取器，在所有请求的页面都会生效，去匹配满足正则的url
-        # - False: 链接提取器仅在其实url页面提取链接，后续将不再提取
+        # - False: 链接提取器仅在起始url页面提取链接，后续将不再提取
         Rule(links, callback='parse_item', follow=False),
     )
 

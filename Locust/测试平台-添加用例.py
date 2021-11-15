@@ -5,16 +5,16 @@ import random
 from faker import Faker
 from locust import HttpUser, TaskSet, task
 
-from DbHelper import DbPool
+from .database import DBPool
 
 
 class Task(TaskSet):
     fake = Faker(locale='zh_CN')
-    pool = DbPool(host='121.4.47.229',
-                  port=3300,
-                  user='root',
-                  password='zm_123456',
-                  db='test_plat')
+    # pool = DBPool(host='121.4.47.229',
+    #               port=3300,
+    #               user='root',
+    #               password='zm_123456',
+    #               db='test_plat')
 
     def on_start(self):
         # 前置登陆

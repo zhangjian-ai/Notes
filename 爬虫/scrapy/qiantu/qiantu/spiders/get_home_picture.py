@@ -10,7 +10,7 @@ class GetHomePictureSpider(scrapy.Spider):
     # allowed_domains = ['www.58pic.com']
     start_urls = ['http://www.58pic.com/c/']
 
-    def parse(self, response):
+    def parse(self, response, **kwargs):
 
         # 解析图片名称及图片地址
         loader = ItemLoader(item=ImageDownload(), selector=response)
