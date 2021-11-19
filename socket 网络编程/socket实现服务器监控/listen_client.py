@@ -9,9 +9,9 @@ server_address = ('127.0.0.1', 8222)
 client.connect(server_address)
 
 # 导出数据标题
-title = ['CPU', 'mem_used_rate', 'mem_used', 'mem_free', 'mem_available', 'download_speed', 'upload_speed']
+title = ['cpu_used_rate', 'mem_used_rate', 'mem_used', 'mem_free', 'mem_available', 'receive', 'send']
 
-# 出事行数
+# 初始行数
 row = 1
 
 # 创建sheet，并指定为第一个sheet。创建表格对象时会默认创建一个sheet

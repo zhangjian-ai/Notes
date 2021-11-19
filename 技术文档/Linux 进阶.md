@@ -1,33 +1,76 @@
-# 1、环境准备
+# 1、Linux 系统版本
 
-## 1.1、共享文件夹 - vmtools
+> 仅介绍常用的几个系统版本。
 
-1. 可以通过vmtools这个工具实现：
+## 1.1、CentOS
 
-   - 可以直接粘贴命令在Windows和Linux之间
-   - 可以设置Windows和Linux的共享文件夹
+CentOS 是一个基于Red Hat Linux 提供的可自由使用源代码的企业级 Linux发行版本，而每个版本的 CentOS 会定期更新一次，以便支持新的硬件，而且在 RHEL的基础上修正了不少已知的 Bug ，其稳定性值得信赖。
 
-2. **安装**
+优点：CentOS完全免费，不存在RED HAT AS4需要序列号的问题，独有yum命令支持在线升级，可以即时更新系统
 
-   - 点击 VMwareStation 上的虚拟机 -> install vmware tools
 
-   - centos 会有一个安装包，将其中的压缩文件解压就会得到一个安装文件
 
-     `解压命令：tar -zxvf xxx.tar.gz`
+## 1.2、Mandriva
 
-     **注意：如果要将压缩包复制到别的目录下，要注意权限问题，一般用root账户登录就能避免**
+Mandriva原名Mandrake，最早在1998年7月发布，刚开始普及Linux系统时，Mandrake非常流行。最早 Mandrake的开发者是基于Redhat进行开发的，Redhat默认采用GNOME桌面系统，而Mandrake将之改为KDE。而由于当时的 Linux普遍比较难安装，所以Mandrake还简化了安装系统。
 
-   - 进入解压的目录，安装 `./vmware-install.pl`
+优点：友好的操作界面，图形配置工具，庞大的社区技术支持，NTFS分区大小变更
 
-   - 全部使用默认设置即可
+缺点：部分版本bug较多，最新版本只先发布给Mandrake俱乐部的成员
 
-   - 需要重启系统
+软件包管理系统：Urpmi (RPM)
 
-3. **设置共享文件夹**
 
-   - 在实际的开发中，文件的上传和下载是用远程方式操作的
-   - Windows端：虚拟机 -> 设置 -> 选项 -> 共享文件夹 -> 总是启用 -> 添加Windows的文件夹路径
-   - Linux端：根目录下的mnt -> hgfs -> 这里就是共享的文件夹
+
+## 1.3、Red Hat
+
+Red Hat最早由Bob Young和Marc Ewing在1995年创建，而正统的Red Hat版本早已停止技术支持，目前Red Hat分为两个系列：由Red Hat公司提供收费技术支持和更新的Red Hat Enterprise Linux，以及由社区开发的免费的Fedora Core。
+
+适用于服务器的版本是Red Hat Enterprise Linux，而由于这是个收费的操作系统。于是，国内外许多企业或空间商选择CentOS。CentOS可以算是RHEL的克隆版，但它最大的好处是免费！
+
+优点：拥有数量庞大的用户，优秀的社区技术支持，许多创新
+
+缺点：免费版(Fedora Core)版本生命周期太短，多媒体支持不佳
+
+软件包管理系统：up2date (RPM)， YUM (RPM)
+
+
+
+## 1.4、SUSE
+
+SUSE是德国最著名的Linux发行版，于2003年年末被Novell收购，之后的发布显得比较混乱，比如9.0版本是收费的，而10.0版本又免费发布。这使得一部分用户感到困惑，也转而使用其它发行版本。但是SUSE仍然是一个非常专业、优秀的发行版。
+
+优点：专业，易用的YaST软件包管理系统
+
+缺点：FTP发布通常要比零售版晚1~3个月
+
+软件包管理系统：YaST (RPM)， 第三方APT (RPM) 软件库(repository)
+
+
+
+## 1.5、Debian
+
+dpkg是Debian系列特有的软件包管理工具，它被誉为所有Linux软件包管理工具最强大的，配合apt- get，在Debian上安装、升级、删除和管理软件变得异常容易。
+
+优点：遵循GNU规范，100%免费，优秀的网络和社区资源，强大的apt-get
+
+缺点：安装相对不易，stable分支的软件极度过时
+
+软件包管理系统：APT (DEB)
+
+
+
+## 1.6、Ubuntu
+
+Ubuntu是一个拥有Debian的优点，以及自身加强的优点的Linux操作系统。Ubuntu是一个相对较新的发行版，它的出现可能改变了许多潜在用户对Linux的看法，因为Ubuntu的安装非常的人性化，只要按照提示一步一步进行，安装和Windows同样简便。并且Ubuntu被誉为对硬件支持最好最全面的Linux发行版之一，许多在其他发行版上无法使用，或者默认配置时无法使用的硬件，在Ubuntu上轻松搞定。
+
+Ubuntu采用自行加强的内核，默认不能直接root登陆，必须从第一个创建的用户通过su或sudo来获取root权限，增加了安全性，避免用户粗心损坏系统
+
+优点：人气颇高的论坛提供优秀的资源和技术支持，固定的版本更新周期和技术支持，可从Debian Woody直接升级
+
+缺点：还未建立成熟的商业模式
+
+
 
 # 2、Linux目录结构
 
@@ -202,7 +245,7 @@ public class Hello{
 
 ## 5.1、关机和重启
 
-```
+```shell
 shutdown
 	shutdown -h now 立即关机
 	shutdown -h 1 表示一分钟过后就关机

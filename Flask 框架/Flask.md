@@ -160,7 +160,7 @@
 
 4. **蓝图**
 
-   > 帮助实现业务功能可拆分的目录结构，类似于 Django 中的app，都用来做业务拆分。
+   > 蓝图是用来帮助实现业务功能可拆分的目录结构，类似于 Django 中的app，都用来做业务拆分。
    >
    > project_name
    >
@@ -219,10 +219,10 @@
    # user.views.py
    from flask import Blueprint
    
-   user = Blueprint('user', __name__, static_folder='static', template_folder='templates', static_url_path='/goods')
+   user = Blueprint('user', __name__, static_folder='static', template_folder='templates', static_url_path='/user')
    '''
    参数说明：
-       goods：为Blueprint对象取一个名字。
+       user：为Blueprint对象取一个名字。
        __name__：和Flask对象一致，传入当前蓝图所在文件名。把该目录作为 一个蓝图的 根目录。蓝图私有的静态文件、模板都相对于该目录。
        static_folder、template_folder、static_url_path 在蓝图对象中是没有默认值的，需要使用时必须显示指定。
    '''
@@ -468,7 +468,8 @@ def price():
 >
 > Request 对象属性：
 >
-> 	- data: 记录请求中的数据，并转换成字符串
+> - data: 记录请求中的数据，并转换成字符串
+>
 > - form: 记录请求中的表单数据，类型：MultiDict
 > - args: 记录请求中的查询参数，类型：MultiDict
 > - cookies: 记录请求中的cookie信息，类型：Dict
@@ -858,8 +859,10 @@ def check_user():
 def auth(func):  # 认证装饰器
     @functools.wraps(func)
     def inner(*args, **kwargs):
+      if int(g.user_id) == 10:
         res = func(*args, **kwargs)
         return res
+      return "sorry， you no permission to operation"
 
     return inner
 
@@ -872,9 +875,7 @@ def index():
 @app.route('/user/manage')
 @auth  # 通过装饰器对局部视图进行权限校验
 def user_manage():
-    if int(g.user_id) == 10:
         return "欢迎来到用户管理中心"
-    return "sorry， you no permission to operation"
 
 
 if __name__ == '__main__':
@@ -891,7 +892,7 @@ if __name__ == '__main__':
 
 - 请求上下文(request context)
 
-  > 请求上下文本质上针对每一个请求独立创建的一个request对象，多个reques之间数据相互隔离，当request处理完成之后，该 request 便被回收释放，结束其生命周期。
+  > 请求上下文本质上针对每一个请求独立创建的一个request对象，多个request之间数据相互隔离，当request处理完成之后，该 request 便被回收释放，结束其生命周期。
 
   - request
     - 封装了HTTP请求的内容，包括cookie、form、args等属性。详见：框架精讲 > 6、Flask request 对象

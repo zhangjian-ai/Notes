@@ -13,8 +13,8 @@
   export PATH=$PATH:${JAVA_HOME}/bin:${JAVA_HOME}/jre/bin:$PATH
   
   # -----------------------
-  # linux/unix(intel) 配置文件路径: /etc/profile
-  # unix(m1)配置文件路径：~/.zprofile
+  # linux 配置文件路径: /etc/profile
+  # unix 配置文件路径：~/.zprofile
   
   # 添加脚本后，重新加载配置文件使其生效
   source /etc/profile
@@ -1139,8 +1139,27 @@ jmeter -n -t jmx/boot-quick.jmx -l jmx/boot-quick.jtl -e -o jmx/report
   [root@VM-0-10-centos influxdb]# netstat -tnpl | grep 8086
   tcp6       0      0 :::8086                 :::*                    LISTEN      7109/influxd
   ```
+  
+- Docker安装
 
-基础语法：
+  ```shell
+  # 创建数据挂载目录
+  mkdir -p /var/local/myapp/influxdb/data
+  
+  # 修改数据目录读写权限
+  chmod -R 777 data
+  
+  # 启动容器
+  docker run -d -p 8086:8086 --name=influxdb -v /var/local/myapp/influxdb/data:/var/lib/influxdb2 influxdb:1.8.2
+  
+  # 注意：2.0.0之后的版本，玩法和2.0.0之前的有很多区别，下面两个就是新增的。
+  # InfluxDB有自带一个管理的页面，直接用浏览器访问8086端口就能看到。
+  # 里面提供了各开发语言调用 influxdb API 的方法
+  ```
+  
+  
+
+2.0.0之前的基础语法：
 
 ```shell
 # 进入influx终端
@@ -1157,12 +1176,14 @@ drop database + name
 show databases
 # 切换数据库
 use database + name
-#查看表
+# 查看表
+# influxdb 不能直接创建表，只能通过插入数据时顺带创建
 show measurements
 drop measurement + name
-#插入数据
-#Insert的时候如果没有带时间戳，InfluxDB会自动添加本地的当前时间作为它的时间戳。
-INSERT cpu,host=192.168.1.1 load=0.1,usage=0.2
+# 插入数据
+# Insert的时候如果没有带时间戳，InfluxDB会自动添加本地的当前时间作为它的时间戳。
+# cpu表示 measurement，理解为数据库中的表；host 表示 tag，理解为索引列，可以有多个，也可以没有，为了提高查询效率，建议至少有一列。
+INSERT cpu,host=192.168.1.1,load=0.1 usage=0.2
 #查看数据
 SELECT * FROM "cpu"
 SELECT "host","load","usage" FROM "cpu" WHERE "host" = '192.168.1.1'
@@ -1175,10 +1196,29 @@ SELECT "host","load","usage" FROM "cpu" WHERE "host" = '192.168.1.1'
 **工具安装**
 
 - 参考grafana官网下载地址：https://grafana.com/grafana/download
+
 - 终端执行`wget https://dl.grafana.com/oss/release/grafana-7.1.5-1.x86_64.rpm`，下载grafana rpm安装包
+
 - `sudo yum install grafana-7.1.5-1.x86_64.rpm` 安装grafana
+
 - `/etc/init.d/grafana-server restart` 启动grafana服务
+
 - 启动成功后通过 http://ip:3000 访问grafana控制台，初始账号密码admin/admin
+
+- Docker 安装
+
+  ```shell
+  # 创建数据挂载目录
+  mkdir -p /var/local/myapp/grafana/data
+  
+  # 修改数据目录读写权限
+  chmod -R 777 data
+  
+  # 启动容器
+  docker run -d -p 3000:3000 --name=grafana -v /var/local/myapp/grafana/data:/var/lib/grafana grafana/grafana
+  ```
+
+  
 
 **数据源配置**
 
@@ -1191,11 +1231,169 @@ SELECT "host","load","usage" FROM "cpu" WHERE "host" = '192.168.1.1'
 
 #### 3、jmeter配置
 
-- 在线程组中添加监听器-backend listener：org.apache.jmeter.visualizers.backend.influxdb.HttpMetricsSender
+- 在线程组中添加监听器-backend listener：org.apache.jmeter.visualizers.backend.influxdb.InfluxdbBackendListenerClient
 - 配置监听器参数
   - influxdbUrl：修改其中的host为influxdb服务器IP
-  - application：自定义应用名称，将随测试数据保存到数据库，与grafana面板的application一致
+  - application：自定义应用名称，将随测试数据保存到数据库，与grafana面板的application一致。作为influxdb的tag。
   - measurement：默认值时jmeter，不必修改。
   - testTitle：自定义测试名称，随便起一个即可。
 - 执行测试，在grafana查看数据
+
+
+
+### Python 实现数据监控
+
+基于 socket 网络编程实现一个简易的服务器资源监控脚本。
+
+#### 服务端
+
+> 安装依赖：
+>
+> ```shell
+> # centos
+> yum install python-pip
+> # ubuntu
+> apt install python-pip
+> 
+> pip install plutil
+> ```
+>
+> 启动服务端脚本：
+>
+> ```shell
+> # 前台运行
+> python listener.py
+> 
+> # 后台运行
+> nohup python listener.py &
+> ```
+
+**脚本(listener.py)：**
+
+```python
+# -*- coding: utf-8 -*-
+import socket
+import threading
+import time
+
+import psutil
+
+server = socket.socket()
+# 如果服务器运行在docker容器内，那么监听地址改为"0.0.0.0"
+addr = ('121.4.47.229', 8222)
+
+server.bind(addr)
+server.listen(10)
+
+
+def get_net_speed(interval):
+    net_msg = psutil.net_io_counters()
+    bytes_sent, bytes_recv = net_msg.bytes_sent, net_msg.bytes_recv
+    time.sleep(interval)
+    net_msg = psutil.net_io_counters()
+    bytes_sent2, bytes_recv2 = net_msg.bytes_sent, net_msg.bytes_recv
+    send = str(round((((bytes_sent2 - bytes_sent) / interval) / 1024), 2))
+    recv = str(round(((bytes_recv2 - bytes_recv) / interval) / 1024, 2))
+
+    return send, recv
+
+
+def collect(conn):
+    # 收集服务器信息
+    while True:
+        rec = conn.recv(1024).decode('utf-8')
+        if rec == 'next':
+            memory = psutil.virtual_memory()
+            cpu_used_percent = str(psutil.cpu_percent(interval=1, percpu=False))
+            mem_used_percent = str(memory.percent)
+            mem_used = str(round(memory.used / (1024.0 * 1024.0), 2))
+            mem_available = str(round(memory.available / (1024.0 * 1024.0), 2))
+            mem_free = str(round(memory.free / (1024.0 * 1024.0), 2))
+            sent_speed, recv_speed = get_net_speed(1)
+
+            msg = '-'.join(
+                [cpu_used_percent, mem_used_percent, mem_used, mem_free, mem_available, sent_speed, recv_speed]).encode(
+                'utf-8')
+
+            conn.send(msg)
+        elif rec == 'exit':
+            conn.close()
+            break
+
+
+while True:
+    conn, _ = server.accept()
+    t = threading.Thread(target=collect, args=(conn,))
+    t.start()
+```
+
+
+
+#### 客户端
+
+> ```
+> 调用客户端脚本需要传入三个命令行参数：监听时间(s)、服务器IP、端口号
+> python3 influx_client.py 120 127.0.0.1 8222
+> ```
+
+**脚本(listen_client):**
+
+```python
+# -*- coding: utf-8 -*-
+"""
+调用脚本需要传入三个命令行参数：监听时间(s)、服务器IP、端口号
+python3 influx_client.py 120 127.0.0.1 8222
+"""
+import socket
+import sys
+
+from influxdb import InfluxDBClient
+
+# 创建客户端socket对象
+socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# 服务端IP地址和端口号元组
+host = sys.argv[2]
+port = sys.argv[3]
+server_address = (host, int(port))
+# 客户端连接指定的IP地址和端口号
+socket.connect(server_address)
+
+# 数据标题
+title = ['cpu_used_rate.pct', 'mem_used_rate.pct', 'mem_used(MB)', 'mem_free(MB)', 'mem_available(MB)', 'receive(KB/S)', 'send(KB/S)']
+
+# 监听时间 s
+time = int(sys.argv[1])
+
+# 实例化influx客户端
+influx = InfluxDBClient(host="121.4.47.229",
+                        port="8086",
+                        username="influx",
+                        password="influx",
+                        database="jd_test")
+
+while time > 0:
+    # 客户端发送数据
+    socket.send('next'.encode())
+    # 客户端接收数据
+    server_data = socket.recv(1024).decode('utf-8')
+    data = server_data.split('-')
+
+    # 拼装数据
+    points = [
+        {
+            "measurement": "server",
+            "tags": {
+                "application": "CRM"
+            },
+            "fields": {key: float(value) for key, value in zip(title, data)},
+        }
+    ]
+    influx.write_points(points)
+
+    # 迭代时间
+    time -= 1
+
+socket.send('exit'.encode('utf-8'))
+socket.close()
+```
 
