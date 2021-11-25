@@ -29,6 +29,8 @@
 
 #### 架构分层
 
+<img src="./images/mysql_001.jpg" style="float: left; width: 80%">
+
 - **连接层**    组件包含 连接池，主要作用是 创建新的连接线程、以及缓存已经创建好的线程；同时完成对客户端的身份认证、权限认证。
 
   ``` shell
@@ -166,7 +168,7 @@
 
   - mysqld：mysqld服务器程序，用来启动mysql
 
-  - mysqld_safe: 一个执行脚本，内部调用mysqld，同时启动一个守护进程，当主进程mysql服务挂掉后，守护进程会再起动一个，同时mysqld_safe还会主动收集错误日志。
+  - mysqld_safe: 一个执行脚本，内部调用mysqld，同时启动一个 守护进程，当主进程mysql服务挂掉后，守护进程会再起动一个，同时mysqld_safe还会主动收集错误日志。
 
     ``` shell
     ./bin/mysql_safe --defaults-file=/var/local/my.conf --user=mysql &
@@ -211,7 +213,7 @@
 
   - 数据存放位置。在mysql 5.5.8 之后，将会为每张表都创建一个独立的空间（表空间）来保存表相关数据。
 
-  - 日志文件。包括 错误日志、慢查询日志（默认是不开启的）、查询日志（默认是不开启的，比较影响性能）。
+  - 日志文件。包括 错误日志、慢查询日志（默认是不开启的）、查询日志（默认是不开启的，比较影响性能）、binlog 日志。
 
     ``` shell
     mysql> show variables like '%log_error%';  # 此时的错误日志并没有输出到日志文件

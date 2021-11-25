@@ -103,7 +103,7 @@
 >
 > - 文件上传：Content-Type 在上传时比较特殊，根据抓包情况没确认是否需要改参数。如果不需要，上传时就不要加。
 >
->   ![](upload_01.png)
+>   ![](./images/upload_01.png)
 >
 > - 文件下载：jmeter本身是不支持将文件保存到本地的，用beanshell脚本将响应数据串流写到指定路径的文本中。在HTTP请求下面添加BeanShell PostProcessor。注意：输出文本类型需要和与预期下载类型一致。
 >
@@ -300,7 +300,7 @@ csv循环取值：
 
 **举例一：单模板单数据**
 
-![](image_01.png)
+![](./images/image_01.png)
 
 **使用说明：**
 
@@ -311,7 +311,7 @@ csv循环取值：
 
 **举例二：多模板单数据**
 
-![](image_02.png)
+![](./images/image_02.png)
 
 **使用说明：**
 
@@ -322,7 +322,7 @@ csv循环取值：
 
 **举例三：多模板多数据**
 
-![](image_03.png)
+![](./images/image_03.png)
 
 这个例子是例1和例2的结合，使用多个模板，每个模板匹配多条数据。那么获取的方式是：
 
@@ -594,7 +594,7 @@ jmeter -n -t jmx/boot-quick.jmx -l jmx/boot-quick.jtl -e -o jmx/report
   jmeter -n -r -t emisp_login.jmx -Gthread=1 -Gloopcount=-1 -Gduration=60 -l /ulic/mysql_project/result/result_debug.jtl
   ```
 
-  ![](configure.png)
+  ![](./images/configure.png)
 
 - 特别注意：
 

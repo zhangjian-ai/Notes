@@ -849,13 +849,13 @@ InfoQ那篇文章里说Elasticsearch使用的倒排索引比关系型数据库�
 
 上大学读书时老师教过我们，二叉树查找效率是logN，同时插入新的节点不必移动全部节点，所以用树型结构存储索引，能同时兼顾插入和查询的性能。因此在这个基础上，再结合磁盘的读取特性(顺序读/随机读)，传统关系型数据库采用了B-Tree/B+Tree这样的数据结构：
 
-<img src="./image-20211101155227593.png" alt="image-20211101155227593" style="zoom:67%;" />
+<img src="./images/image-20211101155227593.png" alt="image-20211101155227593" style="zoom:67%; float:left;" />
 
 为了提高查询的效率，减少磁盘寻道次数，将多个值作为一个数组通过连续区间存放，一次寻道读取多个数据，同时也降低树的高度。
 
 ### 倒排索引
 
-<img src="./image-20211101155421996.png" alt="image-20211101155421996" style="zoom:67%;" />
+<img src="./images/image-20211101155421996.png" alt="image-20211101155421996" style="zoom:67%; float:left;" />
 
 示例:
 
@@ -913,11 +913,11 @@ Elasticsearch为了能快速找到某个term，将所有的term排个序，二�
 
 B-Tree通过减少磁盘寻道次数来提高查询性能，Elasticsearch也是采用同样的思路，直接通过内存查找term，不读磁盘，但是如果term太多，term dictionary也会很大，放内存不现实，于是有了**Term Index**，就像字典里的索引页一样，A开头的有哪些term，分别在哪页，可以理解term index是一颗树：
 
-<img src="./20211101155841.jpg" alt="aa" style="zoom:67%;" />
+<img src="./images/20211101155841.jpg" alt="aa" style="zoom:60%;float:left;" />
 
 这棵树不会包含所有的term，它包含的是term的一些前缀。通过term index可以快速地定位到term dictionary的某个offset，然后从这个位置再往后顺序查找。
 
-<img src="./20211101160024.jpg" alt="aa" style="zoom:67%;" />
+<img src="./images/20211101160024.jpg" alt="aa" style="zoom:67%;float:left;" />
 
 所以term index不需要存下所有的term，而仅仅是他们的一些前缀与Term Dictionary的block之间的映射关系，再结合FST(Finite State Transducers)的压缩技术，可以使term index缓存到内存中。从term index查到对应的term dictionary的block位置之后，再去磁盘上找term，大大减少了磁盘随机读的次数。
 
@@ -929,7 +929,7 @@ B-Tree通过减少磁盘寻道次数来提高查询性能，Elasticsearch也是�
 
 假设我们现在要将mop, moth, pop, star, stop and top(term index里的term前缀)映射到序号：0，1，2，3，4，5(term dictionary的block位置)。最简单的做法就是定义个Map<string, integer="">，大家找到自己的位置对应入座就好了，但从内存占用少的角度想想，有没有更优的办法呢？答案就是：**FST**([理论依据在此，但我相信99%的人不会认真看完的](http://www.cs.nyu.edu/~mohri/pub/fla.pdf))
 
-<img src="./20211101160121.jpg" alt="Alt text" style="zoom:67%;" />
+<img src="./images/20211101160121.jpg" alt="Alt text" style="zoom:50%;float:left;" />
 
 ⭕️表示一种状态
 
@@ -952,7 +952,7 @@ Elasticsearch里除了上面说到用FST压缩term index外，对posting list也
 
 > 增量编码压缩，将大数变小数，按字节存储
 
-首先，Elasticsearch要求posting list是有序的(为了提高搜索的性能，再任性的要求也得满足)，这样做的一个好处是方便压缩，看下面这个图例： <img src="./20211101160520.jpg" alt="Alt text" style="zoom:67%;" />
+首先，Elasticsearch要求posting list是有序的(为了提高搜索的性能，再任性的要求也得满足)，这样做的一个好处是方便压缩，看下面这个图例： <img src="./images/20211101160520.jpg" alt="Alt text" style="zoom:50%;" />
 
 如果数学不是体育老师教的话，还是比较容易看出来这种压缩技巧的。
 
@@ -974,7 +974,7 @@ Bitmap的缺点是存储空间随着文档个数线性增长，Roaring bitmaps�
 
 将posting list按照65535为界限分块，比如第一块所包含的文档id范围在0~65535之间，第二块的id范围是65536~131071，以此类推。再用<商，余数>的组合表示每一组id，这样每组里的id范围都在0~65535内了，剩下的就好办了，既然每组id不会变得无限大，那么我们就可以通过最有效的方式对这里的id存储。
 
-<img src="./20211101160557.jpg" alt="Alt text" style="zoom:67%;" />
+<img src="./images/20211101160557.jpg" alt="Alt text" style="zoom:50%; float:left;" />
 
 细心的小明这时候又举手了:"为什么是以65535为界限?"
 
@@ -991,13 +991,13 @@ Bitmap的缺点是存储空间随着文档个数线性增长，Roaring bitmaps�
 
 先看看跳表的数据结构：
 
-<img src="./image-20211101160824782.png" alt="Alt text" style="zoom:67%;" />
+<img src="./images/image-20211101160824782.png" alt="Alt text" style="zoom:67%;float:left;" />
 
 将一个有序链表level0，挑出其中几个元素到level1及level2，每个level越往上，选出来的指针元素越少，查找时依次从高level往低查找，比如55，先找到level2的31，再找到level1的47，最后找到55，一共3次查找，查找效率和2叉树的效率相当，但也是用了一定的空间冗余来换取的。
 
 假设有下面三个posting list需要联合索引：
 
-<img src="./20211101160912.jpg" alt="Alt text" style="zoom:67%;" />
+<img src="./images/20211101160912.jpg" alt="Alt text" style="zoom:50%;float:left;" />
 
 如果使用跳表，对最短的posting list中的每个id，逐个在另外两个posting list中查找看是否存在，最后得到交集的结果。
 
@@ -1038,7 +1038,7 @@ Elasticsearch的索引思路:
 
 分析器（Analyzer） 一般由三部分构成，字符过滤器（Character Filters）、分词器（Tokenizers）、分词过滤器（Token filters）。
 
-<img src="./20211106192008.jpg" style="zoom:67%;" />
+<img src="./images/20211106192008.jpg" style="zoom:50%; float:left;" />
 
 #### 2.1 字符过滤器
 
@@ -1079,7 +1079,7 @@ ik分词器有以下两种模式：
 
 
 
-## 安装ES
+## 安装 Elasticsearch
 
 1. 下载镜像
 
@@ -1101,7 +1101,7 @@ ik分词器有以下两种模式：
 3. 创建容器并启动
 
    ```shell
-   docker run --name elasticsearch -p 9200:9200 -p 9300:9300  -e "discovery.type=single-node" -e ES_JAVA_OPTS="-Xms256m -Xmx512m" -v /var/local/myapp/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml -v /var/local/myapp/elasticsearch/data:/usr/share/elasticsearch/data -v /var/local/myapp/elasticsearch/plugins:/usr/share/elasticsearch/plugins -d elasticsearch:7.6.2
+   docker run --name elasticsearch -p 9200:9200 -p 9300:9300  -e "discovery.type=single-node" -e ES_JAVA_OPTS="-Xms512m -Xmx512m" -v /var/local/myapp/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml -v /var/local/myapp/elasticsearch/data:/usr/share/elasticsearch/data -v /var/local/myapp/elasticsearch/plugins:/usr/share/elasticsearch/plugins -d elasticsearch:7.6.2
    
    其中elasticsearch.yml是挂载的配置文件，data是挂载的数据，plugins是es的插件，如ik，而数据挂载需要权限，需要设置data文件的权限为可读可写,需要下边的指令。
    chmod -R 777 要修改的路径
@@ -1137,7 +1137,7 @@ ik分词器有以下两种模式：
 
 
 
-## 安装Kibana
+## 安装 Kibana
 
 > kibana 是一款适用于 es 的 **数据可视化和管理工具**, 可以提供实时的直方图、线形图、饼状图和地图。
 >
@@ -1212,7 +1212,7 @@ ik分词器有以下两种模式：
 
    ```shell
    # 下面的启动方式带上了认证的账号密码，可以避免kibana使用时还要再web上输入密码。
-   docker run --name kibana -e ELASTICSEARCH_HOSTS=http://elastic:Zj1340026934@121.4.47.229:9200 -p 5601:5601 -d kibana:7.6.2
+   docker run --name kibana -e ELASTICSEARCH_HOSTS=http://elastic:Zj1340026934@101.43.61.175:9200 -p 5601:5601 -d kibana:7.6.2
    ```
 
 5. 在kibana容器内部，修改配置
@@ -1406,7 +1406,183 @@ IK分词是 ES 的一个插件，下载插件在 plugins 目录解压，然后�
   }
   ```
   
-  
+
+
+
+## 安装 FileBeat
+
+ElasticSearch + FileBeat + Kibana 搭建一套日志收集系统，就是 大家口口相传的 **EFK**，EFK 不是单指某个软件，而是一套关于日志收集、查看、分析的解决方案。
+
+其中，ELasticsearch负责日志保存和搜索，FileBeat负责收集日志，Kibana 负责界面。
+
+EFK和大名鼎鼎的ELK只有一个区别，那就是 EFK 把 ELK 的 Logstash 替换成了 FileBeat，因为Filebeat相对于Logstash来说有2个好处：
+
+1. 侵入低，无需修改程序目前任何代码和配置
+2. 相对于Logstash来说性能高，Logstash对于IO占用很大
+
+当然，FileBeat也并不是完全好过Logstash，毕竟Logstash对于日志的格式化这些相对FileBeat好很多，FileBeat只是将日志从日志文件中读取出来，当然如果你日志本身是有一定格式的，FileBeat也可以格式化，但是相对于Logstash来说，还是差一点。
+
+
+
+1. 下载镜像
+
+   ```shell
+   # 版本号跟es、kibana 保持一致。这个镜像下载很慢。
+   docker pull elastic/filebeat:7.6.2
+   ```
+
+   
+
+2. 创建目录，并配置 filebeat.yml
+
+   ```shell
+   # filebeat.yml
+   filebeat.inputs:
+   - type: log
+     enabled: true
+     ## 配置你要收集的日志目录，可以配置多个目录。这里的路径是容器内部的日志路径
+     paths:
+       - /var/logs/*.log
+   
+     ## 配置多行日志合并规则，以时间为准，一个时间发生的日志为一个事件      
+     multiline.pattern: '^\d{4}-\d{2}-\d{2}'
+     multiline.negate: true
+     multiline.match: after
+   
+   ## 设置kibana的地址，开始filebeat的可视化  
+   setup.kibana:
+       host: "http://101.43.61.175:5601"
+       username: "elastic"   # kibana 服务用户名
+       password: "Zj1340026934"  # kibana 服务密码
+   setup.dashboards.enabled: true
+   
+   ## 定义模板相关信息
+   setup.template.name: "filebeat-log"
+   setup.template.pattern: "filebeat-*"
+   json.keys_under_root: false
+   json.overwrite_keys: true
+   
+   ## 设置 elasticsearch
+   output.elasticsearch:
+       hosts: ["http://101.43.61.175:9200"]
+       username: "elastic"   # elasticsearch 服务用户名
+       password: "Zj1340026934"  # elasticsearch 服务密码
+       index: "filebeat-%{+yyyy.MM.dd}"  # 前缀和模板pattern匹配
+   
+   ## 设置解析json格式日志的规则
+   processors:
+   - decode_json_fields:
+       fields: [""]
+       target: json
+   ```
+
+3. 启动容器
+
+   ```shell
+   docker run -d --name filebeat -v /var/local/myapp/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml -v /var/local/myapp/filebeat/logs/:/var/logs/ --link elasticsearch:elasticsearch --link kibana:kibana elastic/filebeat:7.6.2   
+   ```
+
+4. 容器启动成功后，在logs文件夹中，创建后缀是 .log 的日志文件，并添加一些日志。就可以在kibana的 Discover 中会有一个 filebeat-* 的索引（在 yml 中配置的名字），并能采集到相应的日志信息。
+
+   <img src="./images/es-001.png" alt="Alt text" style="zoom:55%;float:left;" />
+
+5. 按照上面的配置，我们所有的日志都会不分清红皂白的全部保存到 filebeat 索引中，这样一来会造成单个索引中数据量极大，且日志混乱。为了解决这个问题，我们需要将日志分门别类。
+
+   **根据不同的输入，将日志收集到不同的输出：**
+
+   ```shell
+   # filebeat.yml
+   filebeat.inputs:
+   
+   ## ==========指定不同 input 的日志存放路径=============
+   - type: log
+     enabled: true
+     paths:
+       - /var/logs/*.log
+     # 配置field，用于区分不同的输入
+     fields:
+       source: access
+   
+     multiline.pattern: '^\d{4}-\d{2}-\d{2}'
+     multiline.negate: true
+     multiline.match: after
+     
+   - type: log
+     enabled: true
+     paths:
+       - /var/logs/nginx/*.log
+     # 配置field，用于区分不同的输入
+     fields:
+       source: nginx
+   
+     multiline.pattern: '^\d{4}-\d{2}-\d{2}'
+     multiline.negate: true
+     multiline.match: after
+     
+   - type: log
+     enabled: true
+     paths:
+       - /var/logs/django/*.log
+     # 配置field，用于区分不同的输入
+     fields:
+       source: django
+   
+     multiline.pattern: '^\d{4}-\d{2}-\d{2}'
+     multiline.negate: true
+     multiline.match: after
+   
+   ## 设置kibana的地址，开始filebeat的可视化  
+   setup.kibana:
+       host: "http://101.43.61.175:5601"
+       username: "elastic"
+       password: "Zj1340026934"
+   setup.dashboards.enabled: true
+   
+   ## 定义模板相关信息
+   setup.template.name: "jiedian-log"
+   setup.template.pattern: "jiedian-*"
+   json.keys_under_root: false
+   json.overwrite_keys: true
+   
+   ## 设置 elasticsearch
+   output.elasticsearch:
+       hosts: ["http://101.43.61.175:9200"]
+       username: "elastic"
+       password: "Zj1340026934"
+       ## ========== 配置不同的 output ==========
+       # 前缀与 pattern 匹配，不符合下面的 indices 规则的统一收集到这里
+       index: "jiedian-%{[fields.source]}"
+       
+       # 具体匹配，根据不同的 source，定义不同的 index
+       indices:
+         - index: "jiedian-access-%{+yyyy.MM.dd}"
+           when.equals:
+             fields:
+               source: "access"
+               
+         - index: "jiedian-nginx-%{+yyyy.MM.dd}"
+           when.equals:
+             fields:
+               source: "nginx"
+               
+         - index: "jiedian-django-%{+yyyy.MM.dd}"
+           when.equals:
+             # 也可以这样写
+             fields.source: "django"
+   
+   
+   ## 设置解析json格式日志的规则
+   processors:
+   - decode_json_fields:
+       fields: [""]
+       target: json
+   ```
+
+6. 按照上面的配置重启容器后，在对应日志目录准备一些测试数据。并在kibana配置对应索引的索引模式，就可以在 discover 中按索引模式查询各索引的日志信息了。
+
+   <img src="./images/es-002.png" alt="Alt text" style="zoom:55%;float:left;" />
+
+   <img src="./images/es-003.png" alt="Alt text" style="zoom:55%;float:left;" />
 
 
 
@@ -2538,9 +2714,6 @@ GET users/_search
   }
   ```
 
-  
-
-
 
 
 
@@ -2842,7 +3015,7 @@ GET users/_search
 GET _cat/indices?v  # 参数 v 表示显示title
 ```
 
-![img](file:///Users/zhangjian/PycharmProjects/Practice/ElasticSearch/20211106185957.jpg?lastModify=1636780286)
+![img](./images/20211106185957.jpg)
 
 
 
