@@ -72,7 +72,7 @@ Ubuntu采用自行加强的内核，默认不能直接root登陆，必须从第�
 
 
 
-# 2、Linux目录结构
+# 2、Linux 目录结构
 
 ## 2.1、基本介绍
 
@@ -234,18 +234,18 @@ Ubuntu采用自行加强的内核，默认不能直接root登陆，必须从第�
 
 
 
-# 3、远程登录到Linux服务器
+# 3、SSH 和 SCP
 
-## 3.1、为什么要远程登陆呢？
+## 3.1、SSH服务
 
 1. 如果是实际的开发，Linux服务器一般是在第三方服务商的机房里，那么要控制Linux服务器，就要通过远程登陆的方式来操作
-2. 还有文件的上传和下载，也要通过远程登录的方式
+2. 远程文件的上传和下载，也要通过远程登录的方式
 3. **SSH服务监听22号端口**
 5. `setup -> 系统服务 -> sshd` 查看是否开启远程监听服务（SSHD），`*` 代表已经开启；`service sshd status` 也可以检查
 
 
 
-## 3.2、连接Linux
+## 3.2、远程登录
 
 1. 命令行连接语法：
 
@@ -278,7 +278,7 @@ Ubuntu采用自行加强的内核，默认不能直接root登陆，必须从第�
    
    
 
-## 3.3、远程下载和上传文件
+## 3.3、远程传输
 
 **windows**
 
@@ -331,9 +331,34 @@ scp root@121.4.47.229:/var/local/111.html /var/local/
 
 
 
+## 3.5、下载互联网资源
+
+`wget` 资源链接。即可将互联网资源下载到Linux。
+
+```shell
+# 下载一张图片
+ubuntu@VM-16-9-ubuntu:~/learning$ wget https://scpic.chinaz.net/files/pic/pic9/202111/apic36746.jpg
+--2021-11-28 21:23:42--  https://scpic.chinaz.net/files/pic/pic9/202111/apic36746.jpg
+Resolving scpic.chinaz.net (scpic.chinaz.net)... 150.138.105.234
+Connecting to scpic.chinaz.net (scpic.chinaz.net)|150.138.105.234|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 166592 (163K) [image/jpeg]
+Saving to: ‘apic36746.jpg’
+
+apic36746.jpg                           100%[==============================================================================>] 162.69K  --.-KB/s    in 0.06s
+
+2021-11-28 21:23:43 (2.78 MB/s) - ‘apic36746.jpg’ saved [166592/166592]
+
+ubuntu@VM-16-9-ubuntu:~/learning$ ls -lh
+total 164K
+-rw-rw-r-- 1 ubuntu ubuntu 163K Nov 22 15:24 apic36746.jpg
+```
 
 
-# 4、Vi和Vim编辑器
+
+
+
+# 4、Vi 和 Vim
 
 ## 4.1、基本介绍
 
@@ -485,7 +510,7 @@ sync # 代表把内存的数据同步到磁盘上
 
 - 基本语法：`useradd [选项] 用户名`
 
-- 例如：添加用户小明 ==> 添加完成后发生的变化：
+- 例如：添加用户小明 => 添加完成后发生的变化：
 
   - 有一个组被创建了(系统会默认创建一个**同名用户组**，当然也可以指定加入一个组)；
   - `/home/` 目录下有一个 `xiaoming` 的目录
@@ -553,10 +578,18 @@ userdel -r xiaoming    删除用户 xiaoming 以及用户主目录
 - 用户组：类似于角色，系统可以对有共性的多个用户进行统一的管理
 - 增加组： `groupadd groupname`
 
-```
-useradd -g groupname username   将新创建的用户添加到指定用户组
-usermod -g groupname username   修改某个用户的用户组
-usermod -d 目录名 用户名         改变该用户登录的初始目录
+```shell
+useradd -g groupname username   # 将新创建的用户添加到指定用户组
+usermod -g groupname username   # 修改某个用户的用户组
+usermod -d 目录名 用户名         	# 改变该用户登录的初始目录
+
+usermod -G groupname username		# 修改用户到工作组，一个用户可以添加到多个工作组
+usermod -G 24,27 zhangjian			# 修改的时候也可以写组ID，多个用逗号隔开。注意：修改用户组、工作组会离开原来的组
+
+# 如果是想追加，要是用 选项参数：-a
+root@VM-16-9-ubuntu:~# usermod -a -G 4 zhangjian
+root@VM-16-9-ubuntu:~# id zhangjian
+uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),27(sudo)
 ```
 
 
@@ -640,7 +673,7 @@ usermod -d 目录名 用户名         改变该用户登录的初始目录
    使用方法：ls [选项] [目录或是文件]
    -a 显示当前目录所有的文件和目录，包括隐藏的
    -l 以列表的方式显示信息
-   -h 显示文件大小
+   -h 以合适的单位显示文件大小
    ```
 
 3. **cd 命令**（change directory），切换到指定的目录
@@ -797,6 +830,8 @@ usermod -d 目录名 用户名         改变该用户登录的初始目录
     ```
 
     sed命令是三剑客之一，功能十分强大。sed详解：https://www.linuxprobe.com/linux-sed-command.html
+
+    其他两剑客分别是：awk 、grep
 
 18. **ln 命令**，给原文件创建一个链接
 
@@ -984,11 +1019,11 @@ usermod -d 目录名 用户名         改变该用户登录的初始目录
    # -l 展示文件详情信息
    ```
 
-2. 修改文件所有者
+2. 修改文件所有者、所有组
 
    ```shell
    chown [参数] 用户名 文件名
-   chown newowner:newgroup file 改变用户的所有者和所有组
+   chown newowner:newgroup file 改变文件的所有者和所有组
    # -R 如果是目录 则使其下所有子文件或目录递归生效 递归的修改文件、目录的所有者
    ```
 
@@ -1022,60 +1057,134 @@ usermod -d 目录名 用户名         改变该用户登录的初始目录
 
 ## 9.1、基本介绍
 
-- ls -l 中显示的内容如下：
+**ls -l 中显示的内容如下：**
 
-   `-rwxrw-r-- 1 root root 1213 Feb 2 09:39 abc`
+```shell
+root@VM-16-9-ubuntu:~# ls -l
+total 57168  # 当前目录下所有文件大小的总和。该值 默认单位是 kb；而文件列表的单位默认是 byte。
+-rw-r--r-- 1 ubuntu root  8774763 May 15  2018 filebeat-5.4.0-linux-x86_64.tar.gz
+-rw-r--r-- 1 root   root 24868974 Mar 31  2020 filebeat-7.6.2-linux-x86_64.tar.gz
+-rw-r--r-- 1 root   root 24868974 Mar 31  2020 filebeat-7.6.2-linux-x86_64.tar.gz.1
+-rw-r--r-- 1 root   root    18617 Nov 21 00:29 get-docker.sh
+```
+
+**字段说明：**
 
 - 0-9 位说明
-
-  1. 第 0 位确定文件类型(d 目录，- 普通文件， l 连接，c 字符设备，b 块文件例如硬盘)
-  2. 第 1-3 位确定**所有者**（该文件的所有者）拥有该文件的权限。---User
-  3. 第 4-6 位确定**所属组**（同用户组的）拥有该文件的权限，---Group
-  4. 第 7-9 位确定**其他组的用户**拥有该文件的权限 ---Other
-  5. 这里的权限也**可用数字**表示为: r=4，w=2，x=1 因此 rwx=4+2+1=7
+   - 第 0 位确定文件类型(d 目录，- 普通文件， l 连接，c 字符设备，b 块文件例如硬盘)
+   - 第 1-3 位确定**所有者**（文件的所有者 User）拥有该文件的权限；
+   - 第 4-6 位确定**所属组**（同用户组的成员 Group）拥有该文件的权限；
+   - 第 7-9 位确定**其他组的用户**拥有该文件的权限 Other。
+   - 这里的权限也**可用数字**表示为: r=4，w=2，x=1 因此 rwx=4+2+1=7
 
 - `1` 的意思是：如果是文件，表示**硬连接的数**；如果是目录，则表示**该目录下有多少个子目录**
-
 - 所有者名称
-
 - 所在组名称
-
-- 文件大小，1213个字节，如果是目录会统一显示4096
-
-- 文件最后的修改时间
-
+- 文件大小，单位 byte，如果是目录会统一显示4096
+- 文件最后修改时间
 - 文件名
 
 
 
 ## 9.2、rwx 权限详解
 
-1. rwx 作用到文件
-   1. [ r ]代表可读(read)：可以读取，查看
-   2. [ w ]代表可写(write)：可以修改，==但是不代表可以删除该文件==，删除一个文件的前提条件是==对该文件所在的目录有写权限，才能删除该文件==
-   3. [ x ]代表可执行(execute)：可以被执行
-2. rwx 作用到目录
+1. rwx 作用到 **文件**
+   1. [ r ]代表可读(read)：可以读取，查看；
+   
+   2. [ w ]代表可写(write)：**可以修改，但是不代表可以删除该文件，删除一个文件的前提条件是 对该文件所在的目录有写权限，才能删除该文件**；
+   
+   3. [ x ]代表可执行(execute)：可以被执行。
+   
+      
+   
+2. rwx 作用到 **目录**
    1. [ r ] 代表可读(read)：可以读取，ls 查看目录内容
-   2. [ w ] 代表可写(write)：可以修改，目录内创建+删除+重命名目录
+   2. [ w ] 代表可写(write)：可以修改，目录内创建、删除、重命名目录
    3. [ x ] 代表可执行(execute)：可以进入该目录
 
-## 9.3、修改权限 -- chmod
 
-- 通过 chmod 指令，可以修改文件或者目录的权限
+
+## 9.3、修改权限
+
+通过 **chmod** 指令，可以修改文件或者目录的权限
 
 **第一种方式：通过+ 、-、= 变更权限**
 
-- u：所有者 g：所在组 o：其他人 a：所有人(u、g、o 的总和)
-- chmod u=rwx,g=rx,o=x 文件目录名 ==> 给所有者读写操作的权限，给所在组读写权限，给其他人执行的权限
-- chmod o+w 文件目录名 ==> 给其他人增加写权限
-- chmod a-x 文件目录名 ==> 给所有人减少写权限
+> u：所有者 g：所在组 o：其他人 a：所有人(u、g、o 的总和)
+
+- chmod u=rwx,g=rx,o=x 文件/目录名 => 给所有者读写操作的权限，给所在组可读、可执行权限，给其他人执行的权限
+
+  ```shell
+  root@VM-16-9-ubuntu:~# chmod u=rwx,g=rx,o=x filebeat-5.4.0-linux-x86_64.tar.gz
+  root@VM-16-9-ubuntu:~# ls -l filebeat-5.4.0-linux-x86_64.tar.gz
+  -rwxr-x--x 1 ubuntu root 8774763 May 15  2018 filebeat-5.4.0-linux-x86_64.tar.gz
+  ```
+
+- chmod o+w 文件目录名 => 给其他人增加写权限
+
+  ```shell
+  root@VM-16-9-ubuntu:~# chmod o+w filebeat-5.4.0-linux-x86_64.tar.gz
+  root@VM-16-9-ubuntu:~# ls -l filebeat-5.4.0-linux-x86_64.tar.gz
+  -rwxr-x-wx 1 ubuntu root 8774763 May 15  2018 filebeat-5.4.0-linux-x86_64.tar.gz
+  ```
+
+- chmod a-x 文件目录名 => 给所有人减少写权限
+
+  ```shell
+  root@VM-16-9-ubuntu:~# chmod a-x filebeat-5.4.0-linux-x86_64.tar.gz
+  root@VM-16-9-ubuntu:~# ls -l filebeat-5.4.0-linux-x86_64.tar.gz
+  -rw-r---w- 1 ubuntu root 8774763 May 15  2018 filebeat-5.4.0-linux-x86_64.tar.gz
+  ```
+
+  
 
 **第二种方式：通过数字变更权限，其实就是二进制来表示，三个位分别用0和1表示权限的无和有**
 
 - 规则：r=4 w=2 x=1 ，rwx=4+2+1=7 ，rx=4+1=5
+
 - chmod u=rwx,g=rx,o=x 文件目录名 相当于 chmod 751 文件目录名
 
-注意：对于目录，要拥有执行的权限才能进入目录
+  ```shell
+  root@VM-16-9-ubuntu:~# chmod 751 filebeat-5.4.0-linux-x86_64.tar.gz
+  root@VM-16-9-ubuntu:~# ls -l filebeat-5.4.0-linux-x86_64.tar.gz
+  -rwxr-x--x 1 ubuntu root 8774763 May 15  2018 filebeat-5.4.0-linux-x86_64.tar.gz
+  ```
+
+​	**注意：对于目录，要拥有执行的权限才能进入目录**
+
+
+
+**递归修改目录及文件权限：**
+
+```shell
+# 原来的目录及文件权限
+root@VM-16-9-ubuntu:~# ls -l
+total 24
+drwxr-xr-x 2 root root  4096 Nov 26 11:25 apps
+-rw-r--r-- 1 root root 18617 Nov 21 00:29 get-docker.sh
+
+root@VM-16-9-ubuntu:~# ls -l apps  # ls 后面如果接目录，那么展示的内容是目录中文件的详情
+total 32860
+-rwxr-x--x 1 ubuntu root  8774763 May 15  2018 filebeat-5.4.0-linux-x86_64.tar.gz
+-rw-r--r-- 1 root   root 24868974 Mar 31  2020 filebeat-7.6.2-linux-x86_64.tar.gz
+
+## 将目录及文件 所有者、组、其他成员 权限都修改成 可读、可写、可执行
+root@VM-16-9-ubuntu:~# chmod -R 777 apps
+
+root@VM-16-9-ubuntu:~# ls -l
+total 24
+drwxrwxrwx 2 root root  4096 Nov 26 11:25 apps
+-rw-r--r-- 1 root root 18617 Nov 21 00:29 get-docker.sh
+
+root@VM-16-9-ubuntu:~# ls -l apps
+total 32860
+-rwxrwxrwx 1 ubuntu root  8774763 May 15  2018 filebeat-5.4.0-linux-x86_64.tar.gz
+-rwxrwxrwx 1 root   root 24868974 Mar 31  2020 filebeat-7.6.2-linux-x86_64.tar.gz
+```
+
+
+
+
 
 # 10、定时任务调度
 
@@ -1084,6 +1193,8 @@ usermod -d 目录名 用户名         改变该用户登录的初始目录
 - crond 定时任务调度
 - 在我们写了一个脚本或代码，能够完成某个任务，但是需要定时完成，就能够使用一种机制，去定时的调度我们写好的脚本或代码
 - 可以通过crontab进行定时任务设置
+
+
 
 ## 10.2、基本语法
 
@@ -1105,6 +1216,8 @@ usermod -d 目录名 用户名         改变该用户登录的初始目录
 
 - 对于复杂的任务，就需要写脚本来完成（shell脚本）
 
+
+
 ## 10.3、快速入门
 
 任务要求：
@@ -1113,7 +1226,7 @@ usermod -d 目录名 用户名         改变该用户登录的初始目录
 - 设置个人任务调度
 - 执行 crontab –e 命令
 - 接着输入任务到调度文件 如：`*/1 * * * * ls –l /etc/ > /tmp/to.txt`
-- 语句的意思说每小时的每分钟执行`ls –l /etc/ > /tmp/to.txt`命令
+- 语句的意思是 每分钟执行一次 `ls –l /etc/ > /tmp/to.txt` 命令
 
 具体步骤：
 
@@ -1139,83 +1252,119 @@ usermod -d 目录名 用户名         改变该用户登录的初始目录
 3. 表达式例子：
 
 ```
-45 22 * * * 命令   ==>  在22点45分执行命令
-0 17 * * 1 命令   ==>  在每周一的17点0分执行命令
-0 5 1,15 * * 命令   ==>  在每月的1号和15号的凌晨5点0分执行命令
-40 4 * * 1-5 命令   ==>  每周一到周五的凌晨4点40分执行命令
-*/10 4 * * * 命令   ==>  每天的凌晨4点，每个10分钟执行一次命令
+45 22 * * * 命令   ==>  每天 的 22点45分 执行命令
+0 17 * * 1 命令   ==>  每周一 的 17点0分 执行命令
+0 5 1,15 * * 命令   ==>  每月 的 1号和15号 的 凌晨5点0分 执行命令
+40 4 * * 1-5 命令   ==>  每周一到周五 的 凌晨4点40分 执行命令
+*/10 4 * * * 命令   ==>  每天的凌晨4点，每隔10分钟 执行一次命令
 0 0 1,15 * 1 命令   ==>  每月的1号和15号，每周一的0点0分都会执行命令
 注意:星期几和几号最好不要同时出现，因为他们定义的都是天，很容易产生混乱
 ```
 
-## 10.4、任务调度的几个应用实例
 
-### 10.4.1、第一个案例：每隔1 分钟，就将当前的日期信息，追加到 /tmp/mydate 文件
 
-1. 先编写一个文件 mytask1.sh
+## 10.4、应用实例
 
-   ```
-   date >> /tmp/mydate
-   ```
+### 10.4.1、示例一
 
-2. 给 mytask1.sh 一个可以执行权限
+每隔1 分钟，就将当前的日期信息，追加到 /root/apps/mydate.txt 文件
 
-   ```
-   chmod 744 mytask1.sh
-   ```
+1. 执行命令 crontab -e，配置定时任务，内容如下:
 
-3. 执行命令 `crontab -e`
+   > 首次执行 crontab -e 时，需要选择编辑器，我这里选择 vim.tiny
+   >
+   > ```shell
+   > root@VM-16-9-ubuntu:~/apps# crontab -e
+   > 
+   > Select an editor.  To change later, run 'select-editor'.
+   >   1. /bin/nano        <---- easiest
+   >   2. /usr/bin/vim.basic
+   >   3. /usr/bin/vim.tiny
+   >   4. /bin/ed
+   > 
+   > Choose 1-4 [1]: 3
+   > ```
 
-4. 执行 `*/1 * * * * mytask1.sh` 代码
-
-### 10.4.2、第二个案例：每隔1 分钟， 将当前日期和日历都追加到 /home/mycal 文件中
-
-1. 先编写一个文件 /home/mytask2.sh
-
-   ```
-   date >> /tmp/mycal 
-   cal >> /tmp/mycal
-   ```
-
-2. 给 mytask1.sh 一个可以执行权限
-
-   ```
-   chmod 744 /home/mytask2.sh
+   ```shell
+   # 将如下类容添加到定时任务
+   */1 * * * * date >> /root/apps/mydate.txt
    ```
 
-3. `crontab -e` 进入定时任务调度
 
-4. `*/1 * * * * /home/mytask2.sh`
 
-### 10.4.3、第三个案例：每天凌晨2:00 将mysql 数据库 testdb ，备份到文件中
+### 10.4.2、示例二
 
-1. 先编写一个文件 /home/mytask3.sh
+每隔1 分钟， 将当前日期和日历都追加到 /root/apps/mydate.txt 文件中
 
-   ```
-   /usr/local/mysql/bin/mysqldump -u root -proot testdb > /tmp/mydb.bak
-   ```
+1. 先编写一个文件 /root/apps/mytask.sh
 
-2. 给 mytask3.sh 一个可以执行权限
-
-   ```
-   chmod 744 /home/mytask3.sh
+   ```shell
+   cal >> /root/apps/mydate.txt
+   date >> /root/apps/mydate.txt
    ```
 
-3. `crontab -e`
+2. 为 脚本添加可执行权限
 
-4. `0 2 * * * /home/mytask3.sh`
+   ```shell
+   chmod 744 /root/apps/mytask.sh
+   ```
 
-## 10.5、crond相关指令
+2. `crontab -e` 编辑任务
 
+   ```
+   */1 * * * * /root/apps/mytask.sh
+   ```
+
+4. `crontab -l` 可以看到新添加的任务
+
+   ```shell
+   root@VM-16-9-ubuntu:~/apps# crontab -l
+   # secu-tcs-agent monitor, install at Sun Nov 21 00:07:21 CST 2021
+   * * * * * /usr/local/sa/agent/secu-tcs-agent-mon-safe.sh > /dev/null 2>&1
+   */5 * * * * flock -xn /tmp/stargate.lock -c '/usr/local/qcloud/stargate/admin/start.sh > /dev/null 2>&1 &'
+   */1 * * * * /root/apps/mytask.sh
+   ```
+
+5. 在 /root/apps/mydate.txt 可以看到定时任务产生的数据。
+
+
+
+## 10.5、相关指令
+
+```shell
+service cron start  # 启动服务
+service cron stop # 关闭服务
+service cron restart # 重启服务
+service cron reload # 重新载入配置
+service cron status # 检查状态
+
+crontab -e 	# 编辑任务
+crontab –r  # 终止任务调度
+crontab –l  # 列出当前有那些任务调度su - 
+crontab -u  # 设定某个用户的定时任务
+
+crontab -l -u ubuntu  # 列出 用户 ubuntu 的 cron 任务
 ```
-conrtab –r  ==>  终止任务调度
-crontab –l  ==>  列出当前有那些任务调度
-service crond restart [重启任务调度]
-```
 
-# 11、Linux磁盘分区和挂载
+
+
+# 11、磁盘分区和挂载
 
 ## 11.1、分区基础知识
+
+> 计算机中存放信息的主要的存储设备就是硬盘，但是硬盘不能直接使用，必须对硬盘进行分割，分割成的一块一块的硬盘区域就是**磁盘分区**。在传统的磁盘管理中，将一个硬盘分为两大类分区：主分区 和 扩展分区。
+>
+> **主分区：**
+>
+> 主分区，也称为主磁盘分区，和 扩展分区 、逻辑分区 一样，是一种分区类型。主分区中不能再划分其他类型的分区，因此每个主分区都相当于一个逻辑磁盘（在这一点上主分区和逻辑分区很相似，但主分区是直接在硬盘上划分的，逻辑分区则必须建立于扩展分区中）。
+>
+> **扩展分区：**
+>
+> 扩展分区，严格地讲它不是一个实际意义的分区，它仅仅是一个指向下一个分区的指针，这种指针结构将形成一个单向链表。这样在主引导扇区中除了主分区外，仅需要存储一个被称为扩展分区的分区数据，通过这个扩展分区的数据可以找到下一个分区(实际上也就是下一个逻辑磁盘)的起始位置，以此起始位置类推可以找到所有的分区。
+>
+> **逻辑分区：**
+>
+> 逻辑分区是 硬盘 上一块连续的区域。每个 主分区 只能分成一个 逻辑驱动器，每个主分区都有各自独立的引导块，可以用fdisk设定为启动区。一个 硬盘 上最多可以有4个主分区，而 扩展分区 上可以划分出多个 逻辑驱动器。这些 逻辑驱动器 没有独立的引导块，不能用fdisk设定为启动区。
 
 **分区的两种方式：**
 
@@ -1237,114 +1386,180 @@ service crond restart [重启任务调度]
 
 - 原理介绍：
 
-  - Linux 来说无论有几个分区，分给哪一目录使用，它**归根结底就只有一个根目录**，**一个独立且唯一的文件结构** , Linux 中每个分区都是用来组成整个文件系统的一部分。
-  - Linux 采用了一种叫==“载入”==的处理方法，它的整个文件系统中包含了一整套的文件和目录， 且将一个分区和一个目录联系起来。这时要载入的一个分区将使它的存储空间在一个目录下获得。
-  - 通俗来说，就是硬盘下的分区会映射成根目录下的某个目录
+  - Linux 无论有几个分区，分给哪一目录使用，但它 **归根结底就只有一个根目录**，**一个独立且唯一的文件结构** ，因此 Linux  中每个分区都是用来组成整个文件系统的一部分。
+  - Linux 采用了一种叫 **挂载** 的处理方法，它的整个文件系统中包含了一整套的文件和目录， 且将一个分区和一个目录联系起来。这时要载入的一个分区将使它的存储空间在一个目录下获得。
+  - 通俗来说，就是**硬盘下的分区会映射成根目录下的某个目录**
 
 - 硬盘说明
 
   - Linux 硬盘分 IDE 硬盘和 SCSI 硬盘，目前基本上是 SCSI 硬盘
-  - 对于 IDE 硬盘，驱动器标识符为`hdx~`,其中`hd`表明分区所在设备的类型，这里是指 IDE 硬盘了。`x`为盘号（**a 为基本盘，b 为基本从属盘，c 为辅助主盘，d 为辅助从属盘**）,`~`代表分区，**前四个分区用数字 1 到 4 表示**，它们是主分区或扩展分区，**从 5 开始就是逻辑分区**。例如：hda3 表示为第一个 IDE 硬盘上的第三个主分区或扩展分区,hdb2 表示为第二个 IDE 硬盘上的第二个主分区或扩展分区
+
+    > IDE即Integrated Drive Electronics，它的本意是指把控制器与盘体集成在一起的硬盘驱动器，IDE是表示硬盘的传输接口。
+    >
+    > SCSI硬盘是采用 SCSI接口 的硬盘，SCSI是Small Computer System Interface（小型计算机系统接口）的缩写，使用50针接口，外观和普通硬盘接口有些相似。
+    >
+    > SCSI硬盘和普通IDE硬盘相比有很多优点：接口速度快，并且由于主要用于服务器，因此硬盘本身的性能也比较高，硬盘转速快，缓存容量大，CPU占用率低，扩展性远优于IDE硬盘，并且支持 热插拔。
+
+  - 对于 IDE 硬盘，驱动器标识符为`hdx~`，其中`hd`表明分区所在设备的类型，这里是指 IDE 硬盘。`x`为盘号（**a 为基本盘，b 为基本从属盘，c 为辅助主盘，d 为辅助从属盘**）,`~`代表分区，**前四个分区用数字 1 到 4 表示**，它们是主分区或扩展分区，**从 5 开始就是逻辑分区**。例如：hda3 表示为第一个 IDE 硬盘上的第三个主分区或扩展分区,hdb2 表示为第二个 IDE 硬盘上的第二个主分区或扩展分区
+
   - 对于 SCSI 硬盘则标识为`sdx~`，SCSI 硬盘是用`sd`来表示分区所在设备的类型的，其余则和 IDE 硬盘的表示方法一样。
 
-- 使用
+- 查看系统的分区和挂载情况
 
-  ```
-  lsblk 命令
-  ```
+  > 命令 `lsblk`：List block 显示分区
 
-  查看当前系统的分区和挂载情况
+  - 直接输入`lsblk`查看
 
-  - List block 显示分区
-  - 输入`lsblk -f` 即可查看到当前系统的分区情况和相对应的挂载目录
-  - 显示的内容为：
-    - 分区情况、分区类型、UUID（universal unique id）唯一标识分区的40位不重复的字符串、挂载点
-  - 如果想看大小，可以直接输入`lsblk`查看
+    ```shell
+    ubuntu@VM-16-9-ubuntu:~$ lsblk
+    NAME   MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
+    sr0     11:0    1 146.8M  0 rom
+    vda    252:0    0    80G  0 disk						# 因为是云服务器，所以是虚拟磁盘
+    └─vda1 252:1    0    80G  0 part /					
+    
+    # 字段说明：
+    # NAME ：块设备名。
+    # MAJ:MIN ：主要和次要设备号。
+    # RM ：设备是否可移动设备。在本例中设备sr0的RM值等于1，这说明他们是可移动设备。
+    # SIZE ：设备的容量大小信息。
+    # RO ：设备是否为只读。在本案例中，所有设备的RO值为0，表明他们不是只读的。
+    # TYPE ：块设备是否是磁盘或磁盘上的一个分区。在本例中，vda是磁盘，vda1是分区，而sr0是只读存储（rom）。
+    # MOUNTPOINT ：设备挂载的挂载点。
+    ```
 
-## 11.3、新增硬盘并挂载的详细步骤
+  - 输入`lsblk -f` 即可查看文件系统信息
+
+    ```shell
+    ubuntu@VM-16-9-ubuntu:~$ lsblk -f
+    NAME   FSTYPE  LABEL    UUID                                 MOUNTPOINT
+    sr0    iso9660 config-2 2021-11-21-00-18-21-00
+    vda
+    └─vda1 ext4             5ba34c3d-bd14-451d-a7d8-09a64009e3f1 /
+    
+    # FSTYPE ：文件系统类型。iso9660 表示一种光盘的文件
+    ```
+
+    
+
+
+## 11.3、新增硬盘并挂载
 
 案例：给 Linux 系统增加一个新的硬盘，并且挂载到 `/home/newdisk`
 
-1. **虚拟机添加硬盘**
+1. **添加硬盘**
 
-   ```
-   虚拟机  ->  设置  ->  硬件  ->  添加  ->  选择硬盘，下一步  ->  SCSI虚拟磁盘类型  ->  分配空间  -> 完成
-   系统重启，再使用 lsblk -f 查看硬盘分区情况，可以查看到一个没有分区的硬盘sdb
-   ```
+   将硬盘装上后，重启系统。
+
+   `fdisk -l` 或` lsblk -f` 查看硬盘分区情况，可以查看到一个没有分区的硬盘sdb。
 
 2. **分区**
 
-   ```
-   fdisk /dev/sdb  进入分区引导
-   m  寻求帮助
-   n  添加一个新的分区
-   p  设置为主分区  e是扩展分区
-   选择主分区编号
-   回车 + 回车，两次回车默认剩余全部空间
-   w 分区信息写入硬盘并退出
-   再使用 lsblk -f 查看分区情况可以发现只有分区sdb1但是没有对应的信息，这就是因为还没有格式化
+   ```shell
+   fdisk /dev/sdb  # 进入分区引导
+   # m  显示菜单和帮助信息
+   # n  新建分区
+   # p  显示分区信息
+   # t  设置分区号
+   # d	 删除分区
+   # w  保存修改
+   # 回车 + 回车，两次回车默认剩余全部空间
+   # 再使用 lsblk -f 查看分区情况可以发现只有分区sdb1但是没有对应的信息，这就是因为还没有格式化
    ```
 
-3. **格式化**（MakeFileSystem）-- 创建文件系统
+3. **格式化**（MakeFileSystem）
 
-   ```
+   ```shell
    msfs -t ext4 /dev/sdb1   
-   意思就是：把 sdb1 格式化成 ext4 这种分区类型
+   # 把 sdb1 格式化成 ext4 这种类型的分区
    ```
 
-4. **挂载**，将一个分区和一个目录联系起来
+4. **临时挂载**
 
-   ```
-   先创建一个目录 /home/newdisk
-   mount /dev/sdb1 /home/newdisk   ->     挂载
-   但是这样的设置挂载，当你重启机器的时候，硬盘和目录的挂载关系就会没有了，这个只是临时挂载
+   ```shell
+   # 创建目录 
+   mkdir -p /home/newdisk
    
-   如果想不挂载了，就使用umount 设备名称 或者 挂载目录
-   例如： umount /dev/sdb1 或 者 umount /newdisk
-   要想设置永久，就需要设置一个文件
+   # 挂载
+   mount /dev/sdb1 /home/newdisk
+   
+   # 这样的设置挂载，当你重启机器的时候，硬盘和目录的挂载关系就会没有了，只是临时挂载
+   
+   # 如果想不挂载了，就使用 umount 设备名称 或者 挂载目录，解除挂载关系
+   # 例如： umount /dev/sdb1 或者 umount /newdisk
    ```
 
-5. **设置可以自动挂载**（永久挂载），当你重启系统，仍然可以挂载到 /home/newdisk
+5. **永久挂载**
 
-   ```
-   编辑一个文件 vim /etc/fstab  这个文件就记录着分区和挂载点的情况
+   ```shell
+   # 编辑文件 
+   vim /etc/fstab  # 这个文件就记录着分区和挂载点的情况
+   
+   # 添加一行映射关系代码：
    -----------------------------------------------------------------------
-   编辑其中的内容
-   添加一行映射关系代码
-   /dev/sdb1                      /home/newdisk ext4 default 0 0
-   保存退出
+   /dev/sdb1 /home/newdisk ext4 default 0 0
    -----------------------------------------------------------------------
-   编辑完成后
+   
+   # 编辑完成后执行：
    mount -a 
-   -a 就是自动挂载
-   重启过后就能发现是永久挂载了
+   
+   # -a 表示自动挂载，每次系统重启就会自动挂载，也就是永久挂载了
    ```
+
+
 
 ## 11.4、查看磁盘情况
 
-```
-df [选项]   ->  查询系统整体磁盘使用情况
--l   列表显示
+- **df**
 
-du [选项] [目录]  ->  查询指定目录的磁盘占用情况，默认为当前目录
--s   指定目录占用大小汇总
--h   带计量单位
--a   含文件
---max-depth=1   子目录深度
--c   列出明细的同时，增加汇总值
+  查询系统整体磁盘使用情况
 
-例1 -> 查询 /opt 目录的磁盘占用情况，深度为 1  ->  du -ach --max-depth=1 /opt
-例2 -> 统计/home 文件夹下文件的个数  ->  ls -l /home | grep "^-" | wc -l
-例3 -> 统计/home 文件夹下目录的个数  ->  ls -l /home | grep "^d" | wc -l
-例4 -> 统计/home 文件夹下文件的个数，包括子文件夹里的  ->  ls -lR /home | grep "^-" | wc -l
-例5 -> 统计文件夹下目录的个数，包括子文件夹里的  ->  ls -lR /home | grep "^d" | wc -l
-例6 -> 以树状显示目录结构  ->  先yum install tree，再tree
+  ```shell
+  ubuntu@VM-16-9-ubuntu:~$ df -h
+  Filesystem      Size  Used Avail Use% Mounted on
+  udev            1.9G     0  1.9G   0% /dev
+  tmpfs           379M  7.2M  372M   2% /run
+  /dev/vda1        79G  7.0G   69G  10% /
+  tmpfs           1.9G   24K  1.9G   1% /dev/shm
+  tmpfs           5.0M     0  5.0M   0% /run/lock
+  tmpfs           1.9G     0  1.9G   0% /sys/fs/cgroup
+  tmpfs           379M     0  379M   0% /run/user/500
+  ```
 
-解析：
-用了管道符分隔，先列出来，再过滤，再统计
-"^-"中 ^ 是定位符，表示开头   -表示以-开头的
-ls参数是区分大小写的  -> 大写的R代表递归，小写的r（reverse）代表逆序
-```
+- **du [选项] [目录]**
+
+  查询指定目录的磁盘占用情况，默认为当前目录。
+
+  > -s   指定目录占用大小汇总
+  > -h   带计量单位
+  > -a   含文件
+  > --max-depth=1   子目录深度
+  > -c   列出明细的同时，增加汇总值
+
+  ```shell
+  # 查询 /opt 目录的磁盘占用情况，深度为 1
+  root@VM-16-9-ubuntu:~/apps# du -ach --max-depth=1 /opt
+  12K	/opt/containerd
+  16K	/opt
+  16K	total
+  
+  # 统计/home 文件夹下文件的个数 
+  root@VM-16-9-ubuntu:~/apps# ls -l /home | grep "^-" | wc -l
+  0			# 家目录下都是以用户命名的文件夹
+  
+  # 统计/home 文件夹下目录的个数
+  root@VM-16-9-ubuntu:~# ls -l /home | grep "^d" | wc -l
+  3
+  
+  # 统计/home 文件夹下文件的个数，包括子文件夹里的
+  root@VM-16-9-ubuntu:~# ls -lR /home | grep "^-" | wc -l
+  1
+  
+  # 统计文件夹下目录的个数，包括子文件夹里的
+  root@VM-16-9-ubuntu:~# ls -lR /home | grep "^d" | wc -l
+  4
+  ```
+
+  
 
 # 12、网络配置
 
@@ -1357,6 +1572,8 @@ Linux下查看ip地址  ->  ifconfig
 测试两个主机之间网路是否联通  ->  ping ip地址
 ```
 
+
+
 ## 12.2、Linux网络环境配置
 
 1. 可以通过**图形化界面**进行设置，设置**自动连接**
@@ -1364,29 +1581,34 @@ Linux下查看ip地址  ->  ifconfig
    - linux 启动后会自动获取 IP，**缺点是每次自动获取的 ip 地址可能不一样**
    - 这个不适用于做服务器，因为我们的服务器的 ip 需要是固定的
 
-2. 通过**修改配置文件指定固定ip**
+2. 通过**修改配置文件配置 静态IP**
 
-   ```
-   直接修改配置文件来指定IP，并可以连接到外网   ->   /etc/sysconfig/network-scripts/ifcfg-eth0
+   文件位置：/etc/sysconfig/network-scripts/ifcfg-eth0
    第一个显卡就是eth0，第二个就是eth1
    
    例：要将 ip 地址配置成静态的，ip 地址为 192.168.184.130
-   vim /etc/sysconfig/network-scripts/ifcfg-eth0    ->  打开配置文件
-   Linux会显示文件内容，其中要修改的内容如下 ↓↓↓↓
-   DEVICE=eth0   ->接口名（设备，网卡）
-   HWADDR=00:0c:2x:6x:0x:xx   ->  MAC地址
-   TYPE=Ethernet   ->  网络类型
-   UUID=926a57ba-92c6-4231-bacb-f27e5e6a9f44   ->  随机ID
-   ONBOOT=yes    ->   系统启动的时候网络接口是否有效  静态，ONBOOT为yes；自动，ONBOOT为no
-   BOOTPROTO=static   -> 以静态方式获得ip，还有bootp采用BOOTP协议 dhcp采用DHCP协议 none不使用协议
-   IPADDR=192.168.184.130   ->  指定ip
-   GATEWAY=192.168.184.2   ->  网关
-   DNS1=192.168.184.2   ->  dns和网关保持一致即可
    
-   修改后，一定要 重启服务
+   ```shell
+   # 打开配置文件
+   vim /etc/sysconfig/network-scripts/ifcfg-eth0
+   
+   # Linux会显示文件内容，其中要修改的内容如下
+   DEVICE=eth0   # 接口名（设备，网卡）
+   HWADDR=00:0c:2x:6x:0x:xx   # MAC地址
+   TYPE=Ethernet   # 网络类型
+   UUID=926a57ba-92c6-4231-bacb-f27e5e6a9f44   # 随机ID
+   
+   ONBOOT=yes    # 系统启动的时候网络接口是否有效  静态，ONBOOT为yes；自动，ONBOOT为no
+   BOOTPROTO=static   # 以静态方式获得ip，还有bootp采用BOOTP协议 dhcp采用DHCP协议 none不使用协议
+   IPADDR=192.168.184.130   # 指定ip
+   GATEWAY=192.168.184.2   # 网关
+   DNS1=192.168.184.2   # dns和网关保持一致即可
+   
+   # 修改后，重启网络服务
    service network restart
-   或者直接  reboot 重启系统
    ```
+
+
 
 # 13、进程管理
 
@@ -1394,123 +1616,262 @@ Linux下查看ip地址  ->  ifconfig
 
 - 在 LINUX 中，**每个执行的程序（代码）都称为一个进程**。每一个进程都**分配一个 ID 号**
 - **每一个进程，都会对应一个父进程，而这个父进程可以复制多个子进程**。例如 www 服务器
-- **每个进程都可能以两种方式存在的，前台与后台**。所谓前台进程就是用户目前的屏幕上可以进行操作的。后台进程则是实际在操作（也称为守护进程），但由于屏幕上无法看到的进程，通常使用后台方式执行
+- **每个进程都可能以两种方式存在的，前台与后台**。所谓前台进程就是用户目前的屏幕上可以进行操作的。后台进程则是实际在操作，但由于屏幕上无法看到的进程，通常使用后台方式执行
 - **一般系统的服务都是以后台进程的方式存在，而且都会常驻在系统中**。直到关机才才结束
+
+
 
 ## 13.2、显示系统执行的进程
 
+**ps 命令** 
+
+> -a  显示当前终端所有的进程信息
+> -u  以用户的格式显示进程信息
+> -x  显示后台进程运行的参数
+> -e  显示所有进程
+> -f  全格式
+
+**示例一：**
+
+```shell
+ubuntu@VM-16-9-ubuntu:~$ ps
+  PID TTY          TIME CMD
+18006 pts/1    00:00:00 bash
+19738 pts/1    00:00:00 ps
+
+# PID   进程识别号
+# TTY   终端机号
+# TIME  此进程所消CPU时间
+# CMD   正在执行的命令或进程名
 ```
-查看进行使用的指令是 ps ,一般来说使用的参数是 ps -aux
--a  显示当前终端所有的进程信息
--u  以用户的格式显示进程信息
--x  显示后台进程运行的参数
--e  显示所有进程
--f  全格式
-
-PID   进程识别号
-TTY   终端机号
-TIME  此进程所消CPU时间
-CMD   正在执行的命令或进程名
 
 
-例1：输入指令 ps -aux | more
-USER   PID   %CPU  %MEM   VSZ   RSS   TTY   STAT    START    TIME     COMMAND
 
-详解
-System V 展示风格
-USER：用户名称
-PID：进程号
-%CPU：进程占用 CPU 的百分比
-%MEM：进程占用物理内存的百分比
-VSZ：进程占用的虚拟内存大小（单位：KB）
-RSS：进程占用的物理内存大小（单位：KB）
-TTY：终端名称
-STAT：进程状态，其中 S-睡眠，s-表示该进程是会话的先导进程，N-表示进程拥有比普通优先级更低的优先级，R-正在运行，D-短期等待，Z-僵死进程，T-被跟踪或者被停止等等
-STARTED：进程的启动时间
-TIME：CPU 时间，即进程使用 CPU 的总时间
-COMMAND：启动进程所用的命令和参数，如果过长会被截断显示
+**示例二：**
 
+```shell
+ubuntu@VM-16-9-ubuntu:~$ ps -aux | more
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         1  0.0  0.2  78828  8848 ?        Ss   Nov24   0:04 /sbin/init
+root         2  0.0  0.0      0     0 ?        S    Nov24   0:00 [kthreadd]
+root         4  0.0  0.0      0     0 ?        I<   Nov24   0:00 [kworker/0:0H]
+root         6  0.0  0.0      0     0 ?        I<   Nov24   0:00 [mm_percpu_wq]
+root         7  0.0  0.0      0     0 ?        S    Nov24   0:08 [ksoftirqd/0]
+...
 
-例2：输入指令 ps -ef | more
-UID  PID  PPID   C  STIME  TTY   TIME   CMD
-
-详解：
-UID：用户 ID
-PID：进程 ID
-PPID：父进程 ID
-C：CPU 用于计算执行优先级的因子。数值越大，表明进程是 CPU 密集型运算，执行优先级会降低；数值越小，表明进程是 I/O 密集型运算，执行优先级会提高
-STIME：进程启动的时间
-TTY：完整的终端名称
-TIME：CPU 时间
-CMD：启动进程所用的命令和参数
+# USER：用户名称
+# PID：进程号
+# %CPU：进程占用 CPU 的百分比
+# %MEM：进程占用物理内存的百分比
+# VSZ：进程占用的虚拟内存大小（单位：KB）
+# RSS：进程占用的物理内存大小（单位：KB）
+# TTY：终端名称
+# STAT：进程状态
+	# S-睡眠
+	# s-表示该进程是会话的先导进程
+	# N-表示进程拥有比普通优先级更低的优先级
+	# R-正在运行
+	# D-短期等待
+	# Z-僵死进程
+	# T-被跟踪或者被停止等等
+# STARTED：进程的启动时间
+# TIME：CPU 时间，即进程使用 CPU 的总时间
+# COMMAND：启动进程所用的命令和参数，如果过长会被截断显示
 ```
+
+
+
+**示例三：**
+
+```shell
+ubuntu@VM-16-9-ubuntu:~$ ps -ef | more
+UID        PID  PPID  C STIME TTY          TIME CMD
+root         1     0  0 Nov24 ?        00:00:04 /sbin/init
+root         2     0  0 Nov24 ?        00:00:00 [kthreadd]
+root         4     2  0 Nov24 ?        00:00:00 [kworker/0:0H]
+root         6     2  0 Nov24 ?        00:00:00 [mm_percpu_wq]
+root         7     2  0 Nov24 ?        00:00:09 [ksoftirqd/0]
+
+# UID：用户 ID
+# PID：进程 ID
+# PPID：父进程 ID
+# C：CPU 用于计算执行优先级的因子。数值越大，表明进程是 CPU 密集型运算，执行优先级会降低；数值越小，表明进程是 I/O 密集型运算，执行优先级会提高
+# STIME：进程启动的时间
+# TTY：完整的终端名称
+# TIME：CPU 时间，即进程使用 CPU 的总时间
+# CMD：启动进程所用的命令和参数
+```
+
+
 
 ## 13.3、终止进程 kill 和 killall
 
 - 若是某个进程执行一半需要停止时，或是已消了很大的系统资源时，此时可以考虑停止该进程
 - 可使用 kill 命令来完成此项任务
 
-```
-kill [选项] 进程号    ->   通过进程号杀死进程
--9  表示强迫进程立即停止
+```shell
+# 通过进程号杀死进程
+kill [选项] 进程号
+# -9  表示强迫进程立即停止
 
-killall 进程名称      ->   通过进程名称杀死进程，也支持通配符，这在系统因负载过大而变得很慢时很有用
-
-例子：
-踢掉某个用户  ->  ps -aux | grep sshd  ->  查看进程号  ->  kill 4010
-终止多个 gedit 编辑器  ->  killall gedit
-强制杀掉一个终端  ->  kill -9 4090
+# 通过进程名称杀死进程，也支持通配符，这在系统因负载过大而变得很慢时很有用
+killall 进程名称
 ```
+
+
+
+**示例：**
+
+踢掉某个用户，关闭其连接
+
+```shell
+# 打印终端连接相关进程
+zhangjian@VM-16-9-ubuntu:~$ ps -aux | grep sshd
+root      1082  0.0  0.1  73352  6128 ?        Ss   Nov24   0:00 /usr/sbin/sshd -D
+root      8834  0.0  0.1 109036  7328 ?        Ss   19:33   0:00 sshd: ubuntu [priv]
+ubuntu    8916  0.0  0.0 109036  3460 ?        S    19:33   0:00 sshd: ubuntu@pts/1
+root     10359  0.0  0.1 109036  7268 ?        Ss   19:40   0:00 sshd: ubuntu [priv]
+ubuntu   10439  0.0  0.0 109036  3432 ?        S    19:40   0:00 sshd: ubuntu@pts/0
+root     12375  0.0  0.1 109036  7232 ?        Ss   19:49   0:00 sshd: ubuntu [priv]
+ubuntu   12457  0.0  0.0 109036  3420 ?        S    19:49   0:00 sshd: ubuntu@pts/2
+zhangji+ 12494  0.0  0.0  14828  1036 pts/0    R+   19:49   0:00 grep --color=auto sshd
+
+# 杀死进程 12457
+zhangjian@VM-16-9-ubuntu:~$ sudo kill -9 12457  # 杀死进程往往需要root权限
+```
+
+
 
 ## 13.4、查看进程树
 
-```
+```shell
 pstree [选项] 
--p :显示进程的 PID
--u :显示进程的所属用户
 
-例子：请你树状的形式显示进程的 pid
-pstree -p
+# -p :显示进程的 PID
+# -u :显示进程的所属用户
 ```
+
+
 
 ## 13.5、服务管理
 
-- **服务(service) 本质就是进程**，但是是运行在后台的，通常都会监听某个端口，等待其它程序的请求，比如（mysql , sshd 防火墙等），因此我们又称为**守护进程**，是 Linux 中非常重要的知识点。
+- **服务(service) 本质就是进程**，但是是运行在后台的，通常都会监听某个端口，等待其它程序的请求，比如（mysql、sshd、防火墙等），因此我们又称为**守护进程**，是 Linux 中非常重要的知识点。
 
-```
+```shell
 service 服务名 [start | stop | restart | reload | status]
-CentOS7.0 后 不再使用 service ,而是 systemctl
 
-查看服务名：
-1.使用setup->系统服务查看   CentOS7是nmtui   使用tab切换到[确定]和[取消]
-2.查看目录 ls -l /etc/init.d/    CentOS7使用 systemctl list-unit-files 可以列出所有的服务
+# CentOS7.0 后不再使用 service，而是 systemctl
 ```
+
+
+
+**查看服务名：**
+
+```shell
+# ubuntu
+ubuntu@VM-16-9-ubuntu:~$ ls -l /etc/init.d/
+total 200
+-rwxr-xr-x 1 root root 2269 Apr 22  2017 acpid
+-rwxr-xr-x 1 root root 4335 Mar 23  2018 apparmor
+-rwxr-xr-x 1 root root 2805 Feb 27  2020 apport
+-rwxr-xr-x 1 root root 1071 Aug 22  2015 atd
+-rwxr-xr-x 1 root root 1232 Apr 19  2018 console-setup.sh
+-rwxr-xr-x 1 root root 3049 Nov 16  2017 cron
+-rwxr-xr-x 1 root root  937 Mar 18  2018 cryptdisks
+-rwxr-xr-x 1 root root  978 Mar 18  2018 cryptdisks-early
+-rwxr-xr-x 1 root root 2813 Nov 16  2017 dbus
+-rwxr-xr-x 1 root root 3843 Nov 18 08:33 docker
+-rwxr-xr-x 1 root root 4489 Jun 29  2018 ebtables
+-rwxr-xr-x 1 root root  985 Jul 16  2018 grub-common
+-rwxr-xr-x 1 root root 3809 Feb 15  2018 hwclock.sh
+...
+
+# centos 7
+[root@VM-0-10-centos ~]# systemctl list-unit-files
+dbus.service                                  static
+debug-shell.service                           disabled
+dm-event.service                              static
+docker.service                                disabled
+dracut-cmdline.service                        static
+dracut-initqueue.service                      static
+...
+```
+
+
 
 ## 13.6、查看防火墙
 
-```
-查看当前防火墙的状况   ->    service iptables status  CentOS7改为  systemctl status firewalld
-关闭防火墙    ->    service iptables stop  CentOS7改为  systemctl stop firewalld
-开启防火墙    ->    service iptables start  CentOS7改为  systemctl start firewalld
+```shell
+# 查看当前防火墙的状况，CentOS7改为  systemctl status firewalld
+service iptables status  
 
-检查Linux的某个端口是否在监听并且可以访问    ->    telnet ip 端口号  例如 telnet 192.168.1.30 22
-yum list telnet*   yum install telnet-server  yum install telnet.*   按照这三条指令先安装亲测有效
+# 关闭防火墙，CentOS7改为  systemctl stop firewalld
+service iptables stop
 
-注意！
-1. 关闭或者启用防火墙后，立即生效
-2. 这种方式只是临时生效，当重启系统后，还是回归以前对服务的设置
-3. 如果希望设置某个服务自启动或关闭永久生效，要使用 chkconfig 指令
+# 开启防火墙，CentOS7改为  systemctl start firewalld
+service iptables start
+
+# 注意：
+# 1. 关闭或者启用防火墙后，立即生效
+# 2. 这种方式只是临时生效，当重启系统后，还是回归以前对服务的设置
+# 3. 如果希望设置某个服务自启动或关闭永久生效，要使用 chkconfig 指令
 ```
+
+
+
+**查看linux某个端口是否在监听并可以访问：**
+
+- 安装 telnet工具
+
+   `yum list telnet*`：查看 telnet 相关可安装的软件包
+
+  ```shell
+  [root@VM-0-10-centos ~]# yum list telnet*
+  已加载插件：fastestmirror, langpacks
+  Determining fastest mirrors
+  可安装的软件包
+  telnet.x86_64                                1:0.17-66.el7                          updates
+  telnet-server.x86_64                         1:0.17-66.el7                          updates
+  
+  # 依次安装即可
+  yum install telnet.x86_64
+  yum install telnet-server.x86_64
+  ```
+
+- 命令
+
+  ```shell
+  telnet ip 端口号 
+  
+  # 连接可用的端口
+  [root@VM-0-10-centos ~]# telnet 101.43.61.175 9200
+  Trying 101.43.61.175...
+  Connected to 101.43.61.175.
+  Escape character is '^]'.
+  ... # 这里就可以输入访问接口的信息
+  
+  # 连接不可用的端口
+  ubuntu@VM-16-9-ubuntu:~$ telnet 121.4.47.229 3301
+  Trying 121.4.47.229...
+  telnet: Unable to connect to remote host: Connection refused
+  ```
+
+  
 
 ## 13.7、**chkconfig 指令**
 
 - 通过`chkconfig` 命令可以**给每个服务的各个运行级别设置自启动/关闭**
 - 但是这个指令只能在CentOS中使用
 
-```
-chkconfig --list|grep xxx     ->  查看服务 
-chkconfig 服务名 --list        ->  查看服务 
-chkconfig --level 5 服务名 on/off   ->  修改服务在某个运行级别下的自启动
+```shell
+# 查看服务 
+chkconfig --list|grep xxx
+
+# 查看服务
+chkconfig 服务名 --list
+
+# 修改服务在某个运行级别下的自启动
+chkconfig --level 5 服务名 on/off
 
 例子：
 案例 1： 请显示当前系统所有服务的各个运行级别的运行状态  ->   chkconfig --list
@@ -1521,7 +1882,9 @@ chkconfig --level 5 服务名 on/off   ->  修改服务在某个运行级别下�
 案例 6： 在所有运行级别下，开启防火墙  ->   chkconfig iptables on3
 ```
 
-- chkconfig 重新设置服务后自启动或关闭，==需要重启机器 reboot 才能生效==
+- chkconfig 重新设置服务后自启动或关闭，需要重启机器 reboot 才能生效
+
+
 
 ## 13.8、动态监控进程
 
@@ -1529,115 +1892,135 @@ chkconfig --level 5 服务名 on/off   ->  修改服务在某个运行级别下�
 - Top 与 ps 最大的不同之处，在于 top 在执行一段时间可以更新正在运行的的进程
 - 有点类似于Windows下的任务管理器
 
-```
+```shell
 top [选项]
-选项说明：
--d 秒数  ->  指定top命令每隔几秒更新，默认是3秒在top命令的交互模式当中可以执行的命令
--i   ->   使top不显示任何进闲置或僵死进程
--p   ->   通过指定监控进程ID来仅仅监控某个进程的状态
-交互操作说明
-P  ->  以CPU使用率排序
-M  ->  以内存使用率排序
-N  ->  以PID排序
-q  ->  退出top
-输入u后输入某个用户名  ->  查看该用户名的服务
-输入k，回车，再输入一个进程ID号  ->  终止指定的进程
+
+# 选项说明：
+# -d 指定top命令每隔几秒更新，默认是3秒在top命令的交互模式当中可以执行的命令
+# -i 使top不显示任何进闲置或僵死进程
+# -p 通过指定 进程ID 来仅仅监控某个进程的状态
+
+# 交互操作说明:
+# C 以CPU使用率排序
+# M 以内存使用率排序
+# N 以PID排序
+# q 退出top
+# 输入u后输入某个用户名  =>  查看该用户名的服务
+# 输入k，回车，再输入一个进程ID号  =>  终止指定的进程
 ```
 
-## 13.9、查看系统网路情况 netstat
 
-```
-net [选项]
--an  ->  按一定顺序排列输出
--p  ->  显示哪个进程在调用
 
-案例1:查看系统所有的网络服务  ->  netstat -anp | more
-案例2:查看系统某一个网络服务  ->  netstat -anp | grep sshd
+**示例：动态监控docker进程**
+
+```shell
+# 查看docker进程号
+ubuntu@VM-16-9-ubuntu:~$ ps -aux | grep docker
+root      1314  0.0  2.1 1428660 84228 ?       Ssl  Nov24   1:14 /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+
+# 监控进程，每 1s 刷新一次
+ubuntu@VM-16-9-ubuntu:~$ top -d 1 -p 1314
+top - 20:46:25 up 3 days, 22:44,  7 users,  load average: 0.07, 0.02, 0.00
+Tasks:   1 total,   0 running,   1 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  0.5 us,  0.0 sy,  0.0 ni, 99.5 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+KiB Mem :  3875260 total,   161232 free,  1594672 used,  2119356 buff/cache
+KiB Swap:        0 total,        0 free,        0 used.  1987224 avail Mem
+
+  PID USER      PR  NI    VIRT    RES    SHR S  %CPU %MEM     TIME+ COMMAND
+ 1314 root      20   0 1428660  84228  53492 S   0.0  2.2   1:14.72 dockerd
 ```
+
+
 
 # 14、RPM
 
 ## 14.1、基本介绍
 
-RPM是一种用于互联网下载包的打包及安装工具，它包含在某些 Linux 分发版中，生成具有`.RPM `扩展名的文件
+RPM是一种用于互联网下载包的打包及安装工具，它包含在某些 Linux 分发版中，生成具有`.RPM `扩展名的文件。
 
-RPM 是 `RedHat Package Manager`（RedHat 软件包管理工具）的缩写，类似 windows 的 setup.exe，这一文件格式名称虽然打上了 RedHat 的标志，但理念是通用的
+RPM 是 `RedHat Package Manager`（RedHat 软件包管理工具）的缩写，类似 windows 的 setup.exe，这一文件格式名称虽然打上了 RedHat 的标志，但理念是通用的。
 
-Linux 的分发版本都有采用（suse,redhat, centos 等等），可以算是公认的行业标准了。
+Linux 的分发版本都有采用（suse、redhat、centos 等等），可以算是公认的行业标准了。
+
+
 
 ## 14.2、查询RPM包
 
-```
-rpm -qa  ->  查询所安装的所有rpm 软件包
-rpm -qa | more   ->  分页显示
-rpm -qa | grep X [rpm -qa | grep firefox]  ->  指定查找某个软件
-rpm -qi 软件包名  ->  查询软件包信息
-rpm -ql 软件包名  ->   查询软件包中的文件
-rpm -qf 文件全路径名   ->  查询文件所属的软件包
+```shell
+# 查询所安装的所有rpm 软件包
+rpm -qa
+
+# 查询软件包信息
+rpm -qi 软件包名
+
+# 查询软件包中的文件
+rpm -ql 软件包名
+
+# 查询文件所属的软件包
+rpm -qf 文件全路径名
 
 
-基本格式：
-一个 rpm 包名：firefox-45.0.1-1.el6.centos.x86_64.rpm 
-名称:firefox
-版本号：45.0.1-1
-适用操作系统: el6.centos.x86_64
-表示 centos6.x 的 64 位系统
-如果是 i686、i386 表示 32 位系统，noarch 表示通用
+# 基本格式：
+# 一个 rpm 包名：firefox-45.0.1-1.el6.centos.x86_64.rpm 
+# 名称:firefox
+# 版本号：45.0.1-1
+# 适用操作系统: el6.centos.x86_64
+# 表示 centos6.x 的 64 位系统
+# 如果是 i686、i386 表示 32 位系统，noarch 表示通用
 ```
+
+
 
 ## 14.3、安装RPM包
 
-```
+```shell
+# 下载rpm安装包
+wget 安装包地址		# 不仅仅是rpm包，wget可以从互联网上下载任何资源到linux
+
+# 安装rpm包
 rpm -ivh RPM包的全路径名称
-i=install 安装
-v=verbose 提示
-h=hash  进度条
+
+# i install 安装
+# v verbose 提示
+# h hash 进度条
 ```
+
+
 
 ## 14.4、卸载RPM包
 
-```
+```shell
 rpm -e RPM包名
 
-注意事项：
-1. 如果其它软件包依赖于您要卸载的软件包，卸载时则会产生错误信息。如：
-$ rpm -e foo
-removing these packages would break dependencies:foo is needed by bar-1.0-1
-2. 如果我们就是要删除 foo 这个 rpm 包，可以增加参数 --nodeps ，就可以强制删除，但是一般不推荐这样做，因为依赖于该软件包的程序可能无法运行
-如：$ rpm -e --nodeps foo
-带上 --nodeps 就是强制删除。
+# 注意事项：
+# 1. 如果其它软件包依赖于您要卸载的软件包，卸载时则会产生错误信息。如：
+# $ rpm -e foo
+# removing these packages would break dependencies:foo is needed by bar-1.0-1
+# 2. 如果我们就是要删除 foo 这个 rpm 包，可以增加参数 --nodeps ，就可以强制删除，但是一般不推荐这样做，因为依赖于该软件包的程序可能无法运行
+# 如：$ rpm -e --nodeps foo
+# 带上 --nodeps 就是强制删除。
 ```
+
+
 
 # 15、YUM
 
-## 15.1、基本介绍
-
 - Yum 是一个 **Shell 前端软件包管理器**
-- YUM 基于 RPM 包管理，**能够从指定的服务器自动下载 RPM 包并且安装**，可以自动处理依赖性关系，并且一次安装所有依赖的软件包。**使用 yum 的前提是已经联网**。
+- Yum 基于 RPM 包管理，**能够从指定的服务器自动下载 RPM 包并且安装**，可以自动处理依赖性关系，并且一次安装所有依赖的软件包。**使用 yum 的前提是已经联网**。
 
-```
-基本指令：
-查询 yum 服务器是否有需要安装的软件  ->  yum list|grep xx 软件列表
-下载安装指定的 yum 包  ->  yum install xxx 
-```
+```shell
+# 查询 yum 服务器是否有需要安装的软件
+yum list | grep xx   # xx可以只是安装包的部分关键字
 
-## 15.2、安装YUM包
-
-```
-先查询软件列表  ->   yum list|grep jdk
-安装包  yum install java-1.8.0-openjdk.i686
-
-一般会默认安装最新的，你也可以指定安装某个包
-安装完成过后会删除安装包
+# 下载安装指定的 yum 包
+yum install xxx 
 ```
 
-如果需要卸载，直接通过RPM包管理卸载即可
+
 
 # 16、搭建python开发环境
 
- 
-
-
+ 待补充
 
 
 
@@ -1646,17 +2029,16 @@ removing these packages would break dependencies:foo is needed by bar-1.0-1
 ## 17.1、为什么要学Shell编程
 
 1. Linux 运维工程师在进行服务器集群管理时，需要**编写 Shell 程序来进行服务器管理**。
-2. 对于 JavaEE 和 Python 程序员来说，工作的需要，你的老大会要求你编写一些**Shell 脚本**进行程序或者是服务器的维护，比如编写一个定时备份数据库的脚本。
-3. 对于大数据程序员来说，需要编写 Shell 程序来**管理集群**。
+2. 对于程序员来说，有时需要编写一些 **Shell 脚本** 进行程序或者是服务器的维护，比如编写一个定时备份数据库的脚本。
+
+
 
 ## 17.2、Shell是什么
 
 - Shell 是一个命令行解释器，它为用户提供了一个向Linux 内核发送请求以便运行程序的界面系统级程序，用户可以用 Shell 来启动、挂起、停止甚至是编写一些程序
 - 在我们使用的过程中，应用程序调用shell或者我们直接执行shell脚本，然后shell操作Linux内核，内核再驱动硬件
 - shell主要是对我们的指令进行解析，解析指令给Linux内核。反馈结果在通过内核运行出结果，通过shell解析给用户
-- ==shell是外壳程序的统称，bash 是具体的一种shell==
-
-- Shell编程开发原理
+- **shell是外壳程序的统称，bash 是具体的一种shell**
 
 
 
@@ -1669,8 +2051,9 @@ removing these packages would break dependencies:foo is needed by bar-1.0-1
 
 2. **快速写一个 输出 helloworld 的脚本** `hello.sh`
 
-   ```
-   #!/bin/bash    ->  表示shell脚本用bash来解析
+   ```shell
+   # 表示shell脚本用bash来解析
+   #!/bin/bash
    echo "hello world"
    ```
 
@@ -1678,44 +2061,173 @@ removing these packages would break dependencies:foo is needed by bar-1.0-1
 
    1. **输入脚本的绝对路径或相对路径**，即可执行
 
+      ```shell
+      # 给所有者一个执行权限
+      chmod 744 hello.sh
+      
+      # 相对路径执行
+      ubuntu@VM-16-9-ubuntu:~/learning$ ./hello.sh
+      
+      # 绝对路径
+      ubuntu@VM-16-9-ubuntu:~/learning$ /home/ubuntu/learning/hello.sh
+      Hello World!
       ```
-      chmod 744 hello.sh   ->  给所有者一个执行权限
-      ./hello.sh   ->   相对路径
-      /root/shell/hello.sh   ->   绝对路径
+   
+   2. **输入指令**：`sh 脚本路径` 这样可以不用赋予脚本执行权限，直接执行，但是**不推荐**
+   
+      ```shell
+      # 取消 文件拥有者的可执行权限
+      ubuntu@VM-16-9-ubuntu:~/learning$ chmod 644 hello.sh
+      
+      ubuntu@VM-16-9-ubuntu:~/learning$ ls -l
+      total 168
+      -rw-rw-r-- 1 ubuntu ubuntu 166592 Nov 22 15:24 apic36746.jpg
+      -rw-r--r-- 1 ubuntu ubuntu     32 Nov 29 10:41 hello.sh
+      
+      # 通过相对路径执行
+      ubuntu@VM-16-9-ubuntu:~/learning$ sh ./hello.sh
+      Hello World!
+      
+      # 通过绝对路径执行
+      sh /root/shell/hello/sh
       ```
+   
+3. **两种执行shell脚本的方式的区别**
 
-   2. **输入指令**：`sh 脚本路径` 这样可以不用赋予脚本执行权限，直接执行，但是==不推荐==
+   1. 运行`sh ./hello.sh` 表示用 指定的 解释器 sh 来解释脚本；
 
+   2. 运行 `./hello.sh` ，首先查找脚本第一行是否指定了解释器。如果没指定，那么就用当前系统默认的shell(大多数linux默认是bash)；如果指定了解释器，那么就将该脚本交给指定的解释器。
+   
+      所以，如果系统默认的解释器 就是 **sh**，那么 以上两种运行方式没什么区别。
+   
+      ```shell
+      # 查看系统默认的解释器
+      ubuntu@VM-16-9-ubuntu:~/learning$ echo $SHELL
+      /bin/bash
+      
+      # 查看系统支持的shell解释器
+      ubuntu@VM-16-9-ubuntu:~/learning$ cat /etc/shells
+      # /etc/shells: valid login shells
+      /bin/sh
+      /bin/bash
+      /bin/rbash
+      /bin/dash
+      /usr/bin/tmux
+      /usr/bin/screen
       ```
-      sh ./hello.sh   ->   通过相对路径
-      sh /root/shell/hello/sh   ->   通过绝对路径
-      ```
+   
+      
 
 ## 17.4、Shell的变量
 
 ### 17.4.1、Shell变量的介绍
 
-- Linux Shell 中的变量分为，==系统变量==和==用户自定义变量==。
+Linux Shell 中的变量分为，**系统变量** 和 **用户自定义变量**。
 
+系统变量：`$HOME、$PWD、$SHELL、$USER` 等；显示当前 shell 中所有变量：set
+
+```shell
+# 打印系统变量
+ubuntu@VM-16-9-ubuntu:~/learning$ echo $HOME
+/home/ubuntu
+
+ubuntu@VM-16-9-ubuntu:~/learning$ echo $USER
+ubuntu
+
+ubuntu@VM-16-9-ubuntu:~/learning$ echo "path=$PATH"  # 双引号中可以引用变量
+path=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
 ```
-系统变量：$HOME、$PWD、$SHELL、$USER 等   比如： echo "path=$PATH"
-显示当前 shell 中所有变量：set
-```
+
+
 
 ### 17.4.2、Shell变量的定义
 
-```
-定义变量：变量=值
-撤销变量：unset 变量
-声明静态变量：readonly 变量，  注意：不能unset!
-把变量提升为全局环境变量，可供其他 shell 程序使用   --> 详情见下一节 设置环境变量
+简单地说，**变量 就是用一个固定的字符串（也可能是字符、数字等的组合）代替更多、更复杂的内容，该内容里可能还会包含变量、路径、字符串等其他内容。** 变量是暂时存储数据及数据标记，所存储的数据存在于内存空间中，通过正确地调用内存中变量的名字就可以读取出与变量对应的数据。
 
-例：
-A=100
-readonly B=99
-echo "A=$A"
-unset A
+```shell
+# 定义变量: 变量=值		// 中间无任何空格
+ubuntu@VM-16-9-ubuntu:~$ name=zhangjian
+ubuntu@VM-16-9-ubuntu:~$ age=18
+
+# 交互式定义变量、赋值: read -p "提示信息" 变量名
+ubuntu@VM-16-9-ubuntu:~$ read -p "请输入您的大名:" name
+请输入您的大名:luojie
+
+# 引用变量: $变量名	${变量名}		// 花括号作用是来界定变量名的，即花括号中整个是一个变量名。建议尽量都使用花括号，增加可读性
+ubuntu@VM-16-9-ubuntu:~$ echo $age
+18
+ubuntu@VM-16-9-ubuntu:~$ echo $name
+luojie
+ubuntu@VM-16-9-ubuntu:~$ echo ${name}
+luojie
+
+# 撤销变量: unset 变量
+ubuntu@VM-16-9-ubuntu:~$ unset name
+ubuntu@VM-16-9-ubuntu:~$ echo ${name}   # 再次打印该变量，打印一个空行，什么都没有
+
+# 声明静态变量: readonly 变量=值			// 	不能撤销 unset
+ubuntu@VM-16-9-ubuntu:~$ readonly name=zhangjian
+ubuntu@VM-16-9-ubuntu:~$ echo ${name}
+zhangjian
+ubuntu@VM-16-9-ubuntu:~$ unset name
+-bash: unset: name: cannot unset: readonly variable
 ```
+
+
+
+**赋值时使用引号：**
+
+变量赋值时，尽量使用引号包起来，不仅更加规范，不同的引号还有特殊的作用：
+
+- **双引号：**允许通过$符号引用其他变量值
+
+- **单引号：**禁止引用其他变量值，$视为普通字符
+- **反撇号：**命令替换，提取命令执行后的输出结果
+
+```shell
+# 双引号定义不同字符串
+ubuntu@VM-16-9-ubuntu:~$ first_name="zhang"
+
+# 双引号 引用其他变量
+ubuntu@VM-16-9-ubuntu:~$ full_name="${first_name} jie"
+ubuntu@VM-16-9-ubuntu:~$ echo ${full_name}
+zhang jie
+
+# 单引号	中的引用全部视为原始字符串
+ubuntu@VM-16-9-ubuntu:~$ full_name_1='${first_name} jun'
+ubuntu@VM-16-9-ubuntu:~$ echo ${full_name_1}
+${first_name} jun
+
+# 反撇号 相当于执行反撇号中的命令，并将执行结果返回回来
+ubuntu@VM-16-9-ubuntu:~$ full_name_2=`echo ${full_name}`
+ubuntu@VM-16-9-ubuntu:~$ echo ${full_name_2}
+zhang jie
+
+# 反撇号中执行的语句，可以返回多个值，将多个值拼成一个字符串赋值给变量
+ubuntu@VM-16-9-ubuntu:~/learning$ ls -l | grep "ubuntu" | awk '{print $9}'
+apic36746.jpg
+hello.sh
+
+ubuntu@VM-16-9-ubuntu:~/learning$ file_names=`ls -l | grep "ubuntu" | awk '{print $9}'`
+ubuntu@VM-16-9-ubuntu:~/learning$ echo ${file_names}
+apic36746.jpg hello.sh
+
+# 反撇号 返回多个值时，将其放到小括号中，将结果作为数组返回给变量
+ubuntu@VM-16-9-ubuntu:~/learning$ file_names=(`ls -l | grep "ubuntu" | awk '{print $9}'`)
+ubuntu@VM-16-9-ubuntu:~/learning$ echo ${file_names[0]}
+apic36746.jpg
+ubuntu@VM-16-9-ubuntu:~/learning$ echo ${file_names[1]}
+hello.sh
+
+# 用 $() 可以替换 ``，二者效果相同
+ubuntu@VM-16-9-ubuntu:~/learning$ file_names=($(ls -l | grep "ubuntu" | awk '{print $9}'))
+ubuntu@VM-16-9-ubuntu:~/learning$ echo ${file_names[0]}
+apic36746.jpg
+ubuntu@VM-16-9-ubuntu:~/learning$ echo ${file_names[1]}
+hello.sh
+```
+
+
 
 ### 17.4.3、定义变量的规则
 
@@ -1723,80 +2235,211 @@ unset A
 2. **等号两侧不能有空格**
 3. 变量名称一般习惯为**大写**
 
-### 17.4.4、将命令的返回值赋给变量（重点）
 
+
+
+
+### 17.4.4、变量表达式
+
+变量表达式，返回一个执行表达式之后的值。原变量的值不变。
+
+<table border=1>
+  <thead>
+    <tr>
+    	<td>表达式</td>
+      <td>返回值说明</td>
+    </tr>
+  </thead>
+  <tbody>
+  	<tr>
+    	<td>${#string}</td>
+      <td> string 的长度</td>
+    </tr>
+    <tr>
+    	<td>${string:position}</td>
+      <td>从下标 position 处开始提取字符串，直到结束。包含 position 索引</td>
+    </tr>
+    <tr>
+    	<td>${string:position:len}</td>
+      <td>从下标 position 处开始提取字符串，提取 len 个。包含 position 索引</td>
+    </tr>
+    <tr>
+    	<td>${string#substring}</td>
+      <td>从开头删除最短匹配字串</td>
+    </tr>
+    <tr>
+    	<td>${string##substring}</td>
+      <td>从开头删除最长匹配字串</td>
+    </tr>
+    <tr>
+    	<td>${string%substring}</td>
+      <td>从结尾删除最短匹配字串</td>
+    </tr>
+    <tr>
+    	<td>${string%%substring}</td>
+      <td>从结尾删除最长匹配字串</td>
+    </tr>
+  </tbody>
+</table>
+
+**示例：**
+
+```shell
+# 定义一个字符串变量
+ubuntu@VM-16-9-ubuntu:~$ str="abcdefghi"
+
+# 计算string长度
+ubuntu@VM-16-9-ubuntu:~$ length="${#str}"
+ubuntu@VM-16-9-ubuntu:~$ echo ${length}
+9
+
+# 从指定位置处开始提取字符串
+ubuntu@VM-16-9-ubuntu:~$ echo ${str:2}
+cdefghi
+
+# 从指定位置处提取指定长度的子串
+ubuntu@VM-16-9-ubuntu:~$ echo ${str:3:4}
+defg
+
+# 从开头删除最短匹配子串
+ubuntu@VM-16-9-ubuntu:~$ str="ababababcdf"
+ubuntu@VM-16-9-ubuntu:~$ echo ${str#ab}
+abababcdf
+
+# 从开头删除最长匹配子串
+ubuntu@VM-16-9-ubuntu:~$ MAX_SUB="${str##*b}"  # * 表示任意字符
+ubuntu@VM-16-9-ubuntu:~$ echo $MAX_SUB
+cdf
 ```
-A=`ls -la`   用反引号将命令括起来 -> 运行里面的命令并把结果返回给变量 A
-A=$(ls -la)  等价于反引号
-```
+
+
+
+
 
 ## 17.5、设置环境变量
 
 ### 17.5.1、基本语法
 
-```
-export 变量名=变量值  ->  将 shell 变量输出为环境变量
-source 配置文件   ->  让修改后的配置信息立即生效
-echo $变量名   ->  查询环境变量的值
+```shell
+# 将 shell 变量输出为环境变量
+export 变量名=变量值
+
+# 让修改后的配置信息立即生效
+source 配置文件
+
+# 查询环境变量的值
+echo $变量名
 ```
 
-- 例如，在 /etc/profile 中设置一个环境变量`$TOMCAT_HOME` ，在我们自己写得shell脚本中引用，但是在配置过后，为了让 /etc/profile 中的环境变量生效，需要使用 `source /etc/profile` 或者重启系统/注销用户才能生效，类似于一个全局变量
+
 
 ### 17.5.2、快速入门
 
-```
-# vim /etc/profile 
-# 定义一个环境变量 
-TOMCAT_HOME='helloworld'
+```shell
+# 编辑
+vim /etc/profile 
+
+# 定义环境变量，添加如下内容：
+TOMCAT_HOME="Hello World"
 export TOMCAT_HOME
+export ZJ_HOME='sichuan province suining city'
 
-# 要使用 source /etc/profile 指令重新加载，不然使用不了
+# 重新加载环境变量
+source /etc/profile
 
-# vim ./hello.sh
+# 编辑脚本：
+vim ./hello.sh
+
+# 内容如下：
 #!/bin/bash
-echo "$TOMCAT_HOME"
+echo ${TOMCAT_HOME}
+echo "============"
+echo ${ZJ_HOME}
+
+# 执行脚本
+ubuntu@VM-16-9-ubuntu:~/learning$ ./hello.sh
+Hello World
+============
+sichuan province suining city
 ```
+
+
 
 ## 17.6、位置参数变量
 
 ### 17.6.1、介绍
 
-当我们执行一个 shell 脚本时，如果希望**获取到命令行的参数信息**，就可以使用到位置参数变量
+当我们执行一个 shell 脚本时，如果希望 **获取到命令行的参数信息**，就可以使用到位置参数变量
 
-比如 ：
+**比如 ：**
 
-`./myshell.sh 100 200` , 这个就是一个执行 shell 的命令行，可以在 myshell 脚本中获取到参数信息
+`./positionParams.sh 10 20 30 44` ，这个就是一个执行 shell 的命令行，可以在 myshell 脚本中获取到参数信息
+
+
 
 ### 17.6.2、基本语法
 
-```
-$n   -> n 为数字，$0 代表命令本身，$1-$9 代表第一到第九个参数，十以上的参数，十以上的参数需要用大括号包含，如${10}
+`$n` : 
 
-$*   ->   这个变量代表命令行中所有的参数，$*把所有的参数看成一个整体
-$@   ->   这个变量也代表命令行中所有的参数，不过$@把每个参数区分对待
-===> 这两者的区别可以到循环语句的for循环语句存中查看区别
+> n 为数字，$0 代表命令本身，$1-$9 代表第一到第九个参数，十及以上的参数，十以上的参数需要用大括号包含，如${10}
 
-$#   ->   这个变量代表命令行中所有参数的个数
-```
+`$*` :
 
-### 17.6.3 应用实例
+> 代表命令行中所有的参数，`$*`把所有的参数看成一个整体
 
-- 编写一个 shell 脚本 positionPara.sh ， 在脚本中获取到命令行的各个参数信息
+`$@` : 
 
-```
+> 代表命令行中所有的参数， `$@` 把每个参数区分对待，可以理解为 `$@` 的值是由 命令行参数组成的数组
+
+`$#` :
+
+> 代表命令行中所有参数的个数
+
+
+
+### 17.6.3、 应用实例
+
+**编写一个 shell 脚本 positionParams.sh：**
+
+```shell
 #!/bin/bash
-#获取各个参数
-echo $0 $1 $2
-echo $*
-echo $@
-echo "参数个数=$#"
+echo "这是命令行参数的演示脚本"
+echo "======================="
+echo "脚本执行命令：$0"
+echo "命令行参数的个数：$#"
+echo "传入的参数有：$*"
+echo "传入的参数分别是："
 
-输入 ./positionPara.sh 100 200 300 后的输出效果
-./positionPara.sh 100 200
-100 200 300
-100 200 300 
-参数个数=3
+# 遍历 $@ ，遍历的值保存到 局部变量 i 中
+index=1
+for i in $@
+do
+	echo "第 ${index} 个值：$i"
+	# 运算符中使用变量，不需要在用 ${} 包裹，但用了也无妨
+	index=$[index + 1]
+done
 ```
+
+
+
+**执行脚本：**
+
+```shell
+ubuntu@VM-16-9-ubuntu:~/learning$ ./positionParams.sh 10 20 30 xiaozhang wuji
+这是命令行参数的演示脚本
+=======================
+脚本执行命令：./positionParams.sh
+命令行参数的个数：5
+传入的参数有：10 20 30 xiaozhang wuji
+传入的参数分别是：
+第 1 个值：10
+第 2 个值：20
+第 3 个值：30
+第 4 个值：xiaozhang
+第 5 个值：wuji
+```
+
+
 
 ## 17.7、预定义变量
 
@@ -1829,6 +2472,8 @@ echo "参数个数=$#"
    最后的进程号=22084
    最后一次执行的命令的返回状态：0
    ```
+
+
 
 ## 17.8、运算符
 
