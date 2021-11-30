@@ -4570,7 +4570,7 @@ mysqldump 客户端工具用来备份数据库或者在不同数据库之间迁�
 语法：
 
 ``` mysql
-mysqldump [options] db_name [tables]  # 备份指定的某一个数据库，同时也可以显示的支出要备份的表。如果不指定，则备份库中所有表。
+mysqldump [options] db_name [tables]  # 备份指定的某一个数据库，同时也可以显示的指出要备份的表。如果不指定，则备份库中所有表。
 
 mysqldump [options] --database/-B db1 [db2 db3 ...]  # 备份多个指定的数据库数据
 

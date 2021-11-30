@@ -463,11 +463,11 @@ public class Hello{
 
 16. 多行注释：`:<<! 中间的代码 !`
 
+
+
 ## 4.5、vim键盘图
 
-![img](https://www.runoob.com/wp-content/uploads/2015/10/vi-vim-cheat-sheet-sch1.gif)
-
-![img](https://www.linuxidc.com/upload/2016_08/160826064815403.png)
+<img src="./images/linux_002.gif" style="float: left;">
 
 
 
@@ -1386,7 +1386,7 @@ crontab -l -u ubuntu  # 列出 用户 ubuntu 的 cron 任务
 
 - 原理介绍：
 
-  - Linux 无论有几个分区，分给哪一目录使用，但它 **归根结底就只有一个根目录**，**一个独立且唯一的文件结构** ，因此 Linux  中每个分区都是用来组成整个文件系统的一部分。
+  - Linux 无论有几个分区，分给哪一目录使用，它 **归根结底就只有一个根目录**，**一个独立且唯一的文件结构** ，因此 Linux  中每个分区都是用来组成整个文件系统的一部分。
   - Linux 采用了一种叫 **挂载** 的处理方法，它的整个文件系统中包含了一整套的文件和目录， 且将一个分区和一个目录联系起来。这时要载入的一个分区将使它的存储空间在一个目录下获得。
   - 通俗来说，就是**硬盘下的分区会映射成根目录下的某个目录**
 
@@ -1565,11 +1565,15 @@ crontab -l -u ubuntu  # 列出 用户 ubuntu 的 cron 任务
 
 ## 12.1、常用指令
 
-```
-Windows下查看ip地址  ->  ipconfig
-Linux下查看ip地址  ->  ifconfig
+```shell
+# Windows下查看ip地址
+ipconfig
 
-测试两个主机之间网路是否联通  ->  ping ip地址
+# Linux下查看ip地址
+ifconfig
+
+# 测试两个主机之间网路是否联通
+ping ip地址
 ```
 
 
@@ -1615,7 +1619,7 @@ Linux下查看ip地址  ->  ifconfig
 ## 13.1、进程的基本介绍
 
 - 在 LINUX 中，**每个执行的程序（代码）都称为一个进程**。每一个进程都**分配一个 ID 号**
-- **每一个进程，都会对应一个父进程，而这个父进程可以复制多个子进程**。例如 www 服务器
+- **每一个进程，都会对应一个父进程，而这个父进程可以复制多个子进程**
 - **每个进程都可能以两种方式存在的，前台与后台**。所谓前台进程就是用户目前的屏幕上可以进行操作的。后台进程则是实际在操作，但由于屏幕上无法看到的进程，通常使用后台方式执行
 - **一般系统的服务都是以后台进程的方式存在，而且都会常驻在系统中**。直到关机才才结束
 
@@ -2089,34 +2093,63 @@ yum install xxx
       Hello World!
       
       # 通过绝对路径执行
-      sh /root/shell/hello/sh
+      sh /home/ubuntu/learning/hello.sh
       ```
    
-3. **两种执行shell脚本的方式的区别**
+   3. **两种执行shell脚本的方式的区别**
+   
+      1. 运行`sh ./hello.sh` 表示用 指定的 解释器 sh 来解释脚本；
+   
+      2. 运行 `./hello.sh` ，首先查找脚本第一行是否指定了解释器。如果没指定，那么就用当前系统默认的shell(大多数linux默认是bash)；如果指定了解释器，那么就将该脚本交给指定的解释器。
+   
+         所以，如果系统默认的解释器 就是 **sh**，那么 以上两种运行方式没什么区别。
+   
+         ```shell
+         # 查看系统默认的解释器
+         ubuntu@VM-16-9-ubuntu:~/learning$ echo $SHELL
+         /bin/bash
+         
+         # 查看系统支持的shell解释器
+         ubuntu@VM-16-9-ubuntu:~/learning$ cat /etc/shells
+         # /etc/shells: valid login shells
+         /bin/sh
+         /bin/bash
+         /bin/rbash
+         /bin/dash
+         /usr/bin/tmux
+         /usr/bin/screen
+         ```
 
-   1. 运行`sh ./hello.sh` 表示用 指定的 解释器 sh 来解释脚本；
+4. `&` 后台运行
 
-   2. 运行 `./hello.sh` ，首先查找脚本第一行是否指定了解释器。如果没指定，那么就用当前系统默认的shell(大多数linux默认是bash)；如果指定了解释器，那么就将该脚本交给指定的解释器。
+   在命令后面加上 `&` 符号表示在后台运行
+
+   ```shell
+   ubuntu@VM-16-9-ubuntu:~/learning$ ./hello.sh &
+   [1] 13401
+   ubuntu@VM-16-9-ubuntu:~/learning$ Hello World!
    
-      所以，如果系统默认的解释器 就是 **sh**，那么 以上两种运行方式没什么区别。
+   [1]+  Done                    ./hello.sh  # 后台运行时，程序不会自动结束。点击回车后，才结束。
+   ```
+
+5. `nohup` 不挂断运行
+
+   在命令前面加上 `nohup` 表示不挂断执行命令。当账户退出或终端关闭时，程序仍然运行。通常和`&`一起使用。
+
+   ```shell
+   ubuntu@VM-16-9-ubuntu:~/learning$ nohup ./hello.sh &
+   [1] 14139
+   ubuntu@VM-16-9-ubuntu:~/learning$ nohup: ignoring input and appending output to 'nohup.out'
    
-      ```shell
-      # 查看系统默认的解释器
-      ubuntu@VM-16-9-ubuntu:~/learning$ echo $SHELL
-      /bin/bash
-      
-      # 查看系统支持的shell解释器
-      ubuntu@VM-16-9-ubuntu:~/learning$ cat /etc/shells
-      # /etc/shells: valid login shells
-      /bin/sh
-      /bin/bash
-      /bin/rbash
-      /bin/dash
-      /usr/bin/tmux
-      /usr/bin/screen
-      ```
+   [1]+  Done                    nohup ./hello.sh  # 这只是一个脚本，脚本跑完，回车后就结束进程了。
    
-      
+   ubuntu@VM-16-9-ubuntu:~/learning$ cat nohup.out
+   Hello World!
+   ```
+
+   
+
+
 
 ## 17.4、Shell的变量
 
@@ -2177,7 +2210,7 @@ ubuntu@VM-16-9-ubuntu:~$ unset name
 
 **赋值时使用引号：**
 
-变量赋值时，尽量使用引号包起来，不仅更加规范，不同的引号还有特殊的作用：
+变量赋值时，字符串尽量使用引号包起来，不仅更加规范，不同的引号还有特殊的作用：
 
 - **双引号：**允许通过$符号引用其他变量值
 
@@ -2234,8 +2267,6 @@ hello.sh
 1. 变量名称可以由**字母、数字和下划线**组成，但是**不能以数字**开头。
 2. **等号两侧不能有空格**
 3. 变量名称一般习惯为**大写**
-
-
 
 
 
@@ -2314,6 +2345,76 @@ cdf
 
 
 
+### 17.4.5、扩展：Shell 数组
+
+**数组定义**
+
+在 Shell 中，用括号`()`来表示数组，数组元素之间用空格来分隔。由此，定义数组的一般形式为：
+
+```shell
+array_name=(ele1  ele2  ele3 ... elen)
+# 注意: 
+# 	1. 赋值号=两边不能有空格，必须紧挨着数组名和数组元素；
+#		2. Shell 是弱类型的，它并不要求所有数组元素的类型必须相同；
+#		3. Shell 数组的长度不是固定的，定义之后还可以增加元素，而且可以增加到任意索引处。
+```
+
+
+
+**获取数组元素**
+
+获取数组元素的值，一般使用下面的格式：
+
+```shell
+${array_name[index]}
+# 其中，array_name 是数组名，index 是下标。 把 array_name[index] 理解为一个普通变量
+```
+
+使用@或*可以获取数组中的所有元素：
+
+```shell
+${nums[*]}
+${nums[@]}
+# 两者都可以得到 nums 数组的所有元素
+# ${nums[*]} 把 数组内部所有值看作一个单字符串。同位置参数 $*
+# ${nums[@]} 把 每个参数区分对待，可以理解为 ${nums[@]} 指向多个单列值，可以 被 for 依次遍历。同位置参数 $@
+```
+
+
+
+**示例**
+
+脚本：
+
+```shell
+#!/bin/bash
+
+array=(10 20 "xiaozhang" "abc" 55)
+
+echo "当前数组元素有：${array[*]}"
+echo "给索引11赋值"
+
+array[11]="我是刚来的"
+
+echo "赋值后的数组元素有：${array[@]}"
+
+echo "索引0处的值：${array[0]}"
+echo "索引11处的值：${array[11]}"
+```
+
+
+
+执行：
+
+```shell
+ubuntu@VM-16-9-ubuntu:~/learning$ ./arrayDemo.sh
+当前数组元素有：10 20 xiaozhang abc 55
+给索引11赋值
+赋值后的数组元素有：10 20 xiaozhang abc 55 我是刚来的
+索引0处的值：10
+索引11处的值：我是刚来的
+```
+
 
 
 ## 17.5、设置环境变量
@@ -2381,15 +2482,15 @@ sichuan province suining city
 
 `$n` : 
 
-> n 为数字，$0 代表命令本身，$1-$9 代表第一到第九个参数，十及以上的参数，十以上的参数需要用大括号包含，如${10}
+> n 为数字，$0 表示 脚本名称，$1-$9 代表第一到第九个参数，十及以上的参数，十以上的参数需要用大括号包含，如${10}
 
 `$*` :
 
-> 代表命令行中所有的参数，`$*`把所有的参数看成一个整体
+> 代表命令行中所有的参数，`$*`把所有传递的参数看作一个单字符串
 
 `$@` : 
 
-> 代表命令行中所有的参数， `$@` 把每个参数区分对待，可以理解为 `$@` 的值是由 命令行参数组成的数组
+> 代表命令行中所有的参数， `$@` 把每个参数区分对待，可以理解为 `$@` 指向多个单列值，可以 被 for 依次遍历
 
 `$#` :
 
@@ -2405,7 +2506,7 @@ sichuan province suining city
 #!/bin/bash
 echo "这是命令行参数的演示脚本"
 echo "======================="
-echo "脚本执行命令：$0"
+echo "脚本路径：$0"
 echo "命令行参数的个数：$#"
 echo "传入的参数有：$*"
 echo "传入的参数分别是："
@@ -2428,7 +2529,7 @@ done
 ubuntu@VM-16-9-ubuntu:~/learning$ ./positionParams.sh 10 20 30 xiaozhang wuji
 这是命令行参数的演示脚本
 =======================
-脚本执行命令：./positionParams.sh
+脚本路径：./positionParams.sh
 命令行参数的个数：5
 传入的参数有：10 20 30 xiaozhang wuji
 传入的参数分别是：
@@ -2449,379 +2550,739 @@ ubuntu@VM-16-9-ubuntu:~/learning$ ./positionParams.sh 10 20 30 xiaozhang wuji
 
 2. 基本语法
 
-   ```
-   $$  ->  当前进程的进程号（PID）
-   $!  ->  后台运行的最后一个进程的进程号（PID）
-   $？ ->  最后一次执行的命令的返回状态。如果这个变量的值为 0，证明上一个命令正确执行；如果这个变量的值为非 0（具体是哪个数，由命令自己来决定），则证明上一个命令执行不正确了。
-   ```
+   `$$` :
+
+   > 当前进程的进程号（PID）
+
+   `$!` :
+
+   > 后台运行的最后一个进程号（PID）
+
+   `$?` :
+
+   > 最后一次执行的命令的返回状态。
+   >
+   > 如果这个变量的值为 0，证明上一个命令正确执行；
+   >
+   > 如果这个变量的值为非 0（具体是哪个数，由命令自己来决定），则证明上一个命令执行不正确。
+
+   
 
 3. 应用实例
 
-   ```
-   编写脚本 test.sh
+   **编写脚本：**
+   
+   ```shell
+   ubuntu@VM-16-9-ubuntu:~/learning$ cat test.sh
    #!/bin/bash
-   echo "当前的进程号=$$"
-   # 后台的方式运行 ./myshell.sh 这个脚本
-   ./myshell.sh &
-   echo "最后的进程号=$!"
-   echo "最后一次执行的命令的返回状态：$?"
    
+   echo "系统预定义变量"
+   echo "=============="
    
-   输出效果：
-   当前的进程号=22083
-   最后的进程号=22084
-   最后一次执行的命令的返回状态：0
+   echo "当前进程名称：$0"
+   echo "当前进程号：$$"
+   echo "最后一个进程号：$!"
+   echo "最后一次命令执行结果的状态：$?"
+   ```
+   
+   **执行脚本：**
+   
+   ```shell
+   ubuntu@VM-16-9-ubuntu:~/learning$ ./test.sh
+   系统预定义变量
+   ==============
+   当前进程名称：./test.sh
+   当前进程号：14873
+   最后一个进程号：
+   最后一次命令执行结果的状态：0
+   
+   ubuntu@VM-16-9-ubuntu:~/learning$ echo "$!"
+   15485
    ```
 
 
 
-## 17.8、运算符
+## 17.8、运算操作符
 
 1. **基本介绍**
 
-   - 可以在 shell 中进行各种运算操作
+   通过 运算操作符 ，可以完成 对一些预算表达式的
 
 2. **基本语法**
 
-   ```
-   "$((运算式))"或"$[运算式]"   ->   推荐使用 $[运算式]
-   expr m + n   ->  注意 expr 运算符间要有空格
-   expr m - n
-   expr \*, /, %   -> 乘，除，取余
-   ```
+   `$((运算表达式))` ：
 
-3. 应用案例
+   > 作用是进行数值运算并返回运算结果，它的效率很高，用法灵活，是Linux下常用的运算操作符。
 
-   ```
-   计算（2+3）X4 的值
-       $((运算式))  ->  RESULT1=$(((2+3)*4))
-       $[运算式]  ->  RESULT2=$[(2+3)*4]
-       expr  ->   TEMP=`expr 2 + 3`
-   			  RESULT3=`expr $TEMP \* 4`
-   请求出命令行的两个参数[整数]的和
-   	SUM=$[$1+$2]
-   	echo "SUM=$SUM"
-   	输入指令 ./shelltest.sh 100 200 即可看到输出结果为 SUM=300
-   ```
+   `$[运算表达式]` ：
 
-## 17.9、条件判断
+   > 用法同上。写法更简洁，推荐使用。
 
-1. 基本语法
+   `expr 运算表达式` ：
 
-   ```
-   [ condition ] （注意 condition 前后要有空格）#非空返回 true，可使用$?验证（0 为 true，>1 为 false）
+   > 只负责运算，不主动返回运算结果。如果要获取运算结果，需要用 反撇号 将其包裹。
+
+   `let 赋值表达式` ：
+
+   > 可在操作符中直接完成 变量赋值运算。其中 直接使用变量即可，无需用 ${} 包裹。
+
+3. **算术运算符**
+
+   <img src="./images/linux_001.jpg" style="float: left; width: 65%;">
+
+3. **应用案例**
+
+   ```shell
+   # 准备两个变量
+   ubuntu@VM-16-9-ubuntu:~$ A=15
+   ubuntu@VM-16-9-ubuntu:~$ B=20
    
-   一些案例：
-   [ string ]   ->   返回true
-   [ ]   ->   返回false
-   [ condition ] && echo OK || echo notok   ->  类似于问号表达式，条件为真走前，假走后
-   ```
-
-2. 常用判断条件
-
-   ```
-   1. 两个整数比较
-       = 字符串比较
-       -lt 小 于
-       -le 小于等于
-       -eq 等 于
-       -gt 大 于
-       -ge 大于等于
-       -ne 不等于
-   2. 按照文件权限进行判断
-       -r 有读的权限 [ -r 文件 ]
-       -w 有写的权限
-       -x 有执行的权限
-   3. 按照文件类型进行判断
-       -f 文件存在并且是一个常规的文件
-       -e 文件存在
-       -d 文件存在并是一个目录
-   ```
-
-3. 应用实例
-
-   ```
-   案例1："ok"是否等于"ok"   ->   [ "ok" = "ok" ] && echo equal || echo notEqual
-   案例2：23 是否大于等于 22   ->   [ 23 -gt 22 ] && echo yes || echo no
-   案例3：/root/install.log 目录中的文件是否存在   ->  [ -e /root/install.log ] && echo have || echo nothave  
-   ```
-
-## 17.10、循环和分支
-
-1. if 判断
-
-   ```
-   if [ 条件判断式 ];then
-   	程序
-   fi
-   或者
-   if [ 条件判断式 ]
-   then
-   	程序
-   elif [条件判断式]
-   then
-   	程序
-   fi
-   注意事项：
-   1. [ 条件判断式 ]  中括号和条件判断式之间必须有空格 
-   2. 推荐使用第二种方式
+   # 示例一
+   ubuntu@VM-16-9-ubuntu:~$ C=$((A+B))
+   ubuntu@VM-16-9-ubuntu:~$ echo $C
+   35
    
-   案例：请编写一个 shell 程序，如果输入的参数，大于等于 60，则输出 "及格了"，如果小于 60,则输出 "不及格"
-   if [ $1 -ge 60 ]
-   then
-           echo "及格了"
-   elif [ $1 -lt 60 ]
-   then
-           echo "不及格"
-   fi
-   输出结果：
-   [root@iZwz98zprwjrt7d2pp9g0zZ shell]# ./test2.sh 60
-   及格了
-   [root@iZwz98zprwjrt7d2pp9g0zZ shell]# ./test2.sh 59
-   不及格
-   ```
-
-2. case 语句
-
-   ```
-   case $变量名 in
-   "值 1"）
-   	如果变量的值等于值 1，则执行程序 1
-   ;;
-   "值 2"）
-   	如果变量的值等于值 2，则执行程序 2
-   ;;
-   …省略其他分支…
-   *）
-   	如果变量的值都不是以上的值，则执行此程序
-   ;;
-   esac
-   案例1：当命令行参数是 1 时，输出 "周一", 是 2 时，就输出"周二"， 其它情况输出 "other"
-   case $1 in
-   "1")
-           echo "周一"
-   ;;
-   "2")
-           echo "周二"
-   ;;
-   *)
-           echo "other"
-   esac
+   # 示例二
+   ubuntu@VM-16-9-ubuntu:~$ D=$[A+B]
+   ubuntu@VM-16-9-ubuntu:~$ echo $D
+   35
    
-   输出结果：
-   [root@iZwz98zprwjrt7d2pp9g0zZ shell]# ./case.sh 1
-   周一
-   [root@iZwz98zprwjrt7d2pp9g0zZ shell]# ./case.sh 2
-   周二
-   [root@iZwz98zprwjrt7d2pp9g0zZ shell]# ./case.sh 3
-   other
-   ```
-
-3. for 循环
-
-   ```
-   第一种方式：
-   for 变量 in 值1 值2 值3…
-   do
-     程序
-   done
-   第二种方式：
-   for (( 初始值;循环控制条件;变量变化 ))
-   do
-   	程序
-   done
+   # 示例三
+   ubuntu@VM-16-9-ubuntu:~$ expr $A + $B  # expr 后面不能直接用变量进行运算，需要引用变量的值。同时，值和运算符之间要有空格
+   35
    
-   案例1：打印命令行输入的参数 -> 顺便讲解一下 $* 和 $@ 的区别
-   	代码：
-   	#!/bin/bash
-       for i in "$*"
-       do
-               echo "the num is $i"
-       done
-       echo "=============="
-       for j in "$@"
-       do
-               echo "the num is $j"
-       done
-   	输出效果：
-   	[root@iZwz98zprwjrt7d2pp9g0zZ shell]# ./for.sh 1 2 3 4 5 6
-       the num is 1 2 3 4 5 6
-       ==============
-       the num is 1
-       the num is 2
-       the num is 3
-       the num is 4
-       the num is 5
-       the num is 6
-   案例2：从 1 加到 100 的值输出显示
-   	代码：
-   	SUM=0
-       for ((i=1;i<=100;i++))
-       do
-               SUM=$[SUM+$i]
-       done
-       echo "SUM=$SUM"
-   	输出效果：
-   	SUM=5050
+   ubuntu@VM-16-9-ubuntu:~$ E=`expr $A + $B`
+   ubuntu@VM-16-9-ubuntu:~$ echo $E
+   35
+   
+   # 示例四
+   ubuntu@VM-16-9-ubuntu:~$ let F=A+B
+   ubuntu@VM-16-9-ubuntu:~$ echo $F
+   35
    ```
 
-4. while 循环
 
-   ```
-   while [ 条件判断式 ]    ->  注意空格，while后面是有空格的
-   do
-   	程序
-   done
-   案例1：从命令行输入一个数 n，统计从 1+..+ n 的值
-   	代码：
-   	SUM=0
-       i=0
-       while [ $i -le $1 ]
-       do
-               SUM=$[$SUM+$i]
-               i=$[$i+1]
-       done    
-       echo "sum=$SUM"
-       输入指令：
-       ./while.sh 100
-       输出效果：
-       sum=5050
-   ```
 
-## 17.11、read 读取控制台输入
+## 17.9、条件测试符
 
-基本语法
+### 17.9.1、**基本介绍**
 
+条件测试，其实就是 逻辑判断。在 条件测试符 中 执行 逻辑表达式，并返回布尔值。
+
+
+
+### 17.9.2、**基本语法**
+
+`test 测试表达式` ：
+
+> 通过关键字 `test` 执行逻辑运算
+
+`[ 测试表达式 ]` ：
+
+> 用法同 `test`，文件测试常用
+
+`[[ 测试表达式 ]]` :
+
+> 更高级的操作符，支持通配符匹配
+
+`((测试表达式))` :
+
+> 不能用于字符串测试，不能用于文件测试
+
+| 测试表达式符号     | test                                     | []                                       | [[]]                                                 | (())                  |
+| ------------------ | ---------------------------------------- | ---------------------------------------- | ---------------------------------------------------- | --------------------- |
+| 边界是否需要空格   | 需要                                     | 需要                                     | 需要                                                 | 不需要                |
+| 逻辑操作符         | ! 、-a、 -o                              | ! 、-a、 -o                              | ! 、&& 、 \|\|                                       | ! 、&& 、 \|\|        |
+| 整数比较操作符     | -eq 、 -gt 、-lt、-ge 、-le              | -eq 、 -gt 、-lt、-ge 、-le              | -eq 、 -gt 、-lt、-ge 、-le 或 = 、> 、< 、 >= 、 <= | = 、> 、< 、 >= 、 <= |
+| 字符串比较操作符   | = 、 == 、!=                             | = 、 == 、!=                             | = 、 == 、!=                                         | 不支持                |
+| 文件操作           | -d、-f、-e、-r、-s、-w、-x、-L、-nt、-ot | -d、-f、-e、-r、-s、-w、-x、-L、-nt、-ot | -d、-f、-e、-r、-s、-w、-x、-L、-nt、-ot             | 不支持                |
+| 是否支持通配符匹配 | 不支持                                   | 不支持                                   | 支持                                                 | 不支持                |
+
+
+
+### 17.9.3、**测试操作符**
+
+**逻辑操作符：**
+
+| 在[]和test中使用的操作符 | 在[[]]和(())中使用的操作符 | 说明                             |
+| ------------------------ | -------------------------- | -------------------------------- |
+| -a                       | &&                         | and ，与，两端都为真，才为真     |
+| -o                       | \|\|                       | or ，或， 两端有一个为真，就为真 |
+| !                        | !                          | not ，非， 两端相反，则结果为真  |
+
+
+
+**整数二元比较操作符：**
+
+"="和"!="也可以在[]中作比较使用，但在[]中使用包含"<"和">"的符号时，需要用反斜线转义，有时不转义虽然语法不会报错，但是结果可能不对。
+
+也可以在[[]]中使用包含“-gt”和“-lt”的符号，但是不建议使用。
+
+| 在[]以及test中使用的比较符号 | 在(())和[[]]中使用的比较符号 | 说明                           |
+| ---------------------------- | ---------------------------- | ------------------------------ |
+| -eq                          | == 或 =                      | 相等，全拼为 equal             |
+| -ne                          | !=                           | 不相等，全拼为 not equal       |
+| -gt                          | >                            | 大于，全拼为 greater than      |
+| -ge                          | >=                           | 大于等于，全拼为 greater equal |
+| -lt                          | <                            | 小于，全拼为 less than         |
+| -le                          | <=                           | 小于等于，全拼为less equal     |
+
+
+
+**字符串测试操作符：**
+
+注： == 和 != 两端要有空格 ，`(())` 不能用于字符测试
+
+| 常用字符串测试操作符   | 说明                           |
+| ---------------------- | ------------------------------ |
+| -n                     | 若字符串长度不为0，则为真      |
+| -z                     | 若字符串长度为0，则为真        |
+| “字符串1” == “字符串2” | 若字符串1等于字符串2，则为真   |
+| “字符串1” != “字符串2” | 若字符串1不等于字符串2，则为真 |
+
+
+
+**文件测试操作符：**
+
+注：`(())` 不能用于文件测试，文件测试一般常用的是 []
+
+| 常用文件测试操作符                | 说明                       |
+| --------------------------------- | -------------------------- |
+| -d  ， d的全拼为 directory        | 文件存在且为目录则为真     |
+| -f  ,  f的全拼为 file             | 文件存在且为文件则为真     |
+| -e ， e的全拼为 exists            | 文件存在则为真             |
+| -s ，s的全拼为 size               | 文件存在且大小不为0则为真  |
+| -r ，r的全拼为 read               | 文件存在且可读则为真       |
+| -w ，w的全拼为write               | 文件存在且可写则为真       |
+| -x ，x的全拼为executable          | 文件存在且可执行则为真     |
+| -L ，L的全拼为link                | 文件存在且为链接文件则为真 |
+| f1 -nt f2 ，nt的全拼为 newer than | 文件f1比文件f2新则为真     |
+| f1 -ot f2 ，ot的全拼为older than  | 文件f1比文件f2旧则为真     |
+
+
+
+### 17.9.4、**应用实例**
+
+条件测试其主要是用在 逻辑控制 语句中，这里的示例，仅在每个 操作符类型 中选一个举例。在 下一小节 中将 配合逻辑控制语句一起使用。
+
+```shell
+# test 操作符
+ubuntu@VM-16-9-ubuntu:~/learning$ test 3 -eq 4 && echo true || echo false
+false
+
+# [] 操作符
+ubuntu@VM-16-9-ubuntu:~/learning$ [ -f hello.sh ] && echo true || echo false
+true
+
+# [[]] 操作符。推荐使用，更符合使用习惯。
+ubuntu@VM-16-9-ubuntu:~/learning$ [[ -n "abc" && "efg" == "efg" ]] && echo true || echo false
+true
+
+# (()) 操作符
+ubuntu@VM-16-9-ubuntu:~/learning$ ((5>4)) && echo true || echo false
+true
 ```
+
+ 
+
+
+
+## 17.10、逻辑控制语句
+
+### 17.10.1、if 判断
+
+**语法：**
+
+if语句中的逻辑判断语句 需要使用 `[]` 条件测试符。
+
+```shell
+# 语法一：then 不换行时，用 分号 和条件语句分割
+if [ 条件测试语句 ];then
+	程序
+fi
+
+# 语法一：then 换行
+if [ 条件测试语句 ]
+then
+	程序
+fi
+
+# 语法二：多级判断
+if [ 条件测试语句 ]
+then
+	程序
+elif [ 条件测试语句 ]
+then
+	程序
+fi
+```
+
+
+
+**示例脚本：**
+
+```shell
+#!/bin/bash
+
+echo "根据命令行传入的分数给学生评级"
+echo "当前分数：$1"
+
+if [ $1 -ge 60 -a $1 -lt 80 ]
+then
+	echo "合格"
+elif [ $1 -ge 80 -a $1 -lt 95 ]
+then
+	echo "良好"
+elif [ $1 -ge 95 -a $1 -le 100 ]
+then
+	echo "优秀"
+elif [ $1 -ge 0 -a $1 -lt 60 ]
+then
+	echo "不合格"
+elif [ $1 -lt 0 -o $1 -gt 100 ]
+then
+	echo "无效分数"
+fi
+```
+
+
+
+**测试：**
+
+```shell
+ubuntu@VM-16-9-ubuntu:~/learning$ ./logicTest01.sh 92
+根据命令行传入的分数给学生评级
+当前分数：92
+良好
+
+ubuntu@VM-16-9-ubuntu:~/learning$ ./logicTest01.sh 122
+根据命令行传入的分数给学生评级
+当前分数：122
+无效分数
+
+ubuntu@VM-16-9-ubuntu:~/learning$ ./logicTest01.sh 66
+根据命令行传入的分数给学生评级
+当前分数：66
+合格
+```
+
+
+
+
+
+### 17.10.2、case 语句
+
+**语法：**
+
+```shell
+case $变量名 in
+"值 1"）
+	如果变量的值等于值 1，则执行程序 1
+;;
+"值 2"）
+	如果变量的值等于值 2，则执行程序 2
+;;
+…省略其他分支…
+*）
+	如果变量的值都不是以上的值，则执行此程序
+;;
+esac
+```
+
+
+
+**示例脚本：**
+
+```shell
+#!/bin/bash
+
+case $1 in
+	"1")
+		echo "今天周一"
+		;;
+	"2")
+		echo "今天周二"
+		;;
+	*)		# * 表示任意值
+		echo "我管你周几"
+		;;
+esac
+```
+
+
+
+**测试：**
+
+```shell
+ubuntu@VM-16-9-ubuntu:~/learning$ ./logicTest02.sh 1
+今天周一
+ubuntu@VM-16-9-ubuntu:~/learning$ ./logicTest02.sh 2
+今天周二
+ubuntu@VM-16-9-ubuntu:~/learning$ ./logicTest02.sh 3
+我管你周几
+```
+
+
+
+
+
+### 17.10.3、for 循环
+
+**语法：**
+
+```shell
+# 第一种方式：in 后面可以是多个单列值，也可以是一个数组
+for 变量 in 值1 值2 值3… /数组
+do
+  程序
+done
+
+# 第二种方式：
+for (( 初始值;循环控制条件;变量变化 ))
+do
+	程序
+done
+```
+
+
+
+**示例脚本：**
+
+```shell
+#!/bin/bash
+
+array=(10 20 "feng" "hua" "xue" "yue" 666)
+
+echo "遍历数组"
+for item in ${array[@]}
+do
+	echo "当前值：${item}"
+done
+
+echo "==========="
+echo "等差数列求和"
+sum=0
+for (( i=1;i<=100;i++ ))
+do
+	let sum=sum+i
+done
+
+echo "求和结果为：${sum}"
+```
+
+
+
+**测试：**
+
+```shell
+ubuntu@VM-16-9-ubuntu:~/learning$ ./logicTest03.sh
+遍历数组
+当前值：10
+当前值：20
+当前值：feng
+当前值：hua
+当前值：xue
+当前值：yue
+当前值：666
+===========
+等差数列求和
+求和结果为：5050
+```
+
+
+
+### 17.10.4、while 循环
+
+**语法：**
+
+```shell
+while [ 条件判断式 ]
+do
+	程序
+done
+```
+
+
+
+**示例脚本：**
+
+```shell
+#!/bin/bash
+
+echo "根据输入的值，从1 到该值求和"
+
+read -p "请输入求和的最后一个值：" num
+
+sum=0
+
+if [ ${num} -le 1 ]
+then
+	echo "你输入了一个无效值"
+elif [ ${num} -gt 1 ]
+then
+	while [ ${num} -ge 1 ]
+	do
+		sum=$[sum+num]
+		num=`expr ${num} - 1`
+	done
+
+	echo "计算结果：${sum}"
+fi
+```
+
+
+
+**测试：**
+
+```shell
+ubuntu@VM-16-9-ubuntu:~/learning$ ./logicTest04.sh
+根据输入的值，从1 到该值求和
+请输入求和的最后一个值：500
+计算结果：125250
+```
+
+
+
+
+
+## 17.11、读取控制台输入
+
+前面的实例中已包含该语法的使用方法，此处不再举例演示。
+
+**语法：**
+
+```shell
+# read 语法，与控制台交互
 read [选项] [参数] 赋值变量名
--p：指定读取值时的提示符，然后会阻塞等你输入一个值，回车后继续执行
--t：指定读取值时等待的时间（秒），如果没有在指定的时间内输入，就不再等待了
-赋值变量名：会将读取到的值赋给该变量
 
-例1：读取控制台输入一个 num 值
-read -p "请输入一个num值：" NUM1
-echo "num=$NUM1"
-例2：读取控制台输入一个 num 值，在 10 秒内输入
-read -t 3 -p "请输入一个num值：" NUM2
-echo "num2=$NUM2"
+# -p：指定读取值时的提示符，然后会阻塞等你输入一个值，回车后继续执行
+# -t：指定读取值时等待的时间（秒），如果没有在指定的时间内输入，就不再等待了
 ```
+
+
 
 ## 17.12、函数
 
-1. 函数介绍
+1. **函数介绍**
 
-   - shell 编程和其它编程语言一样，有系统函数，也可以自定义函数。系统函数中，我们这里就介绍两个：`basename`和`dirname`
+   shell 编程和其它编程语言一样，有系统函数，也可以自定义函数。
 
-2. 系统函数
+2. **系统函数**
 
-   1. basename => 返回完整路径最后 / 的部分，常用于获取文件名
+   系统函数中，我们这里就介绍两个：`basename`和`dirname`
 
-      ```
-      basename [pathname] [suffix]
-       basename命令会删掉所有的前缀包括最后一个（‘/’）字符，然后将字符串显示出来
-       suffix 为后缀，如果 suffix 被指定了，basename 会将 pathname 或 string 中的 suffix 去掉
-      
-      例子：请返回 /root/shell/read.sh 的 "read.sh" 部分
-          basename /root/shell/read.sh  ->  返回 read.sh
-          basename /root/shell/read.sh .sh  ->  如果加上后缀则只返回文件名 read
-      ```
+   - **basename**
 
-   2. dirname => 返回完整路径最后 / 的前面的部分，常用于返回路径部分
+     返回 当前文件的完整路径的最后一个 / 后面的部分，常用于获取文件名
 
-      ```
-      dirname 文件绝对路径 
-      从给定的包含绝对路径的文件名中去除文件名（非目录的部分），然后返回剩下的路径（目录的部分）
-      
-      例子：请返回 /root/shell/read.sh 的 /root/shell
-      dirname /root/shell/read.sh  ->  返回前面的路径 /root/shell
-      ```
+     **语法：**
 
-3. 自定义函数
+     ```shell
+     basename [pathname] [suffix]
+     
+     # suffix 为后缀，如果 suffix 被指定了，basename 会将 pathname 或 string 中的 suffix 去掉
+     ```
 
-   ```
+     **示例：**
+
+     ```shell
+     ubuntu@VM-16-9-ubuntu:~/learning$ basename /home/ubuntu/learning/hello.sh
+     hello.sh
+     ubuntu@VM-16-9-ubuntu:~/learning$ basename /home/ubuntu/learning/hello.sh .sh
+     hello
+     ```
+
+     
+
+   - **dirname**
+
+     返回 当前文件的完整路径的最后一个 / 前面的部分，常用于获取文件路径（不包含文件名）
+
+     **语法：**
+
+     ```shell
+     dirname 文件绝对路径 
+     # 从给定的包含绝对路径的文件名中去除文件名（非目录的部分），然后返回剩下的路径（目录的部分）
+     ```
+
+     **示例：**
+
+     ```shell
+     ubuntu@VM-16-9-ubuntu:~/learning$ dirname /home/ubuntu/learning/hello.sh
+     /home/ubuntu/learning
+     ```
+
+     
+
+3. **自定义函数**
+
+   所有函数在使用前必须定义。这意味着必须将函数放在脚本开始部分，直至shell解释器首次发现它时，才可以使用。调用函数仅使用其函数名即可。
+   
+   **语法：**
+   
+   ```shell
    function funname(){
    	Action; 
-   	[return int;]
+   	[return int;]  # 参数返回，可以显示加：return 返回，如果不加，将以最后一条命令运行结果，作为返回值。return后跟数值n(0-255）
    }
-   调用直接写函数名： funname [值]
    
-   例子：计算输入两个参数的和（read）， getSum
-   	代码：
-       #!/bin/bash
-       function getSum(){
-               SUM=$[$n1+$n2]
-               echo "和是:$SUM"
-       }
-   
-       read -p "请输入a:" n1
-       read -p "请输入b:" n2
-   
-       getSum $n1 $n2
-       输入指令：
-       ./fun.sh
-       输出：
-       [root@iZwz98zprwjrt7d2pp9g0zZ shell]# ./fun.sh
-       请输入a:1
-       请输入b:2
-       和是:3
+   # 也可以直接fun() 定义，不带任何参数
+   # 调用直接写函数名： funname [值1 值2 ...]
+   # 函数返回值在调用该函数后通过 $? 来获得
    ```
+   
+   
+   
+   **示例一：无参调用**
+   
+   **脚本：**
+   
+   ```shell
+   #!/bin/bash
+   
+   function getSum(){
+   	SUM=$[${num1}+${num2}]
+   	echo "和是：${SUM}"
+   
+   	return ${SUM}
+   }
+   
+   read -p "输入第一个值：" num1
+   read -p "输入第二个值：" num2
+   
+   # 调用函数
+   getSum
+   
+   echo "返回值是：$?"
+   ```
+   
+   **测试：**
+   
+   ```shell
+   ubuntu@VM-16-9-ubuntu:~/learning$ ./func.sh
+   输入第一个值：10
+   输入第二个值：20
+   和是：30
+   返回值是：30	
+   ```
+   
+   
+   
+   **示例二：带参调用**
+   
+   在Shell中，调用函数时可以向其传递参数。在函数体内部，通过 $n 的形式来获取参数的值，例如，$1表示第一个参数，$2表示第二个参数
+   
+   注意，$10 不能获取第十个参数，获取第十个参数需要${10}。当n>=10时，需要使用${n}来获取参数
+   
+   另外，还有几个特殊字符用来处理参数：
+   
+   | 参数处理 | 说明                                                         |
+   | :------- | :----------------------------------------------------------- |
+   | $#       | 传递到脚本或函数的参数个数                                   |
+   | $*       | 以一个单字符串显示所有向脚本传递的参数                       |
+   | $$       | 脚本运行的当前进程ID号                                       |
+   | $!       | 后台运行的最后一个进程的ID号                                 |
+   | $@       | 与$*相同，但是使用时加引号，并在引号中返回每个参数。         |
+   | $-       | 显示Shell使用的当前选项，与set命令功能相同。                 |
+   | $?       | 显示最后命令的退出状态。0表示没有错误，其他任何值表明有错误。 |
+   
+   **脚本：**
+   
+   ```shell
+   #!/bin/bash
+   
+   getSum(){  # 直接定义函数，不使用 function 关键字
+   	SUM=$[$1+$2]
+   	echo "和是：${SUM}"
+   
+   	return ${SUM}
+   }
+   
+   read -p "输入第一个值：" num1
+   read -p "输入第二个值：" num2
+   
+   # 调用函数
+   getSum ${num1} ${num2}
+   
+   echo "返回值是：$?"
+   ```
+   
+   **测试：**
+   
+   ```shell
+   ubuntu@VM-16-9-ubuntu:~/learning$ ./func.sh
+   输入第一个值：100
+   输入第二个值：233
+   和是：333
+   返回值是：77  # 返回值超过255，导致结果失真
+   ```
+   
+   
 
-## 17.13、Shell编程综合案例
 
-- 需求分析：
 
-  - 每天凌晨 2:10 备份 数据库 testDB 到 /data/backup/db
-  - 备份开始和备份结束能够给出相应的提示信息
-  - 备份后的文件要求以备份时间为文件名，并打包成 .tar.gz 的形式，比如：2018-03-12_230201.tar.gz
-  - 在备份的同时，检查是否有 10 天前备份的数据库文件，如果有就将其删除。
+## 17.13、多命令执行
 
-- 思路分析：
+方式一：
 
-  - 数据库中有一个 testDB ，要在Linux的 /data/backup/db 下备份数据库
-  - 现在在 /usr/sbin 下写一个 mysql_db_bbackup.sh 脚本来实现这个功能
-  - 写完脚本后交给crond来做定时任务调度
+`&&` 连接前后两个命令
 
-- 代码实现：
+```shell
+ubuntu@VM-16-9-ubuntu:~$ cd learning/ && pwd
+/home/ubuntu/learning
 
-  ```
-  vim /usr/sbin/mysql_db_bbackup.sh
-  
-  #!/bin/bash
-  # 数据库的备份
-  
-  # 定义备份的路径
-  BACKUP=/data/backup/db
-  # 获取当前的时间，作为文件名
-  DATETIME=$(data +%Y_%m_%d_%H%M%S)
-  # 输出变量查看 以作调试
-  echo $DATETIME
-  
-  echo "======开始备份======"
-  echo "======备份的路径是 $BACKUP/$DATETIME.tar.gz======"
-  
-  # 主机
-  HOST=localhost
-  # 用户名字
-  DB_USER=root
-  # 密码
-  DB_PASSWD=root
-  # 数据库名
-  DATABASE=testDB
-  # 创建备份的路径  如果备份的路径文件夹存在就使用，没有就创建
-  [ ! -d "$BACKUP/$DATETIME" ] && mkdir -p "$BACKUP/$DATETIME"
-  # 执行mysql的备份数据库的指令 将备份完后的内容进行压缩，形成一个临时的压缩包文件
-  mysqldump -u${DB_USER} -p${DB_PASSWD} --host=$HOST $DATABASE | gzip > $BACKUP/$DATETIME/$DATETIME.sql.gz
-  # 打包备份文件
-  cd $BACKUP
-  tar -zcvf $DATETIME.tar.gz $DATETIME
-  # 删除临时目录
-  rm -rf $BACKUP/$DATETIME
-  # 删除10天前的备份文件
-  find $BACKUP -mtime +10 -name "*.tar.gz" -exec rm -rf {} \;
-  echo "======备份成功======"
-  
-  至此shell脚本编写完成
-  然后将脚本交给crond定时执行
-  crontab -e
-  10 2 * * * /usr/sbin/mysql_db_bbackup.sh
-  ```
+ubuntu@VM-16-9-ubuntu:~$ LOCATION=`cd learning/ && pwd`  # 获取执行结果
+ubuntu@VM-16-9-ubuntu:~$ echo ${LOCATION}
+/home/ubuntu/learning
+```
+
+
+
+方式二：
+
+`()` : **把一串的命令放在括号里面，并且命令之间用`;`号隔开**
+
+> 括号中的命令将会新开一个子shell顺序执行，所以括号中的变量不能够被脚本余下的部分使用；
+>
+> 括号中多个命令之间用分号隔开，最后一个命令可以没有分号；
+>
+> 各命令和括号之间不必有空格。
+
+```shell
+ubuntu@VM-16-9-ubuntu:~$ (cd learning/;pwd)
+/home/ubuntu/learning
+
+ubuntu@VM-16-9-ubuntu:~$ LOCATION1=`(cd learning/;pwd)`  # 获取执行结果
+ubuntu@VM-16-9-ubuntu:~$ echo ${LOCATION1}
+/home/ubuntu/learning
+
+ubuntu@VM-16-9-ubuntu:~$ LOCATION2=$(cd learning/;pwd)   # 用 $ 获取结果，无形之中构成了 $()
+ubuntu@VM-16-9-ubuntu:~$ echo ${LOCATION2}
+/home/ubuntu/learning
+```
+
+
+
+方式三：
+
+`{}` : **把一串的命令放在括号里面，每个命令必须用`;`号结尾**
+
+>括号中的命令在当前 shell 执行，所以括号中的变量 可以被后面的脚本继续使用；
+>
+>最后一个命令也要用分号结尾；
+>
+>第一个命令和左括号之间必须要有一个空格。
+
+```shell
+ubuntu@VM-16-9-ubuntu:~$ { cd learning/;pwd;}
+/home/ubuntu/learning
+
+ubuntu@VM-16-9-ubuntu:~$ LOCATION3=`{ cd learning/;pwd;}`  # 获取执行结果
+ubuntu@VM-16-9-ubuntu:~$ echo ${LOCATION3}
+/home/ubuntu/learning
+
+ubuntu@VM-16-9-ubuntu:~$ LOCATION4=$({ cd learning/;pwd;}) # $() 获取执行结果
+ubuntu@VM-16-9-ubuntu:~$ echo ${LOCATION4}
+/home/ubuntu/learning
+```
+
