@@ -527,8 +527,8 @@ DECIMAL 类型用于存储精确的小数。但因为CPU不支持对DECIMAL的�
 - 变量类型
 
   - 用户变量：以"@"开始，形式为"@变量名"。用户变量跟mysql客户端是绑定的，设置的变量，只对当前用户使用的客户端生效。
-  - 全局变量：定义时，以如下两种形式出现，set GLOBAL 变量名 或者 set @@global.变量名，对所有客户端生效。只有具有super权限才可以设置全局变量。
-  - 会话变量：是指当前建立会话中的变量，它包含全局变量。修改变量使用 set @@变量名，修改后仅对当前客户端生效。
+  - 全局变量：定义时，以如下两种形式出现，`set GLOBAL 变量名` 或者 `set @@global.变量名`，对所有客户端生效。只有具有super权限才可以设置全局变量。
+  - 会话变量：是指当前建立会话中的变量，它包含全局变量。修改变量使用 `set @@变量名`，修改后仅对当前客户端生效。
   - 局部变量：作用范围在begin到end语句块之间。在该语句块里设置的变量。declare语句专门用于定义局部变量。set语句是设置不同类型的变量，包括会话变量和全局变量。
 
 - 变量赋值
@@ -546,7 +546,140 @@ DECIMAL 类型用于存储精确的小数。但因为CPU不支持对DECIMAL的�
     select @cc := 10;
     ```
 
-    
+
+
+
+### 约束
+
+**约束（CONSTRAINT）**，就是 一种限制，用于限制表中的数据，为了保证表中数据的准确性和可靠性。
+
+约束可以在创建表时添加，也可以在修改表时添加。
+
+添加约束，根据约束级别不同，又分为 列级约束 和 表级约束。
+
+
+
+#### 约束分类
+
+> 常用的标识：
+>
+> AUTO_INCREMENT：自增标识。使用该标识的列，可以不用手动的插入值，系统提供默认的序列值。
+>
+> UNSIGNED：非负标识。使用该标识的数值列，不取负数。
+
+1. NOT NULL ：非空，用于保证该字段的值不能为空。
+
+2. DEFAULT：默认值，用于保证该字段有默认值。
+
+3. PRIMARY KEY：主键，用于保证该字段的值具有唯一性，不能为空。
+
+4. UNIQUE：唯一，用于保证该字段的值具有唯一性，可以为空。又叫唯一索引，因为创建唯一约束，会同时创建索引。
+
+5. CHECK：检查约束（MySql不支持），检查字段的值是否为指定的值。
+
+6. FOREIGN KEY：外键，用于限制两个表的关系，用于保证该字段的值必须来自于主表的关联列的值，在从表添加外键约束，用于引用主表中某些的值。
+
+   > 外键：
+   >
+   > 1. 要求在从表中设置外键关系
+   > 2. 从表的外键列的类型和主表的关联列的类型要求一致或兼容，名称无要求
+   > 3. 主表的关联列必须时一个Key（一般为主键或唯一，外键也可以但无意义）
+   > 4. 插入数据时，先插入主表，再插入从表；删除数据时，先删除从表，再删除主表
+
+
+
+#### 创建表时添加约束
+
+- 列级约束
+
+  ```mysql
+  create table if not exists t_stuinfo(
+       id int primary key,    #主键
+       stuName varchar(20) not null,    #非空
+       gender char(1) check(gender='男' or gender='女'),    #检查约束，MySql没有效果但不报错
+       seat int unique,    #唯一约束
+       age int default 18,    #默认（值）约束
+       majorId int references major(id) #外键约束，MySql没有效果，但不报错
+       );
+  ```
+
+- 表级约束
+
+  ```mysql
+  create table if not exists t_stuinfo(
+       id int,
+       stuName varchar(20),
+       gender char(1),
+       seat int,
+       age int,
+       majorId int,
+       constraint pk primary key(id),    #约束名随意，主键不生效，但不报错。
+       constraint uq unique(seat),    #唯一约束
+       constraint ck check(gender='男' or gender='女'),    #检查约束，MySql不支持此约束，不报错但不生效
+       constraint fk_stuinfo_major foreign key(majorId) references major(id)    #外键约束
+       );
+  ```
+
+
+
+#### 修改表时添加/删除约束
+
+修改表时的操作不在举例，给出通用语法。一看就会。
+
+**增加约束语法：**
+
+- 增加列级约束
+
+  ```mysql
+  ALTER TABLE 表名 MODIFY COLUMN 列名 数据类型 约束类型;			# 其实就是直接修改某一列的约束
+  ```
+
+- 增加表级约束
+
+  ```mysql
+  # 通用表级约束
+  ALTER TABLE 表名 ADD CONSTRAINT 约束名 约束类型(列名) [REFERENCES 主表名(主表列名)];
+  
+  # 主键约束
+  ALTER TABLE 表名 ADD PRIMARY KEY(列名);
+  
+  # 唯一约束
+  ALTER TABLE 表名 ADD UNIQUE(列名);
+  ```
+
+
+
+**删除约束语法：**
+
+- 删除主键约束
+
+  ```mysql
+  ALTER TABLE 表名 DROP PRIMARY KEY;
+  ```
+
+- 删除唯一约束
+
+  ```mysql
+  ALTER TABLE 表名 DROP INDEX 索引名 列名/约束名;			# 列级约束，索引名就是列名；表级约束，索引名就是定义时的约束名
+  ```
+
+- 删除外键约束
+
+  ```mysql
+  ALTER TABLE 表名 DROP FOREIGN KEY 外键名称;					# 外键名称通常就是约束名称
+  ```
+
+- 删除其他约束
+
+  前面三个比较特殊，其他约束通过 modify 修改即可。
+
+  ```mysql
+  ALTER TABLE 表名 MODIFY COLUMN 列名 类型;			# 	本质上就是重新定义了列
+  ```
+
+  
+
+
 
 ### 外键
 
@@ -567,12 +700,11 @@ REFERENCES tbl_name (index_col_name, ...)  # 把references指向的表称为主�
 [ON UPDATE {RESTRICT | CASCADE | SET NULL | NO ACTION | SET DEFAULT}]
 
 # ON DELETE、ON UPDATE表示事件触发限制，可设参数：
-
-# RESTRICT（限制主表中有关联外键的列的改动）
-# CASCADE（跟随外键改动）
-# SET NULL（设空值）
-# SET DEFAULT（设默认值）
-# NO ACTION（无动作，默认的）
+  # RESTRICT（限制主表中有关联外键的列的改动）
+  # CASCADE（跟随外键改动）
+  # SET NULL（设空值）
+  # SET DEFAULT（设默认值）
+  # NO ACTION（无动作，默认的）
 ```
 
 示例：
@@ -633,26 +765,26 @@ Empty set (0.00 sec)
 >
 > commit;
 
-四大特性（ACID）：
+#### 四大特性（ACID）
 
 - **原子性（Atomicity）**：即事物是执行过程中不可以再分割的一个逻辑单位。
-
 - **一致性（Consistency）**：保证数据的一致性，即事物修改数据前后一定是和事物的修改规则一致的。
-
 - **持久性（Durability）**：持久性就是事物修改数据后，进行持久化保存，不会因为宕机、断电等情况丢失数据。
-
 - **隔离性（Isolation）**：即多个事物之间，操作相同数据对象时，是想互不影响的。要实现事物的隔离，就必须要求事物的执行是串行的；但是串行执行事物，与会严重影响数据库性能。所以很多时候，会选择牺牲部分隔离性，来提升数据库性能，也因此会带来以下一些问题。
-
+- **丢失更新:** 当两个或多个事物选择同一行，最初的事物修改的值，会被后面的事物修改的值覆盖。
   - **脏读：**一个事物读取到了另外一个事物修改但是未提交的数据。
   - **不可重复读：**当事物内相同的记录被检索两次，且两次得到的结果不相同时，称之为不可重复读。
   - **幻读：**在事物执行过程中，另一个事物将新纪录添加到正在读取的事物中时，会发生幻读。在SQL 92 标准中，幻读是指在同一事物中，两次执行检索到的记录条数不一样（新增/减少）；而在MYSQL的标准中，幻读强调第二次检索时，检索到了第一次检索不存在的记录，而把丢失第一次检索记录归到不可重复读。
 
-  > 事物隔离级别：
-  >
-  > - READ UNCOMMITED（未提交读）：可能产生 脏读、不可重复读、幻读。
-  > - READ COMMITED（已提交读）：可能产生 不可重复读、幻读。
-  > - REPEATABLE READ（可重复读）：SQL 92 标准中可能产生 幻读；MYSQL 标准中 已基本解决幻读，mysql默认的事物隔离级别。可重复读就是说，同一事物中，前后检索多次的记录是一样的。
-  > - SERIALIZABLE（可串行化）：最高隔离性级别，不存在数据不安全的问题，但牺牲了数据库性能。
+
+
+
+#### 隔离级别
+
+- READ UNCOMMITED（未提交读）：可能产生 脏读、不可重复读、幻读。
+- READ COMMITED（已提交读）：可能产生 不可重复读、幻读。
+- REPEATABLE READ（可重复读）：SQL 92 标准中可能产生 幻读；MYSQL 标准中 已基本解决幻读，mysql默认的事物隔离级别。可重复读就是说，同一事物中，前后检索多次的记录是一样的。
+- SERIALIZABLE（可串行化）：最高隔离性级别，不存在数据不安全的问题，但牺牲了数据库性能。
 
 
 
@@ -736,7 +868,9 @@ Empty set (0.00 sec)
 
 > 索引在创建表的时候，可以同时创建，也可以随时增加新的索引。
 
-准备环境：
+##### 已创建表增删索引
+
+**准备环境：**
 
 ``` mysql
 create database demo_01 default charset=utf8;
@@ -763,114 +897,216 @@ INSERT into `country` (`country_id`, `country_name`) values (1, 'China'), (2, 'A
 
 
 
-- 创建索引
+**创建索引：**
 
-  语法：
+语法：
 
-  ``` mysql
-  CREATE [UNIQUE|FULLTEXT|SPATIAL] INDEX index_name [USING index_type] ON tbl_name(index_col_name, ...);
-  
-  index_col_name: column_name[(length)][ASC | DESC]
-  index_type: 默认使用BTREE索引结构
-  ```
+``` mysql
+CREATE [UNIQUE|FULLTEXT|SPATIAL] INDEX index_name [USING index_type] ON tbl_name(index_col_name, ...);
 
-  示例：
+index_col_name: column_name[(length)][ASC | DESC]
+index_type: 默认使用BTREE索引结构
+```
 
-  ``` mysql
-  mysql> create index idx_city_name on city(city_name);
-  Query OK, 0 rows affected (0.12 sec)
-  ```
+示例：
 
-- 查看索引
+``` mysql
+mysql> create index idx_city_name on city(city_name);
+Query OK, 0 rows affected (0.12 sec)
+```
 
-  语法：
 
-  ``` mysql
-  show index from tbl_name;
-  ```
 
-  示例：
+**查看索引：**
 
-  ``` mysql
-  mysql> show index from city\G;   # \G 的作用是切换一下输出的样式，由默认的横表切换为纵表
-  *************************** 1. row ***************************
-          Table: city
-     Non_unique: 0
-       Key_name: PRIMARY
-   Seq_in_index: 1
-    Column_name: city_id
-      Collation: A
-    Cardinality: 4
-       Sub_part: NULL
-         Packed: NULL
-           Null:
-     Index_type: BTREE
-        Comment:
-  Index_comment:
-  *************************** 2. row ***************************
-          Table: city
-     Non_unique: 1
-       Key_name: idx_city_name
-   Seq_in_index: 1
-    Column_name: city_name
-      Collation: A
-    Cardinality: 2
-       Sub_part: NULL
-         Packed: NULL
-           Null:
-     Index_type: BTREE
-        Comment:
-  Index_comment:
-  2 rows in set (0.00 sec)
-  ```
+语法：
 
-- 删除索引
+``` mysql
+show index from tbl_name;
+```
 
-  语法：
+示例：
 
-  ```mysql
-  drop index index_name on tbl_name;
-  ```
+``` mysql
+mysql> show index from city\G;   # \G 的作用是切换一下输出的样式，由默认的横表切换为纵表
+*************************** 1. row ***************************
+        Table: city
+   Non_unique: 0
+     Key_name: PRIMARY
+ Seq_in_index: 1
+  Column_name: city_id
+    Collation: A
+  Cardinality: 4
+     Sub_part: NULL
+       Packed: NULL
+         Null:
+   Index_type: BTREE
+      Comment:
+Index_comment:
+*************************** 2. row ***************************
+        Table: city
+   Non_unique: 1
+     Key_name: idx_city_name
+ Seq_in_index: 1
+  Column_name: city_name
+    Collation: A
+  Cardinality: 2
+     Sub_part: NULL
+       Packed: NULL
+         Null:
+   Index_type: BTREE
+      Comment:
+Index_comment:
+2 rows in set (0.00 sec)
+```
 
-  示例:
 
-  ```mysql
-  mysql> drop index idx_city_name on city;
-  Query OK, 0 rows affected (0.01 sec)
-  Records: 0  Duplicates: 0  Warnings: 0
-  ```
 
-- ALTER 索引相关命令
+**删除索引：**
 
-  语法：
+语法：
 
-  ```mysql
-  # 添加主键索引，要求索引值必须是唯一的，且不能为 null
-  alter table tbl_name add primary key(column_list);
-  # 添加唯一索引，要求索引值必须是唯一的，但是 null 除外，且可以有多个 null 值
-  alter table tbl_name add unique index_name(column_list);
-  # 添加普通索引
-  alter table tbl_name add index index_name(column_list);
-  # 添加全文索引
-  alter table tbl_name add fulltext index_name(column_list);
-  
-  # 删除索引
-  alter table tbl_name drop index index_name;
-  ```
+```mysql
+drop index index_name on tbl_name;
+```
 
-  示例：
+示例:
 
-  ```mysql
-  # 创建唯一索引
-  mysql> alter table city add unique idx_city_name(city_name);
-  Query OK, 0 rows affected (0.03 sec)
-  Records: 0  Duplicates: 0  Warnings: 0
-  
-  # 删除索引
-  mysql> alter table city drop index idx_city_name;
-  Query OK, 0 rows affected (0.02 sec)
-  Records: 0  Duplicates: 0  Warnings: 0
-  ```
+```mysql
+mysql> drop index idx_city_name on city;
+Query OK, 0 rows affected (0.01 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+```
+
+
+
+**ALTER 索引相关命令：**
+
+语法：
+
+```mysql
+# 添加主键索引，要求索引值必须是唯一的，且不能为 null
+alter table tbl_name add primary key(column_list);
+# 添加唯一索引，要求索引值必须是唯一的，但是 null 除外，且可以有多个 null 值
+alter table tbl_name add unique index_name(column_list);
+# 添加普通索引
+alter table tbl_name add index index_name(column_list);
+# 添加全文索引
+alter table tbl_name add fulltext index_name(column_list);
+
+# 删除索引
+alter table tbl_name drop index index_name;
+```
+
+示例：
+
+```mysql
+# 创建唯一索引
+mysql> alter table city add unique idx_city_name(city_name);
+Query OK, 0 rows affected (0.03 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+# 删除索引
+mysql> alter table city drop index idx_city_name;
+Query OK, 0 rows affected (0.02 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+```
+
+
+
+
+
+##### 创建表同时创建索引
+
+语法：
+
+```mysql
+create table TABLE_NAME (
+	...
+  PRIMARY KEY (`col_name`),  # 主键索引
+  KEY `idx_name_single` (`col_name`),  # 单列索引
+  KEY `idx_nname_multi` (`col_name1`, `col_name2`, ...)  # 复合索引
+);
+```
+
+示例：
+
+```mysql
+create table `stu` (
+	id int unsigned not null auto_increment,
+	name varchar(20) not null,
+	score tinyint not null default 0,
+	class char not null,
+	primary key (`id`),
+	key `idx_class` (`class`),
+	key `idx_name_score` (`name`, `score`)
+) ENGINE=InnoDB default charset=utf8;
+```
+
+查看索引：
+
+```mysql
+mysql> show index from stu\G;
+*************************** 1. row ***************************
+        Table: stu
+   Non_unique: 0
+     Key_name: PRIMARY
+ Seq_in_index: 1
+  Column_name: id
+    Collation: A
+  Cardinality: 0
+     Sub_part: NULL
+       Packed: NULL
+         Null:
+   Index_type: BTREE
+      Comment:
+Index_comment:
+*************************** 2. row ***************************
+        Table: stu
+   Non_unique: 1
+     Key_name: idx_class
+ Seq_in_index: 1
+  Column_name: class
+    Collation: A
+  Cardinality: 0
+     Sub_part: NULL
+       Packed: NULL
+         Null:
+   Index_type: BTREE
+      Comment:
+Index_comment:
+*************************** 3. row ***************************
+        Table: stu
+   Non_unique: 1
+     Key_name: idx_name_score
+ Seq_in_index: 1
+  Column_name: name
+    Collation: A
+  Cardinality: 0
+     Sub_part: NULL
+       Packed: NULL
+         Null:
+   Index_type: BTREE
+      Comment:
+Index_comment:
+*************************** 4. row ***************************
+        Table: stu
+   Non_unique: 1
+     Key_name: idx_name_score
+ Seq_in_index: 2
+  Column_name: score
+    Collation: A
+  Cardinality: 0
+     Sub_part: NULL
+       Packed: NULL
+         Null:
+   Index_type: BTREE
+      Comment:
+Index_comment:
+4 rows in set (0.00 sec)
+```
+
+
 
 #### 索引设计原则
 
@@ -1929,7 +2165,12 @@ mysql> explain select * from t_role where id = (select role_id from user_role wh
   	<td>UNION RESULT</td>
     <td>从UNION表获取结果的select</td>
   </tr>
+    <tr>
+  	<td>DEPENDENT SUBQUERY</td>
+    <td>子查询中的第一个SELECT，取决于外面的查询。即会先执行外部的查询，然后再循环执行内部的查询。</td>
+  </tr>
 </table>
+
 
 示例：
 
@@ -2660,7 +2901,7 @@ mysql> explain select * from seller where sellerid not in ('1', '3', '6');
 
 
 
-## SQL优化
+## SQL 优化
 
 ### 大批量数据插入
 
@@ -3895,7 +4136,6 @@ InnoDB与MyISAM的最大不同的两点：一是支持事物（transaction）；
 </table>
 
 
-
 **并发事务处理带来的问题**
 
 <table border="1">
@@ -5076,7 +5316,7 @@ MySQL支持一台主库同时向多台从库进行复制，从库同时也可以
    log-bin=/var/lib/mysql/mysqlbin
    # 是否只读，1 代表只读，0 代表读写
    read-only=0
-   # 忽略的数据库，值不需要同步的数据库
+   # 忽略的数据库，指不需要同步的数据库
    binlog-ignore-db=mysql
    ```
 
@@ -5136,13 +5376,9 @@ MySQL支持一台主库同时向多台从库进行复制，从库同时也可以
 
 
 
-## 问题解答
+## MySQL 补充知识点
 
-### 一、如何排查数据库慢的原因
-
-### 二、 如何优化慢查询语句
-
-### 三、SELECT 查询语句中各子句的执行顺序
+### 1. SELECT 子句的执行顺序
 
 SQL 查询的大致语法结构如下：
 
@@ -5179,7 +5415,7 @@ LIMIT
 
   - **求笛卡尔积**。不论是什么类型的联接运算，首先都是执行交叉连接（CROSS JOIN），求笛卡儿积（Cartesian product），生成虚拟表VT1-J1。
   - **ON筛选器**。 这个阶段对上个步骤生成的VT1-J1进行筛选，根据ON子句中出现的谓词进行筛选，让谓词取值为true的行通过了考验，插入到VT1-J2。
-  - **添加外部行**。如果指定了OUTER JOIN，如LEFT OUTER JOIN、RIGHT OUTER JOIN，还需要将VT1-J2中没有找到匹配的行，作为外部行添加到VT1-J2中，生成VT1-J3。如果FROM子句包含两个以上表，则对上一个连接生成的结果表VT1-J3和下一个表重复依次执行3个步骤，直到处理完所有的表为止。
+  - **添加外部行**。如果指定了OUTER JOIN，如LEFT OUTER JOIN、RIGHT OUTER JOIN，还需要将VT1-J2中没有找到匹配的行，作为外部行添加到VT1-J2中，生成VT1-J3。如果FROM子句包含两个以上表，则对上一个连接生成的结果表VT1-J3和下一个表重复以上3个步骤，直到处理完所有的表为止。
 
   经过以上步骤，FROM阶段就完成了。
 
@@ -5209,4 +5445,268 @@ LIMIT
 - **七、LIMIT阶段**
 
   取出指定行的记录，产生虚拟表VT7，并返回给查询用户。**LIMIT n, m的效率是十分低的，一般可以通过在WHERE条件中指定范围来优化 \**WHERE\** id > ? limit 10。**
+
+
+
+### 2. IN 和 EXISTS 执行效率分析
+
+#### 测试
+
+在得出结论之前，先进行如下两轮测试。
+
+环境准备：
+
+```mysql
+# A表 小表 30000行数据
+create table `A` (
+	`id` int not null auto_increment,
+	`value` varchar(20) not null,
+	`flag` int not null,
+	primary key (`id`),
+	key `idx_a_flag` (`flag`)
+) engine=InnoDB default charset=utf8;
+
+# B表 大表 300000 行数据
+create table `B` (
+	`id` int not null auto_increment,
+	`B_id` int not null,
+	`value` varchar(20) not null,
+	`flag` int not null,
+	primary key (`id`),
+	key `idx_b_flag` (`flag`),
+	key `idx_b_id` (`B_id`)
+) engine=InnoDB default charset=utf8;
+
+# 准备存储过程添加数据
+delimiter $
+
+create procedure `proc_test_02`(in num int)
+begin
+	declare origin int default 0;
+	set origin = 0;
+	if num = 10000 then
+		while origin <= num do
+			insert into `A` (`value`, `flag`) values (origin, origin);
+			set origin = origin + 1;
+		end while;
+	elseif num = 3000000 then
+		while origin <= num do
+			insert into `B` (`B_id`, `value`, `flag`) values (origin, origin, origin);
+			set origin = origin + 1;
+		end while;
+	end if;
+end$
+
+delimiter ;
+
+# 执行两次存储过程
+call proc_test_02(10000);
+call proc_test_02(3000000);
+```
+
+
+
+**测试一：内表查询数据较少**
+
+```mysql
+# in
+mysql> select * from A where flag in (select flag from B where B_id < 100);
+100 rows in set (0.00 sec)
+
+# exists
+mysql> select * from A where exists (select * from B where B_id < 100 and B.flag = A.flag);
+100 rows in set (0.03 sec)
+```
+
+**测试分析：**
+
+- IN 的执行计划
+
+  <img src="./images/mysql_001.png">
+
+  - 执行B表的子查询，得到结果集B，可以使用到B表的索引B_id；
+  - 执行A表的查询，查询条件是A.flag在结果集B里面，可以使用到A表的索引flag。
+
+- EXISTS 的执行计划
+
+  <img src="./images/mysql_002.png">
+
+  - 先将A表所有记录取到；
+  - 逐行针对A表的记录，去关联B表，判断B表的子查询是否有返回数据；
+  - 如果子查询有返回数据，则将A当前记录返回到结果集。
+
+**本次测试，exists 中A表执行了全表扫描，只有B使用了索引。本次 IN 的效率高于 EXISTS。**
+
+
+
+**测试二：内表查询数据较多**
+
+```mysql
+# in
+mysql> select * from A where flag in (select flag from B where B_id > 100);
+29900 rows in set (0.03 sec)
+
+# exists
+mysql> select * from A where exists (select * from B where B_id > 100 and A.flag = B.flag);
+29900 rows in set (0.02 sec)
+```
+
+**测试分析：**
+
+- IN 的执行计划
+
+  <img src="./images/mysql_003.png">
+
+  - 当内表数据较大时，IN 语句执行时，先全部扫描外表，再使用索引内表。
+
+- EXISTS 的执行计划
+
+  <img src="./images/mysql_004.png">
+
+  - 当内表数据较大时，EXISTS 语句执行时，会先执行外部的查询 , 然后再循环执行内部的查询（因为 select_type 是 DEPENDENT SUBQUERY）。
+
+
+
+**当子查询结果集很大，而外部表较小的时候，Exists采用了Block Nested Loop(Block 嵌套循环)，查询效率会优于IN。**
+
+
+
+#### 原理
+
+**IN 原理**
+
+在in的执行中，内表得到结果集，再和外表匹配。外表会对所有的内表结果集匹配，也就是说：如果外表有10，内表有1000，就会执行10*1000次。以此类推在内表比较大的时候，用in方法会效率比较低。
+
+select * from 外表 a where id in (select 相关id from 内表) IN的执行类似如下：
+
+```mysql
+List resultSet=[];
+  Array A=(select * from A);
+  Array B=(select id from B);
+   
+  for(int i=0;i<A.length;i++) {
+     for(int j=0;j<B.length;j++) {
+        if(A[i].id==B[j].id) {
+           resultSet.add(A[i]);
+           break;
+        }
+     }
+  }
+  return resultSet;
+```
+
+
+
+**EXISTS 原理**
+
+exists的执行过程中，并没有对每一条内表的数据都进行查询，而是存在该条数据的时候会将结果集存起来，到最后的时候一同输出结果集。
+
+select a.* from 外表 a where exists(select 1 from 内表 b where a.id=b.id) 的EXISTS的执行语句如下：
+
+```mysql
+List resultSet=[];
+Array A=(select * from 外表 A)
+ 
+for(int i=0;i<A.length;i++) {
+   if(exists(A[i].id) {    //执行select 1 from 内表 b where b.id=a.id是否有记录返回
+       resultSet.add(A[i]);
+   }
+}
+return resultSet;
+```
+
+
+
+#### 结论
+
+两个测试两个结果，不同业务场景要具体分析:
+
+- **IN执行原理：**IN是做外表和内表通过Hash连接，先查询子表，再查询主表，不管子查询是否有数据，都对子查询进行全部匹配。
+- **EXISTS执行原理：**EXISTS是外表做loop循环，先主查询，再子查询，然后去子查询中匹配，如果匹配到就退出子查询返回true，将结果放到结果集。
+
+**IN语法在内表和外表上都使用到索引；EXISTS查询仅内表上可以使用到索引，外表会全表扫描。**
+
+当子查询结果集很大，而外部表较小的时候，EXISTS的Block Nested Loop(Block 嵌套循环)的作用开始显现，查询效率会优于IN；否则IN 的外表索引优势占主要作用，此时IN的查询效率会优于EXISTS。
+
+综上所述：**子查询结果集越大用EXISTS，子查询结果集越小用IN。**
+
+
+
+### 3. UNION 和 UNION ALL 的区别
+
+union查询结果说明：
+
+- **重复记录** 是指查询中各个字段完全 相同 的记录。
+- 第一个 SELECT 语句中被使用的字段名称也被用于结果的字段名称。
+- 各 SELECT 语句字段名称可以不同，但字段属性必须一致。
+
+与union all的区别：
+
+使用 UNION ALL 的时候，只是单纯的把各个查询组合到一起而不会去判断数据是否重复。因此，当确定查询结果中不会有重复数据或者不需要去掉重复数据的时候，应当使用 UNION ALL 以提高查询效率。
+
+
+
+### 4. SELECT * 和 SELECT 全字段 的区别
+
+- 查询效率上：select * （前者）在系统解析时会多一步从系统表获取具体字段的步骤，因此会比 select 全部字段 （后者）多花时间，效率稍低。
+
+- 查询结果上：在表结构不修改的情况下结果相同，但后者的顺序可调，前者则固定；而如果修改了表结构，前者能获得新表结构的所有字段，后者则会在修改字段名或删除字段时报错，会在增加字段时不会输出新字段。
+
+- 应用场景上：前者效率稍低但能应对频繁调整的表结构，适应力强，可用于开发环境，仅极少数特殊业务场景会在生产环境中使用前者；后者效率稍高语意明确，更能清晰表达业务需求，强烈建议在生产环境使用。
+
+
+
+### 5. 分库分表
+
+#### 垂直分表
+
+**将一个表按照字段分成多表，每个表存储其中一部分字段。**
+
+1. 把不常用的字段单独放在一张表；
+
+2. 把 text、blob 等大字段拆分出来放在附表中；
+
+3. 经常组合查询的列放在一张表中；
+
+<font color="red">垂直分表：可以把一个宽表的字段按访问频次、是否是大字段的原则拆分为多个表，这样既能使业务清晰，还能提升部分性能。拆分后，尽量从业务角度避免联查，否则性能方面将得不偿失</font>
+
+
+
+#### 垂直分库
+
+**是指按照业务将表进行分类，分布到不同的数据库上面，每个库可以放在不同的服务器上，它的核心理念是专库专用。**
+
+1. 解决业务层面的耦合，业务清晰；
+
+2. 能对不同业务的数据进行分级管理、维护、监控、扩展等；
+
+3. 高并发场景下，垂直分库一定程度的提升IO、数据库连接数、降低单机硬件资源的瓶颈；
+
+<font color="red">垂直分库：可以把多个表按业务耦合松紧归类，分别存放在不同的库，这些库可以分布在不同服务器，从而使访问压力被多服务器负载，大大提升性能，同时能提高整体架构的业务清晰度，不同的业务库可根据自身情况定制优化方案。但是它需要解决跨库带来的所有复杂问题。</font>
+
+
+
+#### 水平分表
+
+**是在同一个数据库内，把同一个表的数据按一定规则拆到多个表中。**
+
+1. 优化单一表数据量过大而产生的性能问题；
+
+2. 避免IO争抢并减少锁表的几率；
+
+<font color="red">水平分表：可以把一个表的数据(按数据行)分到多个同一个数据库的多张表中，每个表只有这个表的部分数据，这样做能小幅提升性能，它仅仅作为水平分库的一个补充优化。</font>
+
+
+
+#### 水平分库
+
+**把同一个表的数据按一定规则拆到不同的数据库中，每个库可以放在不同的服务器上。**
+
+1. 解决了单库大数据，高并发的性能瓶颈；
+
+2. 提高了系统的稳定性及可用性。稳定性体现在IO冲突减少，锁定减少，可用性指某个库出问题，部分可用；
+
+<font color="red">水平分库：可以把一个表的数据(按数据行)分到多个不同的库，每个库只有这个表的部分数据，这些库可以分布在不同服务器，从而使访问压力被多服务器负载，大大提升性能。它不仅需要解决跨库带来的所有复杂问题，还要解决数据路由的问题。</font>
+
+
 

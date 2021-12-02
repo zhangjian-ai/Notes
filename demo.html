@@ -2,47 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
 </head>
 <body>
-<p>{{ data.name }}</p>
-<script>
-var data = {name: 'kindeng'};
-observe(data);
-data.name = 'dmq'; // 哈哈哈，监听到值变化了 kindeng --> dmq
-
-function observe(data) {
-    if (!data || typeof data !== 'object') {
-        return;
+<style>
+    #container{
+        width: 20%;
+        height: 200px;
+        overflow: auto;
     }
-    // 取出所有属性遍历
-    Object.keys(data).forEach(function(key) {
-        defineReactive(data, key, data[key]);
-    });
-};
+    #subContainer{
+        width: 100%;
+        height: 1000px;
+        background-color: grey;
+    }
+    #content1{
+        width: 100px;
+        height: 100px;
+        background-color: orange;
+        position: fixed; /* 相对 window 发生偏移，且不随页面滚动 */
+        left: 50px;
+        top: 20px;
+    }
 
-function defineReactive(data, key, val) {
-    observe(val); // 监听子属性
-    Object.defineProperty(data, key, {
-        enumerable: true, // 可枚举
-        configurable: false, // 不能再define
-        get: function() {
-            return val;
-        },
-        set: function(newVal) {
-            console.log('哈哈哈，监听到值变化了 ', val, ' --> ', newVal);
-            val = newVal;
-        }
-    });
-}
 
-console.log(data.name)
-data.name = "zhangjian"
-console.log(data.name)
-</script>
-
+</style>
+<div id="container">
+    <div id="subContainer">
+        <div id="content1"></div>
+    </div>
+</div>
 </body>
 </html>
