@@ -5656,7 +5656,213 @@ union查询结果说明：
 
 
 
-### 5. 分库分表
+### 5. SELECT 中的逻辑条件
+
+#### 环境准备
+
+```mysql
+# 创建表
+create table `Score` (
+	`id` int unsigned auto_increment,
+	`name` varchar(20) not null,
+	`sex` enum("男", "女"),
+	`score` tinyint not null,
+	key `idx_name` (`name`),
+	key `idx_score` (`score`),
+	primary key (`id`)
+) engine=InnoDB default CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+# 插入数据
+insert into `Score` (`name`, `sex`, `score`) values ('苏小小', 2, 95), ('李师师', 2, 90), ('陈圆圆', 2, 55), ('柳如是', 2, 80), ('肖自在', 1, 65), ('张灵玉', 1, 55), ('侵掠如火', 1, 95), ('不动如山', 1, 90), ('其徐如林', 2, 80), ('其疾如风', 1, 60);
+```
+
+
+
+#### 1. IF 语句
+
+语法：
+
+> IF(条件表达式, 为真返回值, 为假返回值)
+
+
+
+示例：
+
+```mysql
+select name, IF(score >= 60, '合格', '不合格') as state from Score;
+
+# 结果
+name|state|
+----|-----|
+苏小小 |合格   |
+李师师 |合格   |
+陈圆圆 |不合格  |
+柳如是 |合格   |
+肖自在 |合格   |
+张灵玉 |不合格  |
+侵掠如火|合格   |
+不动如山|合格   |
+其徐如林|合格   |
+其疾如风|合格   |
+```
+
+
+
+#### 2. IFNULL 语句
+
+语法：
+
+> IFNULL(表达式1,表达式2)
+>
+> 如果表达式1不为NULL，则返回 表达式1；否则返回 表达式2。
+
+
+
+示例：
+
+```mysql
+select name, IFNULL(score, 0) as score from Score;
+
+# 结果
+name|score|
+----|-----|
+苏小小 |   95|
+李师师 |   90|
+陈圆圆 |   55|
+柳如是 |   80|
+肖自在 |   65|
+张灵玉 |   55|
+侵掠如火|   95|
+不动如山|   90|
+其徐如林|   80|
+其疾如风|   60|
+```
+
+
+
+#### 3. CASE WHEN 语句
+
+语法一：
+
+> CASE 
+>
+> ​    WHEN expression THEN return_value1
+>
+> ​    WHEN expression THEN return_value2
+>
+> ​    ELSE default_return_value
+>
+> END
+
+示例一：
+
+```mysql
+select name, CASE 
+			 WHEN score >= 80 THEN '优秀'
+			 WHEN score >= 60 and score < 80 THEN '合格'
+			 ELSE '不合格'
+			 END as state
+from Score;
+
+# 结果
+name|state|
+----|-----|
+苏小小 |优秀   |
+李师师 |优秀   |
+陈圆圆 |不合格  |
+柳如是 |优秀   |
+肖自在 |合格   |
+张灵玉 |不合格  |
+侵掠如火|优秀   |
+不动如山|优秀   |
+其徐如林|优秀   |
+其疾如风|合格   |
+```
+
+
+
+语法二：
+
+> CASE column
+>
+> ​    WHEN value1THEN return_value1
+>
+> ​    WHEN value2 THEN return_value2
+>
+> ​    ELSE default_return_value
+>
+> END
+>
+> **实现单个字段的值的枚举**
+
+示例二：
+
+```mysql
+select name, CASE score
+			WHEN 95 THEN '国家队'
+			WHEN 90 THEN '省级队'
+			WHEN 80 THEN '市级队'
+			ELSE '拉垮队'
+			END as team
+from Score;
+
+# 结果
+name|team|
+----|----|
+苏小小 |国家队 |
+李师师 |省级队 |
+陈圆圆 |拉垮队 |
+柳如是 |市级队 |
+肖自在 |拉垮队 |
+张灵玉 |拉垮队 |
+侵掠如火|国家队 |
+不动如山|省级队 |
+其徐如林|市级队 |
+其疾如风|拉垮队 |
+```
+
+
+
+**扩展需求：找出表中分数是前三名的同学，分数相同时并列同一名次**
+
+```mysql
+select c.name, c.score, c.seq
+from 
+(select a.name, a.score,
+case 
+	when @cur_score = a.score then @seq
+	when @cur_score := a.score then @seq := @seq + 1
+	end as seq
+from
+(select name, score from Score order by score desc) as a,
+(select @seq := 0, @cur_score := 0) as b) 
+as c
+where seq <= 3;
+
+# 结果
+name|score|seq|
+----|-----|---|
+苏小小 |   95|1  |
+侵掠如火|   95|1  |
+李师师 |   90|2  |
+不动如山|   90|2  |
+柳如是 |   80|3  |
+其徐如林|   80|3  |
+```
+
+
+
+#### 4. NLT 语句
+
+语法：
+
+> ELT(N,str1,str2,str3,...)
+>
+>  如果 N = 1，返回 str1，如果N = 2，返回 str2，等等。如果 N 小于 1 或大于参数的数量，返回 NULL。
+
+
+
+### 6. 分库分表
 
 #### 垂直分表
 
