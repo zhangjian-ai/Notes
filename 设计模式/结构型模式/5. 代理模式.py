@@ -1,4 +1,4 @@
-'''
+"""
 代理模式：为其他对象提供一种代理，以控制对这个对象的访问。
 角色：
     - 抽象实体(subject)
@@ -8,7 +8,7 @@
     - 远程代理：可以隐藏对象位于远程空间的事实
     - 虚代理：优化对象的访问，例如 根据需要加载资源
     - 保护代理：允许在访问对象时有一些附加的内务处理，例如权限控制
-'''
+"""
 
 from abc import abstractmethod, ABCMeta
 
@@ -79,6 +79,7 @@ class ProtectProxy(Subject):
 
 
 # client
-pp = ProtectProxy('test.txt', 'dev')
-print(pp.get_content())
-pp.set_content('欢迎来到地下城！')
+if __name__ == '__main__':
+    pp = ProtectProxy('test.txt', 'admin')
+    print(pp.get_content())
+    pp.set_content('欢迎来到地下城！')
