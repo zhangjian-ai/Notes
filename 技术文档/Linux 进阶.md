@@ -2466,6 +2466,33 @@ sichuan province suining city
 
 
 
+### 17.5.3、利用 alias 实现 JDK 版本切换
+
+```shell
+# 前提是需要使用多个JDK版本，profile 配置如下
+export JAVA_8_HOME="/Library/Java/JavaVirtualMachines/jdk1.8.0_301.jdk/Contents/Home"
+export JAVA_11_HOME="/Library/Java/JavaVirtualMachines/jdk-11.0.2.jdk/Contents/Home"
+
+alias jdk8='export JAVA_HOME=$JAVA_8_HOME'
+alias jdk11='export JAVA_HOME=$JAVA_11_HOME'
+
+# 保存 profile，并 source 重载 profile 使其立即生效。即可在 命令行 执行 jdk8/jdk11 实现不同版本的 JDK 切换
+zhangjian@zhangjiandeMacBook-Pro JavaVirtualMachines % java -version
+java version "1.8.0_301"
+Java(TM) SE Runtime Environment (build 1.8.0_301-b09)
+
+zhangjian@zhangjiandeMacBook-Pro JavaVirtualMachines % jdk11
+
+zhangjian@zhangjiandeMacBook-Pro JavaVirtualMachines % java -version
+java version "11.0.2" 2019-01-15 LTS
+Java(TM) SE Runtime Environment 18.9 (build 11.0.2+9-LTS)
+Java HotSpot(TM) 64-Bit Server VM 18.9 (build 11.0.2+9-LTS, mixed mode)
+```
+
+
+
+
+
 ## 17.6、位置参数变量
 
 ### 17.6.1、介绍
