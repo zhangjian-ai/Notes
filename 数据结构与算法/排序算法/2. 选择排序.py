@@ -1,18 +1,18 @@
-'''
+"""
 选择排序:
-    - 默认待排序序列首位是最小值，下标为min
+    - 默认待排序序列首位是最小值，下标为 minimum
     - 通过一次内层循环，依次拿首位根后面的值做比较，把真正的最小值放到首位去
-'''
+"""
 
 a = [6, 4, 2, 1, 7, 5, 11, 22, 17, 23, 14, 3, 9]
 
 for i in range(len(a) - 1):
-    min = i
+    minimum = i
     for k in range(i + 1, len(a)):
-        if a[min] > a[k]:
-            min = k
-    if min != i:
-        a[i], a[min] = a[min], a[i]
+        if a[minimum] > a[k]:
+            minimum = k
+    if minimum != i:
+        a[minimum], a[i] = a[i], a[minimum]
 
 print(a)
 
