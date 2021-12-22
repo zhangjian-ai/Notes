@@ -1,4 +1,4 @@
-'''
+"""
 API设计：
     类名：Graph
     构造方法：
@@ -12,18 +12,19 @@ API设计：
         - V 记录顶点数量
         - E 记录边的数量
         - adj 邻接表
-'''
-from 数据结构与算法.数据结构.线性表.队列.队列 import Queue
+"""
+
+from 数据结构与算法.数据结构.线性表.队列.A队列 import Queue
 
 
 class Graph:
     def __init__(self, capacity):
         self.V = capacity
         self.E = 0
-        self.adj = [None] * capacity
+        self.adj = [None] * self.V
 
         # 初始化每个顶点的邻接表队列
-        for i in range(len(self.adj)):
+        for i in range(self.V):
             self.adj[i] = Queue()
 
     def vertex_count(self):

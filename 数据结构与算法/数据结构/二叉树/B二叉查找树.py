@@ -1,4 +1,4 @@
-'''
+"""
 二叉树：
     - 就是度不超过2的树。(每个结点最多有两个子结点)
 满二叉树：
@@ -28,7 +28,7 @@
             - value：存储值
             - left：记录左子结点
             - right：记录右子结点
-'''
+"""
 
 
 class BinaryTree:
@@ -140,7 +140,7 @@ class BinaryTree:
             if min_node != node.right:
                 min_node.right = node.right
 
-            # 返回最小结点，在递归的上一层就会使其称为当前被替换结点的父结点的子结点
+            # 返回最小结点，在递归的上一层就会使其成为当前被替换结点的父结点的子结点
             node = min_node
 
         # 返回当前结点

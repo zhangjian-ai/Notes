@@ -1,8 +1,8 @@
-'''
+"""
 需求：实现单向链表的反转
-'''
+"""
 
-from 链表之单向链表 import LinkList
+from B链表之单向链表 import LinkList
 
 
 class RevLinkList(LinkList):

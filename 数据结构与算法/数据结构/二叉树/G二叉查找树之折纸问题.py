@@ -1,4 +1,4 @@
-'''
+"""
 折纸问题：
     把一张纸放在桌上，向上对折依次，产生一条折痕，展开后这一条折痕向下，标记为 down；
     在此基础上再对折一次，共有3条折痕，展开后，折痕依次：向下、向下、向上，标记为 down down up
@@ -8,13 +8,13 @@
 
 解决思路：
     - 将折痕倒置，看成一棵树。
-    - 对折依次的 下折痕 为根结点
+    - 对折一次的 下折痕 为根结点
     - 每个结点的左子结点是下折痕
     - 每个节点的右子结点是上折痕
     - 对着次数 理解为 树的层数
-'''
+"""
 
-from 数据结构与算法.数据结构.线性表.队列.队列 import Queue
+from 数据结构与算法.数据结构.线性表.队列.A队列 import Queue
 
 
 class PaperFolding:
@@ -57,7 +57,7 @@ class PaperFolding:
                 if node.right:
                     queue.enqueue(node.right)
 
-                # 如果当前结点既没有左子结点又没有右子结点，那么久为其创建新的子结点
+                # 如果当前结点既没有左子结点又没有右子结点，那么就为其创建新的子结点
                 if not node.left and not node.right:
                     node.left = self.Node("down", None, None)
                     node.right = self.Node("up", None, None)
@@ -83,6 +83,6 @@ class PaperFolding:
 
 
 if __name__ == '__main__':
-    t = PaperFolding(2)
+    t = PaperFolding(3)
     t.create_tree()
     t.ergodic_tree()

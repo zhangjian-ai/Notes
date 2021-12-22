@@ -1,4 +1,4 @@
-'''
+"""
 并查集时间复杂度分析:
     根据并查集的API设计，如果我们想将列表中所有的元素都合并到一个组，那么我们至少需要调用N-1次union方法；
     同时，我们在union方法内部遍历了列表。
@@ -17,8 +17,9 @@
     按照如下代码优化后，union方法的时间复杂度变成了O(1)
     但是我们同时修改并掉了find方法，而find方法的时间复杂度是O(n)，所以整体合并的时间复杂度，仍然是O(n^2)
     所以我们继续优化，请见 并查集路径压缩
-'''
-from 数据结构与算法.数据结构.并查集.并查集 import UF
+"""
+
+from 数据结构与算法.数据结构.并查集.A并查集 import UF
 
 
 class UF_Tree(UF):
@@ -28,6 +29,7 @@ class UF_Tree(UF):
             if p == self.eleToGroup[p]:
                 return p
 
+            # 如果不相等，就说明当前结点保存的是父元素。那么久用父元素继续向上查找分组标识
             p = self.eleToGroup[p]
 
     def connected(self, p, q):
@@ -38,7 +40,7 @@ class UF_Tree(UF):
         p_g = self.find(p)
         q_g = self.find(q)
 
-        # 判断而这是否相同，相同则不需要继续合并了
+        # 判断二者是否相同，相同则不需要继续合并了
         if p_g == q_g:
             return
 

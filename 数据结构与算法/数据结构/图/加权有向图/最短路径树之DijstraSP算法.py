@@ -1,4 +1,4 @@
-'''
+"""
 最短路径：
     定义：
         在一幅加权有向图中，从顶点s到顶点v的最短路径，是指从顶点s到顶点v的路径中权重最小的那条路径。
@@ -23,7 +23,7 @@
         例如：要松弛顶点v，只需要遍历v的邻接表，把每一条边都松弛，那么顶点v就松弛了。
 
 API设计：
-    类名：DijstraSP
+    类名：DijkstraSP(迪杰斯特拉最短路径 Dijkstra Short Path)
     构造方法：
         - __init__(G, s) 根据加权有向图G和顶点s，创建一个以顶点s为起点的最短路径树的计算对象
     成员方法：
@@ -31,30 +31,34 @@ API设计：
         - has_path(v) 判断从顶点s到顶点v是否可达
         - get_paths(v) 查询从起点s到顶点v的最短路径的所有边
     成员变量：
+        - marks 一个列表。索引代表顶点，保存布尔值。表示该顶点是否已经被松弛
         - edge_to 一个列表。索引代表顶点，值表示从顶点s到当前顶点的最短路径上的最后一条边
         - dist_to 一个列表。索引代表顶点，值表示从顶点s到当前顶点的最短路径的总权重
-        - queue 一个最小索引优先队列。记录树中顶点与非树中顶点之间的有效横切边
-'''
+        - queue 一个最小优先队列。记录树中顶点与非树中顶点之间的有效横切边
+"""
+
 import sys
 
 from 数据结构与算法.数据结构.图.加权有向图.加权有向图 import EdgeWeightedDiGraph, DirectedEdge
-from 数据结构与算法.数据结构.线性表.队列.优先队列之最小索引优先队列 import IndexMinPriorityQueue
-from 数据结构与算法.数据结构.线性表.队列.队列 import Queue
+from 数据结构与算法.数据结构.线性表.队列.优先队列之最小优先队列 import MinPriorityQueue
+
+from 数据结构与算法.数据结构.线性表.队列.A队列 import Queue
 
 
-class DijstraSP:
+class DijkstraSP:
     def __init__(self, G, s):
+        self.marks = [False] * G.vertex_count
         self.edge_to = [None] * G.vertex_count
         self.dist_to = [None] * G.vertex_count
-        self.queue = IndexMinPriorityQueue(G.edge_count)
+        self.queue = MinPriorityQueue(G.edge_count)
 
         # 初始化dist_to列表，让其默认保存最大浮点数
         for i in range(len(self.dist_to)):
             self.dist_to[i] = sys.float_info.max
 
-        # 初始状态下，默认最短路径树中只有顶点s，且自己倒自己的边的权重值为0.0
+        # 初始状态下，默认最短路径树中只有顶点s，且自己到自己的边的权重值为0.0
         self.dist_to[s] = 0.0
-        self.queue.insert(s, 0.0)
+        self.queue.insert(s)
 
         # 遍历最小索引优先队列的中的顶点，对其进行松弛
         while not self.queue.is_empty:
@@ -63,7 +67,7 @@ class DijstraSP:
 
     def relax(self, G, v):
         """松弛顶点v"""
-        # 变脸顶点v指出的所有边
+        # 遍历顶点v指出的所有边
         for e in G.adj[v]:
             # 获取该边的目标顶点
             w = e.target
@@ -74,10 +78,11 @@ class DijstraSP:
                 self.edge_to[w] = e
 
                 # 将目标顶点w添加到最小索引优先队列，以完成对其松弛
-                if self.queue.contains(w):
-                    self.queue.change_item(w, self.dist_to[w])
-                else:
-                    self.queue.insert(w, self.dist_to[w])
+                if not self.marks[w] and not self.queue.contains(w):
+                    self.queue.insert(w)
+
+        # 遍历完当前顶点指出的所有边，则修改当前顶点已经被松弛
+        self.marks[v] = True
 
     def has_path(self, v):
         """判断从顶点s到顶点v是否可达"""
@@ -125,6 +130,6 @@ if __name__ == '__main__':
     g.add_edge(DirectedEdge(6, 0, 0.58))
     g.add_edge(DirectedEdge(6, 4, 0.94))
 
-    di = DijstraSP(g, 0)
+    di = DijkstraSP(g, 0)
     for e in di.get_paths(6):
         print(e.v, e.w, '=>', e.weight)

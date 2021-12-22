@@ -1,4 +1,4 @@
-'''
+"""
 层序遍历：
     - 就是按层从上往下遍历，每一层从左往右遍历。
 
@@ -10,10 +10,10 @@
         - 将当前结点的key，放入到键队列中
 
 层序遍历是二叉树的高级遍历，采用广度优先原则
-'''
+"""
 
-from 二叉查找树之前序_中序_后序遍历 import ErgodicBinaryTree
-from 数据结构与算法.数据结构.线性表.队列.队列 import Queue
+from D二叉查找树之前序_中序_后序遍历 import ErgodicBinaryTree
+from 数据结构与算法.数据结构.线性表.队列.A队列 import Queue
 
 
 class LayerErgodic(ErgodicBinaryTree):

@@ -1,4 +1,4 @@
-'''
+"""
 前提：
     有向图中无环
 
@@ -14,7 +14,8 @@ API设计：
         - get_order() 获取拓扑排序的所有顶点
     成员变量：
         - order 顶点的拓扑排序序列
-'''
+"""
+
 from 数据结构与算法.数据结构.图.有向图 import Digraph
 from 有向图之检测有环 import DirectedCycle
 from 有向图之顶点排序 import DepthFirstOrder
@@ -55,4 +56,4 @@ if __name__ == '__main__':
     print(topo.get_order)
 
     for i in topo.get_order:
-        print(i)
+        print(i, end=",")

@@ -1,4 +1,4 @@
-'''
+"""
 Prim算法：
     1、把图中一个顶点看作一个集合A，剩余的所有顶点看作一个集合B；
     2、找到两个集合之间的权重最小的边，以及该边连接的另一个顶点；
@@ -17,12 +17,13 @@ API设计：
         - dist_to 一个列表。索引代表顶点，值表示当前顶点和最小生成树之间的最短边的权重
         - marks 一个列表。索引代表顶点，值表示当前顶点是否在最小生成树中
         - queue 一个最小索引优先队列。存放树中顶点与非树中顶点之间的有效横切边的权重
-'''
+"""
+
 import sys
 
-from 数据结构与算法.数据结构.图.加权无向图 import EdgeWeightedGraph, Edge
+from 数据结构与算法.数据结构.图.加权无向图.加权无向图 import EdgeWeightedGraph, Edge
 from 数据结构与算法.数据结构.线性表.队列.优先队列之最小索引优先队列 import IndexMinPriorityQueue
-from 数据结构与算法.数据结构.线性表.队列.队列 import Queue
+from 数据结构与算法.数据结构.线性表.队列.A队列 import Queue
 
 
 class PrimMST:

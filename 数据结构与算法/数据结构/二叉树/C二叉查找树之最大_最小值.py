@@ -1,13 +1,13 @@
-'''
+"""
 获取二叉查找树中，值最大的键、值最小的键。
 在二叉查找树基础上新增以下两个成员方法：
     - min()：从树中找出值最小的key
     - __min(node)：从指定树node中，找出值最小的key
     - max()：从树中找出值最大的key
     - __max(node)：从指定树node中，找出值最大的key
-'''
+"""
 
-from 二叉查找树 import BinaryTree
+from B二叉查找树 import BinaryTree
 
 
 class CustomBinaryTree(BinaryTree):

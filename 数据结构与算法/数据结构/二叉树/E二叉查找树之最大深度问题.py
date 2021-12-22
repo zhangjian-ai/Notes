@@ -1,9 +1,9 @@
-'''
+"""
 最大深度：
     就是找出二叉树的最大层数。
-'''
+"""
 
-from 二叉查找树之前序_中序_后序遍历 import ErgodicBinaryTree
+from D二叉查找树之前序_中序_后序遍历 import ErgodicBinaryTree
 
 
 class DeepBinaryTree(ErgodicBinaryTree):

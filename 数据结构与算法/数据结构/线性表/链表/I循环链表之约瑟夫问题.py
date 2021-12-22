@@ -1,4 +1,4 @@
-'''
+"""
 约瑟夫问题：
     约瑟夫和他的朋友加上39个犹太人一起玩自杀游戏，但是约瑟夫和他的朋友不想死。
 规则：
@@ -6,9 +6,9 @@
     聪明的约瑟夫把自己和朋友的位置依次选在了16和31。
 思路：
     利用循环链表验证 约瑟夫 是否正确
-'''
+"""
 
-from 循环链表 import LoopLinkList
+from H循环链表 import LoopLinkList
 
 
 class Joseph(LoopLinkList):
@@ -38,7 +38,7 @@ class Joseph(LoopLinkList):
                 self.now = self.now.next
                 self.count = 0
             else:
-                # 把上一个结点当前结点，当前结点变为下一个结点
+                # 把上一个结点变为当前结点，当前结点变为下一个结点
                 self.pre = self.now
                 self.now = self.now.next
 

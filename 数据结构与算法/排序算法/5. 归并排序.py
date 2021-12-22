@@ -1,8 +1,8 @@
-'''
+"""
 归并排序（MERGE-SORT）是利用归并的思想实现的排序方法。
 该算法采用经典的分治（divide-and-conquer）策略。
 分治法将问题分(divide)成一些小的问题然后递归求解，而治(conquer)的阶段则将分的阶段得到的各答案"修补"在一起，即分而治之。
-'''
+"""
 
 a = [6, 4, 2, 1, 7, 5, 10, 22, 17, 23, 14, 3, 9, 16, 27, 33, 31, 22, 13, 6, 7]
 
@@ -18,10 +18,11 @@ def divide(seq, min, max):
 
     mid = int((min + max) / 2)
 
-    # 递归调用
+    # 递归调用。拆分序列
     divide(seq, min, mid)
     divide(seq, mid + 1, max)
 
+    # 合并序列。在合并的过程中实现排序
     merge(seq, min, mid, max)
 
 
@@ -45,6 +46,8 @@ def merge(arr, l, m, r):
     j = 0  # 初始化第二个子数组的索引
     k = l  # 初始归并子数组的索引
 
+    # 从两个临时数组中依次取出较小的值放入到原数组
+    # 直到 有一个临时数组被取完
     while i < n1 and j < n2:
         if L[i] <= R[j]:
             arr[k] = L[i]
@@ -54,6 +57,7 @@ def merge(arr, l, m, r):
             j += 1
         k += 1
 
+    # 下面两个 while 就是说，哪个临时 数组 还有剩，就将剩下的直接拷贝给原数组
     # 拷贝 L[] 的保留元素
     while i < n1:
         arr[k] = L[i]

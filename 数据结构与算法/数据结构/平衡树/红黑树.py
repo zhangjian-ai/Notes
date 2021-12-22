@@ -1,11 +1,11 @@
-'''
+"""
 红黑树：
-    - 用标准二叉树来实现的2-3二叉树，在树中用红连接来表示3-结点
+    - 用标准二叉树来实现的2-3查找树，在树中用红连接来表示3-结点
 
 红黑树是含有红黑连接并满足以下条件的二叉查找树：
     - 红连接均为左连接。
     - 没有任何一个结点同时和两条红连接相连。
-    - 红黑树是完全黑色平衡的，即任意空连接到根结点的路径上的黑连接数量相同。
+    - 红黑树是完全黑色平衡的，即任意红连接到根结点的路径上的黑连接数量相同。
     - 根结点的color总是黑色的
 
 红黑树的平衡化：
@@ -13,7 +13,7 @@
     前提：当前结点为h，它的右子结点为x。
     左旋过程：
         1、让x的左子结点变为h的右子结点：h.right = x.left;
-        2、让h称为x的左子结点：x.left = h;
+        2、让h成为x的左子结点：x.left = h;
         3、让h的color属性值变为x的color的属性值：x.color = h.color;
         4、让h的color属性变为RED：h.color = true;
 
@@ -21,7 +21,7 @@
     前提：当前结点为h，它的左子结点为x
     右旋过程：
         1、让x的右子结点称为h的左子结点：h.left = x.right;
-        2、让h称为x的右子结点：x.right = h;
+        2、让h成为x的右子结点：x.right = h;
         3、让h的color属性值变为x的color的属性值：x.color = h.color;
         4、让h的color属性变为RED：h.color = true;
 
@@ -56,7 +56,7 @@ API设计：
             - left 记录左子结点
             - right 记录右子结点
             - color 父结点指向当前结点的连接的颜色。bool值，true表示红色，false表示黑色
-'''
+"""
 
 
 class RedBlackTree:
@@ -150,7 +150,7 @@ class RedBlackTree:
         return self.__get(self.root, key)
 
     def __get(self, h, key):
-        # 如果h为None，则创建一个红色的新结点返回
+        # 如果h为None，表示在递归过程中没有找到存在该key的结点，直接返回None
         if not h:
             return None
 

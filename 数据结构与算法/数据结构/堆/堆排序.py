@@ -1,4 +1,4 @@
-'''
+"""
 堆排序：
     - 利用堆的特性，完成对一个无序列表从小到大的排序。
 API设计：
@@ -10,8 +10,8 @@ API设计：
         - create_heap(source) 根据原始数组source创建出堆heap
         - less(source, i, j) 判断索引i处的值是否小于索引j处的值
         - exch(source, i, j) 交换索引i 和 索引j 处的值
-        - sink(source, target, scope) 对target索引处的值做下沉处理，下沉范围是range
-'''
+        - sink(source, target, scope) 对target索引处的值做下沉处理，下沉范围是 scope
+"""
 
 
 class HeapSort:

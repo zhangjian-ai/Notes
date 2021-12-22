@@ -1,4 +1,4 @@
-'''
+"""
 最小优先队列：
     和最大优先队列相反，把最小值放到索引1处，那么每次取到的值就是最小值了。
     最要的区别就在于上浮、下沉算法的不同。
@@ -9,7 +9,7 @@ API设计：
     成员方法：
         - less(i, j) 判断索引 i 处的值是否小于索引 j 处的值，返回 bool。
         - exch(i, j) 交换索引 i 和索引 j 处的值。
-        - del_max() 删除队列中最大的元素，并返回这个元素。
+        - del_min() 删除队列中最小的元素，并返回这个元素。
         - insert(item) 往队列中插入一个元素 item。
         - swim(k) 使用上浮算法，使索引 k 处的值能在队列中处于一个正确的位置。
         - sink(k) 使用下沉算法，使索引 k 处的值能在队列中处于一个正确的位置。
@@ -18,7 +18,7 @@ API设计：
     成员变量：
         - items 用来保存元素的数组，python中用列表代替
         - N 队列中元素的个数
-'''
+"""
 
 
 class MinPriorityQueue:
@@ -37,7 +37,7 @@ class MinPriorityQueue:
         self.items[i], self.items[j] = self.items[j], self.items[i]
 
     def del_min(self):
-        # 索引1处的值就是最大值
+        # 索引1处的值就是最小值
         max_value = self.items[1]
         self.exch(1, self.N)
         # 判断一下是否有值可删
@@ -58,8 +58,8 @@ class MinPriorityQueue:
 
     def swim(self, index):
         while index > 1:
-            # 判断当前结点是否比父结点大，如果是就交换位置并继续循环
-            if not self.less(int(index / 2), index):
+            # 判断当前结点是否比父结点小，如果是就交换位置并继续循环
+            if self.less(index, int(index / 2)):
                 self.exch(index, int(index / 2))
                 index = int(index / 2)
                 continue
@@ -80,6 +80,16 @@ class MinPriorityQueue:
                 continue
 
             break
+
+    def contains(self, item):
+        """
+        新加一个方法
+        检查item在队列中是否存在
+        """
+        for i in self.items:
+            if i == item:
+                return True
+        return False
 
     @property
     def size(self):
