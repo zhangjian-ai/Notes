@@ -21,37 +21,11 @@ brotli, roundrobin, pyzmq, psutil, msgpack, geventhttpclient, Flask-Cors, Flask-
 '''
 ```
 
-- Locust 参数说明
-  - -h, --help    查看帮助
-  - -H HOST, --host=HOST    指定被测试的主机，采用以格式：http://10.21.32.33
-  - --web-host=WEB_HOST    指定运行 Locust Web 页面的主机，默认为空 ''。
-  - -P PORT, --port=PORT, --web-port=PORT    指定 --web-host 的端口，默认是8089
-  - -f LOCUSTFILE, --locustfile=LOCUSTFILE    指定运行 Locust 性能测试文件，默认为: locustfile.py
-  - --csv=CSVFILEBASE, --csv-base-name=CSVFILEBASE    以CSV格式存储当前请求测试数据。
-  - --master    Locust 分布式模式使用，当前节点为 master 节点。
-  - --worker    Locust 分布式模式使用，当前节点为 slave 节点。
-  - --master-host=MASTER_HOST    分布式模式运行，设置 master 节点的主机或 IP 地址，只在与 --slave 节点一起运行时使用，默认为：127.0.0.1.
-  - --master-port=MASTER_PORT    分布式模式运行， 设置 master 节点的端口号，只在与 --slave 节点一起运行时使用，默认为：5557。注意，slave 节点也将连接到这个端口+1 上的 master 节点。
-  - --master-bind-host=MASTER_BIND_HOST    Interfaces (hostname, ip) that locust master should bind to. Only used when running with --master. Defaults to * (all available interfaces).
-  - --master-bind-port=MASTER_BIND_PORT    Port that locust master should bind to. Only used when running with --master. Defaults to 5557. Note that Locust will also use this port + 1, so by default the master node will bind to 5557 and 5558.
-  - --expect-slaves=EXPECT_SLAVES    How many slaves master should expect to connect before starting the test (only when --no-web used).
-  - --no-web    no-web 模式运行测试，需要 -c 和 -r 配合使用.
-  - -c NUM_CLIENTS, --clients=NUM_CLIENTS    指定并发用户数，作用于 --no-web 模式。
-  - -r HATCH_RATE, --hatch-rate=HATCH_RATE    指定每秒启动的用户数，作用于 --no-web 模式。
-  - -t RUN_TIME, --run-time=RUN_TIME    设置运行时间, 例如： (300s, 20m, 3h, 1h30m). 作用于 --no-web 模式。
-  - -L LOGLEVEL, --loglevel=LOGLEVEL    选择 log 级别（DEBUG/INFO/WARNING/ERROR/CRITICAL）. 默认是 INFO.
-  - --logfile=LOGFILE    日志文件路径。如果没有设置，日志将去 stdout/stderr
-  - --print-stats    在控制台中打印数据
-  - --only-summary    只打印摘要统计
-  - --no-reset-stats    Do not reset statistics once hatching has been completed。
-  - -l, --list    显示测试类, 配置 -f 参数使用
-  - --show-task-ratio    打印 locust 测试类的任务执行比例，配合 -f 参数使用.
-  - --show-task-ratio-json    以 json 格式打印 locust 测试类的任务执行比例，配合 -f 参数使用.
-  - -V, --version    查看当前 Locust 工具的版本.
+
 
 ### 两个关键的类（需要被继承使用）
 
-- HTTPLocust：代码中客户端类需要继承该类，基于Locust类实现，同时封装requests库。
+- HTTPLocust：代码中客户端类需要继承该类，基于Locust类实现，同时封装requests库。下面是类中常用的属性及设置：
 
   > <font style="color: red">We’ve renamed the `Locust` and `HttpLocust` classes to `User` and `HttpUser` in version 1.0</font>
 
@@ -150,7 +124,36 @@ brotli, roundrobin, pyzmq, psutil, msgpack, geventhttpclient, Flask-Cors, Flask-
 
 ### 启动Locust
 
-> 以下是部分常用命令，详情可参考上面参数详解。可轻松组装出你想要的命令。
+> 以下是部分常用命令，详情可参考下面参数详解。可轻松组装出你想要的命令。
+>
+> Locust 参数说明
+>
+> - -h, --help    查看帮助
+> - -H HOST, --host=HOST    指定被测试的主机，采用以格式：http://10.21.32.33
+> - --web-host=WEB_HOST    指定运行 Locust Web 页面的主机，默认为空 ''。
+> - -P PORT, --port=PORT, --web-port=PORT    指定 --web-host 的端口，默认是8089
+> - -f LOCUSTFILE, --locustfile=LOCUSTFILE    指定运行 Locust 性能测试文件，默认为: locustfile.py
+> - --csv=CSVFILEBASE, --csv-base-name=CSVFILEBASE    以CSV格式存储当前请求测试数据。
+> - --master    Locust 分布式模式使用，当前节点为 master 节点。
+> - --worker    Locust 分布式模式使用，当前节点为 slave 节点。
+> - --master-host=MASTER_HOST    分布式模式运行，设置 master 节点的主机或 IP 地址，只在与 --slave 节点一起运行时使用，默认为：127.0.0.1.
+> - --master-port=MASTER_PORT    分布式模式运行， 设置 master 节点的端口号，只在与 --slave 节点一起运行时使用，默认为：5557。注意，slave 节点也将连接到这个端口+1 上的 master 节点。
+> - --master-bind-host=MASTER_BIND_HOST    Interfaces (hostname, ip) that locust master should bind to. Only used when running with --master. Defaults to * (all available interfaces).
+> - --master-bind-port=MASTER_BIND_PORT    Port that locust master should bind to. Only used when running with --master. Defaults to 5557. Note that Locust will also use this port + 1, so by default the master node will bind to 5557 and 5558.
+> - --expect-slaves=EXPECT_SLAVES    How many slaves master should expect to connect before starting the test (only when --no-web used).
+> - --no-web    no-web 模式运行测试，需要 -c 和 -r 配合使用.
+> - -c NUM_CLIENTS, --clients=NUM_CLIENTS    指定并发用户数，作用于 --no-web 模式。
+> - -r HATCH_RATE, --hatch-rate=HATCH_RATE    指定每秒启动的用户数，作用于 --no-web 模式。
+> - -t RUN_TIME, --run-time=RUN_TIME    设置运行时间, 例如： (300s, 20m, 3h, 1h30m). 作用于 --no-web 模式。
+> - -L LOGLEVEL, --loglevel=LOGLEVEL    选择 log 级别（DEBUG/INFO/WARNING/ERROR/CRITICAL）. 默认是 INFO.
+> - --logfile=LOGFILE    日志文件路径。如果没有设置，日志将去 stdout/stderr
+> - --print-stats    在控制台中打印数据
+> - --only-summary    只打印摘要统计
+> - --no-reset-stats    Do not reset statistics once hatching has been completed。
+> - -l, --list    显示测试类, 配置 -f 参数使用
+> - --show-task-ratio    打印 locust 测试类的任务执行比例，配合 -f 参数使用.
+> - --show-task-ratio-json    以 json 格式打印 locust 测试类的任务执行比例，配合 -f 参数使用.
+> - -V, --version    查看当前 Locust 工具的版本.
 
 - 1、如果启动的locust文件名为locustfile.py并位于当前工作目录中，可以在编译器中直接运行该文件，或者通过cmd，执行如下命令：
 
@@ -337,7 +340,7 @@ class Task(TaskSet):
                   user='root',
                   password='zm_123456',
                   db='test_plat')
-
+ 
     def on_start(self):
         # 前置登陆
         id = random.randint(1, 1500)

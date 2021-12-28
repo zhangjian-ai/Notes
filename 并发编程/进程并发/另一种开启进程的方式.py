@@ -11,7 +11,14 @@ class MyProcess(Process):
 
     def run(self) -> None:
         """
-        继承方式下，子进程要完成的代码放这里
+        继承方式下，子进程要完成的代码放这里。看一下基类，run 函数的源码便知，为什么要放这里。源码如下：
+        def run(self):
+            '''
+            Method to be run in sub-process; can be overridden in sub-class
+            '''
+            if self._target:
+                self._target(*self._args, **self._kwargs)
+
         :return:
         """
         time.sleep(2)

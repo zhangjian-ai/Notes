@@ -14,7 +14,7 @@ def consumer():
     print(t.getName())
 
 
-# 面上对象开启线程
+# 面向对象开启线程
 class MyThread(Thread):
 
     def __init__(self, a):
@@ -29,13 +29,13 @@ class MyThread(Thread):
 
 # 开启线程
 t_list = []
-for i in range(100):
+for i in range(10):
     t = Thread(target=consumer, )
     # print(t.getName())  # 线程名
     t.start()
     t_list.append(t)
 
-for i in range(50):
+for i in range(5):
     t = MyThread(i)
     t.start()
     t_list.append(t)

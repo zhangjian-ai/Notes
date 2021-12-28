@@ -8,7 +8,6 @@ from multiprocessing import Queue, Process
 
 def consumer(q):
     while True:
-        time.sleep(1)
         product = q.get()
         if product != None:
             print("消费者消费了产品：【%s】" % product)
@@ -41,7 +40,8 @@ if __name__ == '__main__':
     # 一个消费者
     c = Process(target=consumer, args=(q,))
     c.start()
+    c.join()
 
     # put一个结束表示
-    time.sleep(15)
+    time.sleep(5)
     q.put(None)

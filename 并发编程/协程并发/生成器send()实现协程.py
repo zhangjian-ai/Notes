@@ -9,7 +9,7 @@ def decorator(func):
 
     def wrapper(*args, **kwargs):
         res = func(*args, **kwargs)
-        res.__next__()
+        print(res.__next__())
         # 而这完全等价
         # next(res)
         return res
@@ -24,7 +24,7 @@ def consumer(n):
     必须使用next()或者send(None)
     这里借助装饰器完成第一次调用以开启协程模式
     """
-    info = ''
+    info = '初始值'
     while True:
         time.sleep(n)
         msg = yield info
@@ -32,7 +32,7 @@ def consumer(n):
         info = f"第 {msg} 次等待中 ..."
 
 
-def producer(c1, c2):
+def producer(c1):
     """
     producer和consumer函数在一个线程内执行，通过调用send方法和yield互相切换，实现协程的功能。
     """
@@ -40,12 +40,12 @@ def producer(c1, c2):
     while n < 5:
         print(f"current producing msg : {n}")
         print(c1.send(n))
-        print(c2.send(n))
+        # print(c2.send(n))
         n += 1
 
 
 if __name__ == '__main__':
     c1 = consumer(2)
-    c2 = consumer(3)
+    # c2 = consumer(3)
 
-    producer(c1, c2)
+    producer(c1)

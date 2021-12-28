@@ -19,4 +19,4 @@ while True:
             break
     conn.close()  # 断开server到client的链接
 
-server.close()  # 服务器关闭
+# server.close()  # 服务器关闭

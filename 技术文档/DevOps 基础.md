@@ -144,7 +144,7 @@ AutoTest_MeiDuo		AutomationTestPlat	Repo			automation_test		jmeter_ant		pypi
 >
 >   
 >
-> 可以使用 ～数字表示：
+> 可以使用 ～数字 表示：
 >
 > - HEAD~0 表示当前版本
 > - HEAD~1 上一个版本
@@ -244,7 +244,7 @@ c096fbc (HEAD -> master) first time commit   # commit id: c096fbc
 
 
 
-示例：
+示例一：
 
 ```shell
 # 将本底仓库更新 推送到 远程仓库 的 master 分支
@@ -259,15 +259,61 @@ To github.com:zhangjian-ai/Repo.git
 
 
 
+示例二：
+
+```shell
+# push 本地 dev 分支到 远程仓库 dev2 分支。
+zhangjian@zhangjiandeMacBook-Pro Repo % git push origin dev:dev2
+Enumerating objects: 6, done.
+Counting objects: 100% (6/6), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (3/3), done.
+Writing objects: 100% (4/4), 363 bytes | 363.00 KiB/s, done.
+Total 4 (delta 1), reused 0 (delta 0)
+remote: Resolving deltas: 100% (1/1), completed with 1 local object.
+remote:
+remote: Create a pull request for 'dev2' on GitHub by visiting:
+remote:      https://github.com/zhangjian-ai/Repo/pull/new/dev2
+remote:
+To github.com:zhangjian-ai/Repo.git
+ * [new branch]      dev -> dev2
+ 
+# 查看远程仓库，新创建分支 dev2
+zhangjian@zhangjiandeMacBook-Pro Repo % git branch -a
+* dev
+  master
+  test
+  remotes/origin/dev
+  remotes/origin/dev2
+  remotes/origin/master
+  
+# 删除远程仓库分支 dev2
+zhangjian@zhangjiandeMacBook-Pro Repo % git push origin --delete dev2
+To github.com:zhangjian-ai/Repo.git
+ - [deleted]         dev2
+ 
+# 再次查看远程仓库， dev2 分支已被删除
+zhangjian@zhangjiandeMacBook-Pro Repo % git branch -a
+* dev
+  master
+  test
+  remotes/origin/dev
+  remotes/origin/master
+```
+
+
+
+
+
 ### git branch
 
 `git branch`命令的作用主要是做 **本地分支** 管理操作。
 
 1. 查看本地分支：`git branch`
 2. 查看本地和远程分支：`git branch -a`
-3. 新建名字为`test`的分支：`git branch test`
+3. 新建名字为`test`的本地分支：`git branch test`
 4. 将`test`分支名字改为`dev`：`git branch -m test dev`
-5. 删除名字为`dev`的分支：`git branch -d dev`
+5. 删除名字为`dev`的本地分支：`git branch -d dev`
 
 
 
@@ -682,13 +728,153 @@ ad39985d (zhangjian 2021-12-02 22:16:06 +0800 2) <p>为tag示例添加一行</p>
 
 
 
-
-
-
-
-
-
 # Docker
+
+## Docker 命令
+
+### 基础命令
+
+```shell
+docker search mysql															# 搜索官方仓库中 mysql 相关的镜像
+docker pull ${CONTAINER NAME}                    #拉取镜像。如果镜像前没有指定仓库，那么久默认到官方仓库拉取镜像
+docker images                                    #查看本地所有镜像
+docker ps                                        #查看所有正在运行的容器，加-q则只返回id
+docker ps -a                                     #查看所有容器，加-q则只返回id
+docker rmi ${IMAGE NAME/ID}                      #删除镜像
+docker rm ${CONTAINER NAME/ID}                   #删除容器
+docker save ${IMAGE NAME} > ${FILE NAME}.tar     #将镜像保存成文件
+docker load < ${FILE NAME}.tar                   #从文件加载镜像
+docker start/restart ${CONTAINER NAME/ID}                #运行一个以前运行过的容器
+docker stop ${CONTAINER NAME/ID}                 #停止一个正在运行的容器
+
+docker logs ${CONTAINER NAME/ID}                 #显示运行容器的日志
+		##查看redis容器日志，默认参数
+		docker logs rabbitmq
+		##查看redis容器日志，参数：-f  跟踪日志输出；-t   显示时间戳；--tail  仅列出最新N条容器日志；
+		docker logs -f -t --tail=20 redis
+		##查看容器redis从2019年05月21日后的最新10条日志。
+		docker logs --since="2019-05-21" --tail=10 redis
+
+docker run [选项参数] ${IMAGE NAME} [命令行参数]    #运行一个容器
+    --name ${container name}                          #设置容器名称
+    -p ${host port}:${container port}                 #映射主机和容器内的端口
+    -e ${env name}=${env value}                       #添加环境变量
+    -d                                                #后台运行
+    -v ${host folder path}:${container folder path}   #将主机目录挂在到容器内
+    --restart=always																	#容器随系统自启
+    	no – 默认值，如果容器挂掉不自动重启
+			on-failure – 当容器以非 0 码退出时重启容器，同时可接受一个可选的最大重启次数参数 (e.g. on-failure:10)
+			always – 不管退出码是多少都要重启
+			
+		--link <origin container name/id>:alias				# 让容器之间即便不对外暴露端口，也可以实现通信
+			# 创建并启动名为selenium_hub的容器
+			docker run -d --name selenium_hub selenium/hub
+			
+			# 创建并启动名为node的容器，并把该容器和名为selenium_hub的容器链接起来。
+			docker run -d --name node --link selenium_hub:hub selenium/node-chrome-debug
+			
+			# 说明：
+			# 		selenium_hub是上面启动的1cbbf6f07804（容器ID）容器的名字，这里作为源容器，hub是该容器在link下的别名（alias），通					俗易懂的讲，站在node容器的角度，selenium_hub和hub都是1cbbf6f07804容器的名字，并且作为容器的hostname，node用这2个名					字中的哪一个都可以访问到1cbbf6f07804容器并与之通信（docker通过DNS自动解析）。
+```
+
+
+
+### 高级命令
+
+```shell
+docker ps -f "status=exited"                                   #显示所有退出的容器
+docker ps -a -q                                                #显示所有容器id
+docker ps -f "status=exited" -q                                #显示所有退出容器的id
+docker restart $(docker ps -q)                                 #重启所有正在运行的容器
+docker stop $(docker ps -a -q)                                 #停止所有容器
+docker rm $(docker ps -a -q)                                   #删除所有容器
+docker rm $(docker ps -f "status=exited" -q)                   #删除所有退出的容器
+docker rm $(docker stop $(docker ps -a -q))                    #停止并删除所有容器
+docker start $(docker ps -a -q)                                #启动所有容器
+docker rmi $(docker images -a -q)                              #删除所有镜像
+
+docker top ${CONTAINER NAME/ID}                                #显示一个容器的top信息
+
+docker kill -s KILL [container id]														# 杀死一个或多个指定容器进程
+
+docker stats                                                   #显示容器统计信息(正在运行)
+    docker stats -a                                            #显示所有容器的统计信息(包括没有运行的)
+    docker stats -a --no-stream                                #显示所有容器的统计信息(包括没有运行的) ，只显示一次
+    docker stats --no-stream | sort -k8 -h                     #统计容器信息并以使用流量作为倒序
+    
+docker system 
+      docker system df           #显示硬盘占用
+      docker system events       #显示容器的实时事件
+      docker system info         #显示系统信息
+      docker system prune        #清理文件
+      
+docker build      
+    # 构建docker镜像 -f 指定 Dockerfile 文件；-t 指定镜像名称及tag
+    docker build -f /docker/dockerfile/mycentos -t mycentos:1.1
+    
+    # 如果当前目录下存在名为 Dockerfile 的文件，那么可以向下面这样构建。注意： . 表示当前目录，其他目录同理
+    docker build -t xx/gitlab .			# 构建时，可以指定镜像仓库（XX），不指定 tag 时，使用latest作为tag
+    
+docker commit
+		# 参数：-a 提交的镜像作者；-c 使用Dockerfile指令来创建镜像；-m :提交时的说明文字；-p :在commit时，将容器暂停
+		# 将运行中的容器打包成一个镜像
+		docker commit -m "描述信息" 容器名/容器ID 镜像名:镜像Tag 
+		docker commit -m "description info" TP_web web:latest
+
+docker push
+		# 将本地镜像push到仓库之前，要保证镜像已经指定归属仓库并打了tag。如下，给一个镜像指定仓库
+		docker tag nginx:latest zhangjian1/nginx:latest
+		
+		# push 到Hub仓库 zhangjian1，这里需要客户端登陆
+		docker login --username=[username] --password=[password]
+		
+		# push 镜像。
+		docker push zhangjian1/nginx:latest
+		
+docker cp
+		##将rabbitmq容器中的文件copy至本地路径
+		docker cp rabbitmq:/[container_path] [local_path]
+		
+		##将主机文件copy至rabbitmq容器
+		docker cp [local_path] rabbitmq:/[container_path]/
+		
+		##将主机文件copy至rabbitmq容器，目录重命名为[container_path]（注意与非重命名copy的区别）
+		docker cp [local_path] rabbitmq:/[container_path]
+		
+docker exec
+		# 参数：-i  交互式模式；-t  分配一个伪终端
+		docker exec -it ${CONTAINER NAME/ID} /bin/bash                 #进入容器内。/bin/bash 表示伪终端使用的shell程序
+		
+		# 以交互模式在容器中执行命令，结果返回到当前终端屏幕
+		docker exec -i -t centos ls -l /tmp
+		
+		# 以分离模式在容器中执行命令，程序后台运行，结果不会反馈到当前终端
+		docker exec -d centos touch cache.txt 
+		
+docker network
+		# 查看网络连接
+		docker network ls
+		
+		# 查看网络连接详情
+		docker network inspect 网络名称/网络ID
+		
+		# 容器连接网络
+		docker network connect <network> <container>
+		
+		# 容器断开网络连接，-f 表示强制
+		docker network disconnect [-f] <network> <container>
+		
+		# 创建网络
+		docker network create <network>
+		# 创建网络，指定子网网段和网关。demo_02 就是 网络的名字。通过 docker network inspect demo_02 即可查看新建网络详情
+		docker network create --subnet 172.36.0.0/24 --gateway 172.36.0.1 demo_02
+		
+		# 删除网络
+		docker network rm <network>
+		
+		# 删除所有没有使用的网络
+		docker network prune
+```
 
 
 

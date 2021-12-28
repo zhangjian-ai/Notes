@@ -19,11 +19,11 @@ class NewsPipeline:
     """
     新闻消息管道类
     """
+    sql = "insert into chatroom.news(title, summary, detail_url, img_url, tag) values (%s, %s, %s, %s, %s)"
 
     def process_item(self, item, spider):
-        sql = "insert into chatroom.news(title, summary, detail_url, img_url, tag) values (%s, %s, %s, %s, %s)"
         if isinstance(item, NewsItem):
-            spider.db_pool.execute_one(sql=sql, param=(item.get("title"), item.get("summary"), item.get("detail_url"),
+            spider.db_pool.execute_one(sql=self.sql, param=(item.get("title"), item.get("summary"), item.get("detail_url"),
                                                        item.get("img_url"), item.get("tag")))
 
             spider.count += 1

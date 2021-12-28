@@ -1,9 +1,8 @@
+import socket
+import gevent
 from gevent import monkey
 
 monkey.patch_all()
-
-import socket
-import gevent
 
 
 def accept_conn(conn):

@@ -1,7 +1,7 @@
-### 1、详解`__new__`、`__init__`、`__call__`及对象创建过程
+### 1、Python对象创建过程
 
-`__new__`： 对象的创建，是一个静态方法，第一个参数是cls，返回一个实例好的空对象。
-`__init__`： 对象的初始化， 是一个实例方法，第一个参数是self，为对象加载初始值。
+`__new__`： 对象的创建，是一个类方法，第一个参数是cls，返回一个实例好的空对象。
+`__init__`： 对象的初始化， 是一个实例方法，第一个参数是self，为空对象加载初始值。
 `__call__`： 对象是callable的，也就是可以被调用，注意不是类，一定是对象。对象被调用时，等同于由当前类调用元类中`__call__`函数。
 
 类：理解为是元类(type)的实例对象，所以当运行 类()  时，元类中的`__call__`函数将会被调用。
@@ -29,20 +29,26 @@ type中`__call__`函数的实现逻辑：
 
 
 
-### 2、Python生成器send的应用场景
+### 2、Python生成器send方法
 
 ``` python
-# 生成器是一种使用普通函数语法定义(包含yield关键字即可)的迭代器，迭代器的有点是可以按需获取序列值，而不需要构建出一整个列表
-# send是实现外部访问生成器内部的方法。send()的两个功能：1.传值，接受一个参数(传递给生成器的消息，可以是对象)；2.next()。
+# 生成器是一种使用普通函数语法定义(包含yield关键字即可)的迭代器。
+# 迭代器的特点是可以按需获取序列值，而不是一次性实例化出整个可迭代对象。
+
+# send是实现外部访问生成器内部的方法。
+# send()的两个功能：
+# 		1.传值，接受一个参数(传递给生成器的消息，可以是对象)；
+#			2.迭代下一个值，效果同next()。
+
 # 应用场景：1、实现一个交互式的计算器(没啥用) 2、实现协程
 
 # yield本身就是一种在单线程下可以保存任务运行状态的方法
-#   - 1、yiled可以保存状态，yield的状态保存与操作系统的保存线程状态很像，但是yield是代码级别控制的，更轻量级
+#   - 1、yiled可以保存状态，yield的状态保存与操作系统的保存线程状态很像，但是yield是代码级别控制的，更轻量
 #   - 2、send可以把一个函数的结果传给另外一个函数，以此实现单线程内程序之间的切换
 import time
 
 def decorator(func):
-    """实现一个装饰器来开启协程"""
+    """实现一个装饰器来实现生成器的首次迭代"""
 
     def wrapper(*args, **kwargs):
         res = func(*args, **kwargs)
@@ -90,11 +96,11 @@ if __name__ == '__main__':
 ``` python
 # -------------动态导入模块中的类------------
 '''
-1. 首先import相关模块`import importlib`
+1. 首先import相关工具模块`import importlib`
 
-2. 加载你想要加载的模块`model = importlib.import_module(模块名称)`
+2. 加载你想要加载的模块`module = importlib.import_module(模块名称)`
 
-3. 获取类对象`api_class = getattr(model, 类名)`
+3. 获取类对象`api_class = getattr(module, 类名)`
 
 4. 创建类对象的实例`api_instance = api_class()`
 
@@ -136,8 +142,39 @@ type(name, bases, dict)
     clangs.say()
     print(clangs.name)
     
+
+# 示例二：结合前面讲的对象创建过程，自定义一个元类，来创建一个类
+		class MyType(type):
+      def __call__(cls, *args, **kwargs):
+          instance = cls.__new__(cls, *args, **kwargs)
+
+          if isinstance(instance, cls):
+              instance.__init__(*args, **kwargs)
+              return instance
+
+          return None
+
+		# 定义魔法方法，实现在动态创建类时定义实例属性
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+    def get_name(self):
+        return self.name
+
+    def set_name(self, name):
+        self.name = name
+
+    B = MyType("B", (object,), dict(get_name=get_name, __init__=__init__, set_name=set_name, ref="001"))
+
+    if __name__ == '__main__':
+        b = B("xiaozhang", 29)
+        print(b.get_name())  # xiaozhang
+        b.set_name("xiaowang")
+        print(b.get_name())  # xiaowang
+    
 # 总结：
-#   - 通过type添加的属性是类属性，并不是实例属性
+#   - 通过type中 dict 直接添加的属性是类属性，不是实例属性
 #   - 通过type可以给类添加普通方法，静态方法，类方法，效果跟class一样
 #   - type创建类的效果，包括继承等的使用性质和class创建的类一样。本质class创建类的本质就是用type创建。
 
@@ -148,7 +185,7 @@ type(name, bases, dict)
 
 ```
 
-### 4、Python类属性和实例属性的区别
+### 4、Python类属性和实例属性
 
 ``` python
 '''
@@ -160,14 +197,22 @@ type(name, bases, dict)
 调用类属性:
     - 果需要在类外修改类属性，必须通过类对象去引用然后进行修改。
     - 如果通过实例对象去引用，会产生一个同名的实例属性，这种方式修改的是实例属性，不会影响到类属性，
-      并且之后如果通过实例对象去引用该名称的属性，实例属性会强制屏蔽掉类属性，即引用的是实例属性，除非删除了该实例属性。
+      并且之后如果通过实例对象去引用该名称的属性，同名的实例属性会强制屏蔽掉类属性，即引用的是实例属性，除非删除了该实例属性。
 '''
 ```
 
 ### 5、Python动态创建函数
 
 ``` python
-# lambda 动态创建匿名函数
+# lambda 动态创建匿名函数。通常用在推导式和几个高阶函数中
+
+# 示例：
+    score = [100, 90, 85, 95, 88, 93, 100, 79, 86, 99]
+    # 过滤出成绩大于95的分数
+    # filter 返回的是一个可迭代对象
+    filter_score = list(filter(lambda x: x > 95, score))
+
+    print(filter_score)  # [100, 100, 99]
 ```
 
 ### 6、socket如何解决粘包问题
@@ -184,7 +229,7 @@ type(name, bases, dict)
 
 3. 进行MSS（最大报文长度）大小的TCP分段，当TCP报文长度-TCP头部长度>MSS的时候将发生拆包。
 
-4. 接收方法不及时读取套接字缓冲区数据，这将发生粘包。
+4. 接收方不及时读取套接字缓冲区数据，这将发生粘包。
 
 **B、如何处理粘包、拆包**
 
@@ -192,7 +237,7 @@ type(name, bases, dict)
 
 2. 设置定长消息，服务端每次读取既定长度的内容作为一条完整消息，当消息不够长时，空位补上固定字符。
 
-3. 设置消息边界，服务端从网络流中按消息编辑分离出消息内容，一般使用‘\n’。
+3. 设置消息边界，服务端从网络流中按消息边界分离出消息内容，一般使用‘\n’。
 
 
 
@@ -248,13 +293,13 @@ sys.path 系统导包路径列表说明：
 
 **.pyc文件的介绍：**
 
-> ​		导入时会产生一个.pyc的字节码文件，此文件是当第一次导入时python解释器会将被导入的模块预解释成字节码的文件，下次再导入时python解释器则不会做预解释而是直接拿.pyc文件使用，这样就不会每次导入时做解释的操作，节省时间，当修改模块文件的内容时，python解释器会根据.pyc文件和模块的修改时间判断有没有对模块做修改，如果模块的修改时间比.pyc文件的晚说明模块已经被修改  Python解释器会将模块重新解释成.pyc文件。
+> ​		导入时会产生一个.pyc的字节码文件，此文件是当第一次导入时python解释器会将被导入的模块预解释成字节码的文件，下次再导入时python解释器则不会做预解释而是直接拿.pyc文件使用，这样就不会每次导入时做解释的操作，节省时间，当修改模块文件的内容时，python解释器会根据.pyc文件和模块的修改时间判断有没有对模块做修改，如果模块的修改时间比.pyc文件的晚说明模块已经被修改 python解释器 会将模块重新解释成.pyc文件。
 
 
 
-### 9、python中`__gt__、__lt__`等富比较方法
+### 9、python中的富比较方法
 
-**运算符号与方法名称的对应关系：**
+**运算符号与比较方法的映射关系：**
 
 ​	x<y 调用 `x.__lt__(y)`、
 
@@ -314,7 +359,7 @@ execute __ge__
 
   > 注：数值类型和字符串类型的对象在Python中是不可变的，这意味着无法修改这个对象的值，每次对引用变量的修改，实际上都是新创建了一个对象重新赋值。
 
-  - **引用计数：**PyObject是每个对象必有的内容，其中ob_refcnt就是做为引用计数。当一个对象有新的引用时，它的ob_refcnt就会增加，当引用它的对象被删除，它的ob_refcnt就会减少.引用计数为0时，该对象生命就结束了。
+  - **引用计数：**PyObject是每个对象必有的内容，其中ob_refcnt就是做为引用计数。当一个对象有新的引用时，它的ob_refcnt就会增加，当引用它的对象被删除，它的ob_refcnt就会减少。当引用计数为0时，该对象生命就结束了。
   - **标记-清除机制：**基本思路是先按需分配，等到没有空闲内存的时候从寄存器和程序栈上的引用出发，遍历以对象为节点、以引用为边构成的图，把所有可以访问到的对象打上标记，然后清扫一遍内存空间，把所有没标记的对象释放。
   - **分代回收：**将系统中的所有内存块根据其存活时间划分为不同的集合，每个集合就成为一个“代”，垃圾收集频率随着“代”的存活时间的增大而减小，存活时间通常利用经过几次垃圾回收来度量。
 
@@ -326,15 +371,15 @@ execute __ge__
     - 执行代码。
     - 释放GIL。
   - 释放GIL的条件：
-    - 执行python2虚拟机运行1000字节指令  或者  执行python3虚拟机运行时间15ms字节。
-    - 线程主动让出控制(遭遇sleep或者IO操作也将触发)。
-    - 把线程设置为睡眠状态(等待状态)。
+    - 执行python2虚拟机运行1000字节指令  或者  执行python3虚拟机运行时间15ms。类似于时间片。
+    - 线程遇到阻塞时，主动释放GIL（例如：sleep或者IO操作）。
+    - 把线程设置为睡眠状态（等待状态）。
   - python下的多线程对CPU密集型代码(各种循环处理、计数等等)并不友好，对IO密集型代码(文件处理、网络爬虫等)比较友好。
   - 每个进程有各自独立的GIL，互不干扰，所以CPU密集型代码在python中开启多进程更适合。
 
 
 
-### 11、Python 字节码分析 dis 模块
+### 11、Python 字节码分析
 
 > Python 代码是先被编译为字节码后，再由Python虚拟机来执行字节码， Python的字节码是一种类似汇编指令的中间语言，一个Python 语句会对应若干字节码指令，虚拟机一条一条执行字节码指令，从而完成程序执行。
 > Python dis 模块支持对Python代码进行反汇编，生成字节码指令。
@@ -379,7 +424,7 @@ if __name__ == '__main__':
 
   8          12 LOAD_FAST                0 (a)		# 加载变量a
              14 LOAD_CONST               3 (1)		# 加载常量1
-             16 INPLACE_SUBTRACT									# 就地执行减法操作
+             16 INPLACE_SUBTRACT									# 就地执行减法操作并替换。结合上面我们提到了字符和数值对象是不可变的
              18 STORE_FAST               0 (a)		# 保存变量a
              20 JUMP_ABSOLUTE            4				# 跳转到下一次循环
 
@@ -411,15 +456,24 @@ def func():
         print(a)
   
  
-  # 所有字节码共256个
+  # 所有 字节码指令 共256个，从下面打印可知，还有很多保留索引未使用，为后续扩展保留位置
   code = dis.opname
-  print(code)
   print(len(code))  # 256
+  print(code)  # ['<0>', 'POP_TOP', 'ROT_TWO', 'ROT_THREE', 'DUP_TOP', 'DUP_TOP_TWO', 'ROT_FOUR', '<7>', '<8>', 'NOP', 'UNARY_POSITIVE', 'UNARY_NEGATIVE', 'UNARY_NOT', '<13>', '<14>', 'UNARY_INVERT', 'BINARY_MATRIX_MULTIPLY', 'INPLACE_MATRIX_MULTIPLY', '<18>', 'BINARY_POWER', 'BINARY_MULTIPLY', '<21>', 'BINARY_MODULO', 'BINARY_ADD', 'BINARY_SUBTRACT', 'BINARY_SUBSCR', 'BINARY_FLOOR_DIVIDE', 'BINARY_TRUE_DIVIDE', 'INPLACE_FLOOR_DIVIDE', 'INPLACE_TRUE_DIVIDE', '<30>', '<31>', '<32>', '<33>', '<34>', '<35>', '<36>', '<37>', '<38>', '<39>', '<40>', '<41>', '<42>', '<43>', '<44>', '<45>', '<46>', '<47>', '<48>', '<49>', 'GET_AITER', 'GET_ANEXT', 'BEFORE_ASYNC_WITH', 'BEGIN_FINALLY', 'END_ASYNC_FOR', 'INPLACE_ADD', 'INPLACE_SUBTRACT', 'INPLACE_MULTIPLY', '<58>', 'INPLACE_MODULO', 'STORE_SUBSCR', 'DELETE_SUBSCR', 'BINARY_LSHIFT', 'BINARY_RSHIFT', 'BINARY_AND', 'BINARY_XOR', 'BINARY_OR', 'INPLACE_POWER', 'GET_ITER', 'GET_YIELD_FROM_ITER', 'PRINT_EXPR', 'LOAD_BUILD_CLASS', 'YIELD_FROM', 'GET_AWAITABLE', '<74>', 'INPLACE_LSHIFT', 'INPLACE_RSHIFT', 'INPLACE_AND', 'INPLACE_XOR', 'INPLACE_OR', '<80>', 'WITH_CLEANUP_START', 'WITH_CLEANUP_FINISH', 'RETURN_VALUE', 'IMPORT_STAR', 'SETUP_ANNOTATIONS', 'YIELD_VALUE', 'POP_BLOCK', 'END_FINALLY', 'POP_EXCEPT', 'STORE_NAME', 'DELETE_NAME', 'UNPACK_SEQUENCE', 'FOR_ITER', 'UNPACK_EX', 'STORE_ATTR', 'DELETE_ATTR', 'STORE_GLOBAL', 'DELETE_GLOBAL', '<99>', 'LOAD_CONST', 'LOAD_NAME', 'BUILD_TUPLE', 'BUILD_LIST', 'BUILD_SET', 'BUILD_MAP', 'LOAD_ATTR', 'COMPARE_OP', 'IMPORT_NAME', 'IMPORT_FROM', 'JUMP_FORWARD', 'JUMP_IF_FALSE_OR_POP', 'JUMP_IF_TRUE_OR_POP', 'JUMP_ABSOLUTE', 'POP_JUMP_IF_FALSE', 'POP_JUMP_IF_TRUE', 'LOAD_GLOBAL', '<117>', '<118>', '<119>', '<120>', '<121>', 'SETUP_FINALLY', '<123>', 'LOAD_FAST', 'STORE_FAST', 'DELETE_FAST', '<127>', '<128>', '<129>', 'RAISE_VARARGS', 'CALL_FUNCTION', 'MAKE_FUNCTION', 'BUILD_SLICE', '<134>', 'LOAD_CLOSURE', 'LOAD_DEREF', 'STORE_DEREF', 'DELETE_DEREF', '<139>', '<140>', 'CALL_FUNCTION_KW', 'CALL_FUNCTION_EX', 'SETUP_WITH', 'EXTENDED_ARG', 'LIST_APPEND', 'SET_ADD', 'MAP_ADD', 'LOAD_CLASSDEREF', 'BUILD_LIST_UNPACK', 'BUILD_MAP_UNPACK', 'BUILD_MAP_UNPACK_WITH_CALL', 'BUILD_TUPLE_UNPACK', 'BUILD_SET_UNPACK', 'SETUP_ASYNC_WITH', 'FORMAT_VALUE', 'BUILD_CONST_KEY_MAP', 'BUILD_STRING', 'BUILD_TUPLE_UNPACK_WITH_CALL', '<159>', 'LOAD_METHOD', 'CALL_METHOD', 'CALL_FINALLY', 'POP_FINALLY', '<164>', '<165>', '<166>', '<167>', '<168>', '<169>', '<170>', '<171>', '<172>', '<173>', '<174>', '<175>', '<176>', '<177>', '<178>', '<179>', '<180>', '<181>', '<182>', '<183>', '<184>', '<185>', '<186>', '<187>', '<188>', '<189>', '<190>', '<191>', '<192>', '<193>', '<194>', '<195>', '<196>', '<197>', '<198>', '<199>', '<200>', '<201>', '<202>', '<203>', '<204>', '<205>', '<206>', '<207>', '<208>', '<209>', '<210>', '<211>', '<212>', '<213>', '<214>', '<215>', '<216>', '<217>', '<218>', '<219>', '<220>', '<221>', '<222>', '<223>', '<224>', '<225>', '<226>', '<227>', '<228>', '<229>', '<230>', '<231>', '<232>', '<233>', '<234>', '<235>', '<236>', '<237>', '<238>', '<239>', '<240>', '<241>', '<242>', '<243>', '<244>', '<245>', '<246>', '<247>', '<248>', '<249>', '<250>', '<251>', '<252>', '<253>', '<254>', '<255>']
 
-  # 对象的字节码序列
+
+  # 对象的 字节码 序列，列表中的值对应上面 code 索引，每个索引对应的一个操作指令。同时 code_list 也反映了代码的具体执行过程和顺序
   code_list = [i for i in list(func.__code__.co_code)]
   print(code_list)    # [100, 1, 125, 0, 124, 0, 100, 2, 107, 4, 114, 22, 124, 0, 100, 3, 56, 0, 125, 0, 113, 												# 4, 124, 0, 100, 2, 107, 2, 114, 38, 116, 0, 124, 0, 131, 1, 1, 0, 100, 0, 83, 0]
-  print(code[100])   # LOAD_CONST
+  
+  # 拿上面前两条字节码举例
+  	打印结果：
+      5           0 LOAD_CONST               1 (10)   # 加载一个常量10
+                  2 STORE_FAST               0 (a)		# 保存到变量a中
+  
+  # 可以看到，code_list 把我们程序指令有序的组织起来了
+    print(code[code_list[0]])  # LOAD_CONST
+    print(code[code_list[2]])  # STORE_FAST
 ```
 
 
@@ -432,7 +486,7 @@ def func():
 
 **yield 和 yield from 用法比较**
 
-``` *python
+``` python
 # 一个拼接可迭代对象的例子
 alist = [1, 2, 3, 4]
 astr = 'ABC'
@@ -568,13 +622,13 @@ if __name__ == '__main__':
 >
 > - 在java中， 定义几个名字相同的函数，但是他们的参数类型或者数量不同，从而实现不同的代码逻辑。
 >
-> 	- 在python中，如果定义相同的函数名，那么最后定义的将覆盖前面所有的同名函数。函数名只能是唯一的。
+> - 在python中，如果定义相同的函数名，那么最后定义的将覆盖前面所有的同名函数。函数名只能是唯一的。
 >
 > python中实现重载的两种方式：
 >
 > - 使用默认值参数，在函数内部判断参数类型和有效参数的数量，来实现不同的逻辑。
 > - 使用`functools`模块里面的`singledispatch`装饰器实现函数重载。
-> - 使用装饰器实现不同参数个数、不同参数类型的函数重载。
+> - 使用 第三方装饰器 实现不同参数个数、不同参数类型的函数重载。
 
 **使用默认值参数：**
 
@@ -775,7 +829,7 @@ if __name__ == '__main__':
 
 
 
-### 14、Python 高效使用字典 dict
+### 14、Python 高效使用字典
 
 - **用 in 关键字检查 key 是否存在**
 
@@ -1089,26 +1143,28 @@ print(d.n)
 
 
 
-### 16、Python 面向对象中 property、setter、getter、deleter 、`__getattr__`、`__setattr__`的使用
+### 16、Python中的get、set方法
 
--  **python中的 get 和 set方法**
+> 相关方法：property、setter、getter、deleter 、`__getattr__`、`__setattr__`
+
+- **property 作为方法使用**
 
   ``` python
   class Person:
       def __init__(self):
-          self._age = None
+          self.__age = None
   
       # 通过此方法可以获取到属性age
       def get_age(self):
-          return self._age
+          return self.__age
   
       # 通过此方法可以设置属性age
       def set_age(self, age):
-          self._age = int(age)
+          self.__age = int(age)
   
       # 通过此方法可以删除属性age
       def delete_age(self):
-          del self._age
+          del self.__age
   
       # 创建一个类属性age，将其与上面的操作方法关联
       age = property(get_age, set_age, delete_age)
@@ -1120,13 +1176,19 @@ print(d.n)
   print(p.get_age())   # 18
   print(p.age)    # 18 Person有了一个age属性，结果和p.get_age()保持一致
   
+  p.age = 28
+  print(p.age)   # 28
+  
   p.delete_age()
   print(p.age)  # AttributeError: 'Person' object has no attribute '_age'
+  
+  # 注意：这里的 _age 和 age 不能同名。如果同名，那么 self.age 效果和 p.age 效果是一样的。
+  #			 比如这里在 get_age 中，return self.age 将再次调用方法自身，形成无法释放的递归调用
   ```
 
   
 
-- **property方法**
+- **property 作为装饰器使用**
 
   ``` python
   class Person:
@@ -1208,6 +1270,7 @@ print(d.n)
       ``` python
       class Person:
           def __init__(self):
+            	# 即便是在初始化方法中，给对象赋值，已经开始 调用 __setattr__ 方法了
               self.name = 'xiaozhang'
       
           def __setattr__(self, key, value):
@@ -1226,7 +1289,7 @@ print(d.n)
           18
       '''
       ```
-
+      
       
 
 ### 17、强引用、弱应用 及 weakref 模块
@@ -1282,7 +1345,7 @@ print(sys.getrefcount(id(a)))  # 1 弱引用不增加引用计数，所以该对
 '''
 ```
 
-- **workref 模块**
+- **weakref 模块**
 
 > 弱引用在缓存应用中很有用，因为不想仅因为被缓存引用着而始终保存缓存对象。
 >
@@ -1293,7 +1356,7 @@ print(sys.getrefcount(id(a)))  # 1 弱引用不增加引用计数，所以该对
 > weakref 工具集合:
 >
 > - `WeakKeyDictionary`:
-> - `WeakValueDictionary`: 这是一种可变映射，里面的值是对象的弱引用。被引用的对象在程序中的其他地方被当作垃圾回收后，对应的键会自动从 `WeakValueDictionary` 中删除。因此，`WeakValueDictionary` 经常用于缓存。
+> - `WeakValueDictionary`: 这是一种可变映射，里面的值是对象的弱引用。被引用的对象在程序中的其他地方被当作垃圾回收后，对应的键值会自动从 `WeakValueDictionary` 中删除。因此，`WeakValueDictionary` 经常用于缓存。
 > - `WeakSet`: 保存元素弱引用的集合类。元素没有强引用时，集合会把它删除。
 > - `finalize` (内部使用弱引用)
 >
@@ -1353,41 +1416,47 @@ print(sys.getrefcount(id(a)))  # 1 弱引用不增加引用计数，所以该对
 import pymysql
 from dbutils.pooled_db import PooledDB
 from pymysql.cursors import DictCursor
+from threading import Lock
 
 
 class DBPool:
     """
-    带参数的sql语句，需要使用占位符 %s 占位，param参数应是列表或者元组
+    带参数的sql语句，需要使用占位符(%s, %d, ...)占位，param参数应是列表或者元组
     """
     _instance_dict = dict()
+    lock = Lock()
 
     def __new__(cls, *args, **kwargs):
+        """利用__new__实现单例"""
         key = ''
         for item in args:
             key += str(item)
         for item in kwargs.values():
             key += str(item)
 
-        if key in cls._instance_dict:
-            return cls._instance_dict[key]
-        cls._instance_dict[key] = super(DBPool, cls).__new__(cls)
+        with cls.lock:
+            if key in cls._instance_dict:
+                return cls._instance_dict[key]
+            cls._instance_dict[key] = super(DBPool, cls).__new__(cls)
 
-        return cls._instance_dict[key]
+            return cls._instance_dict[key]
 
     def __init__(self, host, port, user, password, db=None, mincached=5, maxcached=50):
-        self.pool = PooledDB(creator=pymysql,  # 指明创建链接的模块
-                             mincached=mincached,  # 池中最小保持的连接数
-                             maxcached=maxcached,  # 池中最多存在的连接数
-                             ping=0,  # 不主动 ping
-                             host=host,
-                             port=port,
-                             user=user,
-                             passwd=password,
-                             db=db,
-                             use_unicode=True,
-                             charset="utf8",
-                             cursorclass=DictCursor  # fetch的结果 由默认的元组，改成字典形式
-                             )
+        # 如果有 pool 属性，表示当前对象是之前实例化好的，就不需要在进行初始化了
+        if not hasattr(self, "pool"):
+            self.pool = PooledDB(creator=pymysql,  # 指明创建链接的模块
+                                 mincached=mincached,  # 池中最小保持的连接数
+                                 maxcached=maxcached,  # 池中最多存在的连接数
+                                 ping=0,  # 不主动 ping
+                                 host=host,
+                                 port=port,
+                                 user=user,
+                                 passwd=password,
+                                 db=db,
+                                 use_unicode=False,
+                                 charset="utf8",
+                                 cursorclass=DictCursor  # fetch的结果 由默认的元组，改成字典形式
+                                 )
 
     def get_cursor(self):
         conn = self.pool.connection()
@@ -1426,9 +1495,9 @@ class DBPool:
     def query_one(self, sql, param=None):
         """
         执行查询，并取出第一条
-        @param sql:查询SQL，如果有查询条件，请只指定条件列表，并将条件值使用参数[param]传递进来
+        @param sql:查询SQL，如果有查询条件，请指定条件列表，并将条件值使用参数[param]传递进来
         @param param: 可选参数，条件列表值（元组/列表）
-        @return: result dict/boolean 查询到的结果集
+        @return: result list/boolean 查询到的结果集
         """
         conn, cursor = self.get_cursor()
         if param:
@@ -1491,24 +1560,26 @@ class DBPool:
 
 基于类实现：**在一个类里，实现了`__enter__`和`__exit__`的方法，这个类的实例就是一个上下文管理器。**
 
-``` 
-class context:
+``` python
+class Context:
     def __enter__(self):
-        return "aa"
+        return self
+
+    def operate(self):
+        print("do something")
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        print("close")
-        
-    def operation(self):
-    		print("do something")
+        print("close context")
 
-with context() as f:  # with 后面一定是一个对象， as 后面的值就是__enter__函数的返回值，通常返回self
-    print(f)  # 'aa'
+# with 后面一定是一个对象， as 后面的值就是__enter__函数的返回值，通常返回self。其实就是把示例对象本身返回回去，以便调用示例方法
+# 当 with 语句块中的代码执行完之后，将自动执行 __exit__ 中的代码，以完成一些后置的处理工作
+with Context() as context:
+    context.operate()
 
 '''
 打印结果：
-    aa
-    close
+    do something
+		close context
 '''
 ```
 
@@ -1548,7 +1619,7 @@ with context() as f:
 ``` python
 from functools import partial
 
-print(type(partial))  # <class 'type'>  # partial 本身是一个 元类
+print(type(partial))  # <class 'type'>  # partial 本身是一个类
 
 
 def get_sum(a, b):
@@ -1570,9 +1641,9 @@ print(type(get_sum_by_b))  # <class 'functools.partial'>  partial 返回值是�
 
 '''
 实现原理：
-    在 paetial 被调用时，此时将 get_sum函数 及 已知参数 都保存到了 元类的实例对象，也就是 get_sum_by_b 类中。
-    get_sum_by_b 类被调用时，将执行其 元类 的 __call__ 函数。此时把 get_sum_by_b 自身 连同 后续入参 一同传给了 __call__ 函数；
-    __call__函数内部 将前后两波 入参 整合之后，再 调用函数get_sum，并传入整合好的参数完成调用。
+    1. 在 paetial 被调用时，此时将 get_sum函数 及 已知参数 都保存到了一个实例对象中，也就是 get_sum_by_b 中，此时的 get_sum_by_b 就是 partial 类的一个实例对象。
+    2. get_sum_by_b 被调用时，将执行其 元类 的 __call__ 函数。从前面对象的创建过程中，我们知道执行 __call__ 是由对象本身调用的元类的__call__方法，所以此时把 get_sum_by_b 自身 连同 后续入参 一同传给了 __call__ 函数；
+    3. __call__函数内部 将前后两波 入参 整合之后，再 调用函数get_sum，并传入整合好的参数完成调用。
 '''
 ```
 
@@ -1620,7 +1691,7 @@ print(type(get_sum_by_b))  # <class 'functools.partial'>  partial 返回值是�
   
   
   # Local 全局类的实现
-  # 保存属性时，根据线程id根类保存，获取属性时同样根据当前线程id来取，这样便将线程间的数据隔离开了。
+  # 保存属性时，根据线程id分类保存，获取属性时同样根据当前线程id来取，这样便将线程间的数据隔离开了。
   class Local(object):
       DIC = {}
   
@@ -1632,10 +1703,7 @@ print(type(get_sum_by_b))  # <class 'functools.partial'>  partial 返回值是�
   
       def __setattr__(self, key, value):
           ident = get_ident()
-          if ident in self.DIC:
-              self.DIC[ident][key] = value
-          else:
-              self.DIC[ident] = {key: value}
+          self.DIC.setdefault(ident, {})[key] = value
   
   
   obj = Local()
@@ -1700,7 +1768,7 @@ print(type(get_sum_by_b))  # <class 'functools.partial'>  partial 返回值是�
     - 实例的`__dict__`仅存储与该实例相关的实例属性，正是因为实例的`__dict__`属性，每个实例的实例属性才会互不影响。
     - 类的`__dict__`存储所有实例共享的变量和函数(类属性，方法等)，不保存实例属性（`__init__`中的属性）。
     - 子类的`__dict__`并不包含其父类的属性。
-    - 实例的`__dict__`会继承父类的实例属性，因为子类实例实际上也拥有父类中相同的实例属性。
+    - 实例的`__dict__`会继承父类的实例属性，因此子类实例实际上也拥有父类中相同的实例属性。
 
 - dir()
 
@@ -1752,7 +1820,7 @@ print(type(get_sum_by_b))  # <class 'functools.partial'>  partial 返回值是�
 
   - 结论
 
-    - dir( )在对象中自动搜索到了 包括从父类中继承的所有属性（如：`__new__`）。
+    - dir( )在对象中自动搜索到了 包括类中的所有属性（如：`__new__`）。
     - dir(类) 不会收集`__init__`中定义的属性，因为这个属性只属于具体的实例。
 
 - `__slots__`

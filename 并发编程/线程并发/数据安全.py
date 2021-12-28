@@ -15,10 +15,10 @@ def get(loop: int = 1):
     # while not num:
     #     time.sleep(1E-8)
     for _ in range(loop):
-        num.pop()
+        print(num.pop())
 
 
-num = [0]
+num = []
 
 t1 = Thread(target=put, args=(loop,))
 t2 = Thread(target=get, args=(loop,))
@@ -38,4 +38,3 @@ t2.join()
 # t2.join()
 
 
-print(len(num))

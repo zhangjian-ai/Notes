@@ -1,8 +1,10 @@
 # gevent.monkey.patch_all()  在文件开头执行，帮助实现协程遇到I/O是自动切换
 #   - 因为协程间的切花是由用户控制，很多细小的I/O操作很难界定，所以引入该模块
 
-from gevent import monkey;  monkey.patch_all()
 import gevent
+from gevent import monkey
+
+monkey.patch_all()
 
 
 def func():

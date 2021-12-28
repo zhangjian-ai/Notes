@@ -27,6 +27,7 @@ if __name__ == '__main__':
     for i in range(50):
         p = Process(target=action, args=(data, lock,))
         p.start()
-        p.join()
+
+    time.sleep(12)
 
     print(data)

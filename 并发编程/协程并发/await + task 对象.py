@@ -32,7 +32,7 @@ async def task():
     print(pending)
 
 
-asyncio.run(task())
+# asyncio.run(task())
 
 task_list = [func(), func()]
 

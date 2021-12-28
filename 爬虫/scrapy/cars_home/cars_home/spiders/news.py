@@ -37,7 +37,7 @@ class NewsSpider(CrawlSpider):
 
     # 初始化数据库连接池
     db_pool = DBPool(
-        host="121.4.47.229",
+        host="101.43.61.175",
         port=3300,
         user="root",
         password="zm_123456",

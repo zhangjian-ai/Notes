@@ -1,41 +1,47 @@
 import pymysql
 from dbutils.pooled_db import PooledDB
 from pymysql.cursors import DictCursor
+from threading import Lock
 
 
 class DBPool:
     """
-    带参数的sql语句，需要使用占位符展位，param参数应是列表或者元组
+    带参数的sql语句，需要使用占位符(%s, %d, ...)占位，param参数应是列表或者元组
     """
     _instance_dict = dict()
+    lock = Lock()
 
     def __new__(cls, *args, **kwargs):
+        """利用__new__实现单例"""
         key = ''
         for item in args:
             key += str(item)
         for item in kwargs.values():
             key += str(item)
 
-        if key in cls._instance_dict:
-            return cls._instance_dict[key]
-        cls._instance_dict[key] = super(DBPool, cls).__new__(cls)
+        with cls.lock:
+            if key in cls._instance_dict:
+                return cls._instance_dict[key]
+            cls._instance_dict[key] = super(DBPool, cls).__new__(cls)
 
-        return cls._instance_dict[key]
+            return cls._instance_dict[key]
 
     def __init__(self, host, port, user, password, db=None, mincached=5, maxcached=50):
-        self.pool = PooledDB(creator=pymysql,  # 指明创建链接的模块
-                             mincached=mincached,  # 池中最小保持的连接数
-                             maxcached=maxcached,  # 池中最多存在的连接数
-                             ping=0,  # 不主动 ping
-                             host=host,
-                             port=port,
-                             user=user,
-                             passwd=password,
-                             db=db,
-                             use_unicode=False,
-                             charset="utf8",
-                             cursorclass=DictCursor  # fetch的结果 由默认的元组，改成字典形式
-                             )
+        # 如果有 pool 属性，表示当前对象是之前实例化好的，就不需要在进行初始化了
+        if not hasattr(self, "pool"):
+            self.pool = PooledDB(creator=pymysql,  # 指明创建链接的模块
+                                 mincached=mincached,  # 池中最小保持的连接数
+                                 maxcached=maxcached,  # 池中最多存在的连接数
+                                 ping=0,  # 不主动 ping
+                                 host=host,
+                                 port=port,
+                                 user=user,
+                                 passwd=password,
+                                 db=db,
+                                 use_unicode=False,
+                                 charset="utf8",
+                                 cursorclass=DictCursor  # fetch的结果 由默认的元组，改成字典形式
+                                 )
 
     def get_cursor(self):
         conn = self.pool.connection()
@@ -74,7 +80,7 @@ class DBPool:
     def query_one(self, sql, param=None):
         """
         执行查询，并取出第一条
-        @param sql:查询SQL，如果有查询条件，请只指定条件列表，并将条件值使用参数[param]传递进来
+        @param sql:查询SQL，如果有查询条件，请指定条件列表，并将条件值使用参数[param]传递进来
         @param param: 可选参数，条件列表值（元组/列表）
         @return: result list/boolean 查询到的结果集
         """
