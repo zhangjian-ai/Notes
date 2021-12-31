@@ -91,6 +91,8 @@ if __name__ == '__main__':
     producer(c1, c2)
 ```
 
+
+
 ### 3、Python动态创建类
 
 ``` python
@@ -185,6 +187,8 @@ type(name, bases, dict)
 
 ```
 
+
+
 ### 4、Python类属性和实例属性
 
 ``` python
@@ -201,7 +205,11 @@ type(name, bases, dict)
 '''
 ```
 
+
+
 ### 5、Python动态创建函数
+
+**lambda：创建匿名函数**
 
 ``` python
 # lambda 动态创建匿名函数。通常用在推导式和几个高阶函数中
@@ -214,6 +222,39 @@ type(name, bases, dict)
 
     print(filter_score)  # [100, 100, 99]
 ```
+
+
+
+**内置函数`compile()` + `types` 模块，动态创建函数**
+
+```python
+"""
+compile(source, filename, mode, flags=0, dont_inherit=False, optimize=- 1)
+source 可以是常规的字符串、字节字符串，或者 AST 对象。
+filename 实参需要是代码读取的文件名；如果代码不需要从文件中读取，可以传入一些可辨识的值（经常会使用 '<string>'）。
+mode 实参指定了编译代码必须用的模式。如果 source 是语句序列，可以是 'exec'；如果是单一表达式，可以是 'eval'；如果是单个交互式语句，可以是 'single'。（在最后一种情况下，如果表达式执行结果不是 None 将会被打印出来。）
+"""
+
+import types
+
+
+def sum(a, b):
+    return a + b
+
+
+# 将 str 编译成代码
+
+module_code = compile(source='def foobar(a, b): return sum(a, b)', filename='<string>', mode='exec').co_consts[0]
+
+# globals 入参提供一个字典，为函数提供可能用到的属性
+foobar = types.FunctionType(code=module_code, globals={"sum": sum}, name="foobar")
+
+if __name__ == '__main__':
+    print(foobar(4, 5))  # 9
+
+```
+
+
 
 ### 6、socket如何解决粘包问题
 
