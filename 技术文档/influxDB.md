@@ -104,7 +104,7 @@ time                  butterflies    honeybees   location    scientist
 
 上面提到的结构都存储在数据库中，示例的数据库为my_database。一个数据库可以有多个measurement，retention policy， continuous queries以及user。influxdb是一个无模式的数据库，可以很容易的添加新的measurement，tags，fields等。而它的操作却和传统的数据库一样，可以使用类SQL语言查询和修改数据。
 
-influxdb不是一个完整的CRUD数据库，它更像是一个CR-ud数据库。它优先考虑的是增加和读取数据而不是更新和删除数据的性能，而且它阻止了某些更新和删除行为使得创建和读取数据更加高效。
+influxdb不是一个完整的CRUD数据库，它更像是一个 CR-UD 数据库。它优先考虑的是增加和读取数据而不是更新和删除数据的性能，而且它阻止了某些更新和删除行为使得创建和读取数据更加高效。
 
 
 
@@ -955,11 +955,11 @@ time                   mean
 
 retention policy， 即数据保留策略，数据中的retention policy为默认的autogen。它表示数据一直保留永不过期，副本数量为1。你也可以指定数据的保留时间，如30天。
 
-InfluxDB的数据保留策略(RP)用来定义数据在InfluxDB中存放的时间,或者定义保存某个期间的数据。 一个数据库可以有多个保留策略, 但每个策略必须是独一无二的。
+InfluxDB的数据保留策略(RP)用来定义数据在InfluxDB中存放的时间，或者定义保存某个期间的数据。 一个数据库可以有多个保留策略, 但每个策略必须是独一无二的。
 
 ### 1.2  InfluxDB数据保留策略目的
 
-InfluxDB本身不提供数据的删除操作, 因此用来控制数据量的方式就是定义数据保留策略。 因此定义数据保留策略的目的是让InfluxDB能够知道可以丢弃哪些数据, 节省数据存储空间，避免数据冗余的情况。
+InfluxDB本身不提供数据的删除操作, 因此用来控制数据量的方式就是定义数据保留策略。 因此定义数据保留策略的目的是让InfluxDB能够知道可以丢弃哪些数据，节省数据存储空间，避免数据冗余的情况。
 
 ## 2.操作示例
 
@@ -989,7 +989,7 @@ autogen 0s       168h0m0s           1        true
 
 - name 策略名称：默认autogen
 - duration 持续时间： 0s 代表无限制
-- shardGroupDuration shardGroup数据存储时间：shardGroup是InfluxDB的一个基本存储结构, 应该大于这个时间的数据在查询效率上应该有所降低。
+- shardGroupDuration shardGroup数据存储时间：shardGroup是 InfluxDB 的一个基本存储结构，应该大于这个时间的数据在查询效率上应该有所降低。
 - replicaN 副本个数：1 代表只有一个副本
 - default 是否默认策略：true 代表设置为该数据库的默认策略
 

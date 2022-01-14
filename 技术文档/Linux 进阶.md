@@ -78,8 +78,8 @@ Ubuntu采用自行加强的内核，默认不能直接root登陆，必须从第�
 
 - Linux中，`/`即代表根目录，不同于Windows的C、D、E盘结构，Linux只有一个根目录，然后在此目录下创建其他目录，是**树结构**
 - Linux的文件系统采用级层式的树状目录结构，最上层目录就是根目录，有且只有一个
-- ==Linux世界里，一切皆为文件==，即使是硬件，也会被映射成相应的文件
-- ==**Linux开机流程**：开机 => BIOS => /boot => init进程 => 运行级别 => 运行级别对应的服务==
+- Linux世界里，**一切皆为文件**，即使是硬件，也会被映射成相应的文件
+- **Linux开机流程**：开机 => BIOS => /boot => init进程 => 运行级别 => 运行级别对应的服务
 
 ## 2.2、根目录
 
@@ -96,7 +96,7 @@ Ubuntu采用自行加强的内核，默认不能直接root登陆，必须从第�
 
 /lost+found  一般情况下是空的，系统非法关机后，系统就会存放一些文件
 
-/etc   所有系统管理员所需要的配置文件和子目录，例如人员的帐号密码文件，各种服务的起始文件等。一般来说，这个目录下面的各文件属性时可以让一般的用户查阅的，但是只有root用户有权先修改。FHS建议不要放置可执行的文件在这个目录下
+/etc   所有系统管理员所需要的配置文件和子目录，例如人员的帐号密码文件，各种服务的起始文件等。一般来说，这个目录下面的各文件属性是可以让一般的用户查阅的，但是只有root用户有权先修改。FHS建议不要放置可执行的文件在这个目录下
 
 /usr  这里面放置的数据属于可分享的与不可变动的（shareable，static），其实usr是UNIX SOFTWARE RESOURCE的缩写，而非user的缩写，也就是unix操作系统软件放置的位置而非用户的数据
 
@@ -111,7 +111,7 @@ Ubuntu采用自行加强的内核，默认不能直接root登陆，必须从第�
 ====================================================================================================
 /tmp  这是让一般的用户或者是正在执行的程序暂时放置文件的地方
 
-/dev   在linux中任何的设备和接口设备都是以文件的形式存在于这个目录当中。你只要到通过访问这个目录下的某个文件就相当于访问某个设备，类似于Windows的设备管理器
+/dev   在linux中任何的设备和接口设备都是以文件的形式存在于这个目录当中。你只要通过访问这个目录下的某个文件就相当于访问某个设备，类似于Windows的设备管理器
 
 /media  放置的就是可以删除的设备。包括软盘，光盘，dvd等都临时挂放在此。
 
@@ -119,7 +119,7 @@ Ubuntu采用自行加强的内核，默认不能直接root登陆，必须从第�
 
 /opt  这个是给第三方软件放置的目录。不过，在以前的linux下我们喜欢放置在/usr/local下面，一般是通过编译源码方式安装的程序。
 
-/var  这个目录下面主要放置常态性变动的文件，包括cache,logfile以及某些软夹运营所产生的文件。例如MYSQL数据库文件等
+/var  这个目录下面主要放置常态性变动的文件，包括cache,logfile以及某些软件运行所产生的文件。例如MYSQL数据库文件等
 
 /selinux SeLinux是一种安全子系统他能控制程序只能访问特定文件
 ```
@@ -196,7 +196,7 @@ Ubuntu采用自行加强的内核，默认不能直接root登陆，必须从第�
 /proc/kcore # 这个就是内存的大小啦！好大对吧！但是不要读他啦！
 /proc/modules # 目前我们的 Linux 已经加载的模块列表，也可以想成是驱动程序啦！
 /proc/mounts # 系统已经挂载的数据，就是用 mount 这个命令呼叫出来的数据啦！
-/proc/swaps # 到底系统挂加载的内存在哪里？呵呵！使用掉的 partition 就记录在此啦！
+/proc/swaps # 交换区配置，使用到的 partition 就记录在此啦！
 /proc/partitions # 使用 fdisk -l 会出现目前所有的 partition 吧？在这个文件当中也有纪录喔！
 /proc/pci # 在 PCI 汇流排上面，每个装置的详细情况！可用 lspci 来查阅！
 /proc/version # 核心的版本，就是用 uname -a 显示的内容啦！
@@ -271,10 +271,10 @@ Ubuntu采用自行加强的内核，默认不能直接root登陆，必须从第�
 2. **Linux虚拟机的三种网络连接形式**
 
    - 桥接模式：与主机在同一网段，Linux可以和其他系统通信，但是如果Linux虚拟机数量多可能造成ip冲突
-   - NAT模式：网络地址转换方式，即母机代理通讯，再创建子网供虚拟机使用，其中一个和Linux无法和本局域网中的其他真实主机进行通讯
+   - NAT模式：网络地址转换方式，即母机代理通讯，再创建子网供虚拟机使用，其缺点Linux无法和本局域网中的其他真实主机进行通讯
    - 仅主机模式：即单机模式，是一个独立的主机，不能访问外网
 
-   ==一般选择NAT模式==
+   
    
    
 
@@ -383,7 +383,7 @@ total 164K
 
    **一般默认就是正常模式**，在该模式下，我们**可以使用快捷键**。
 
-   以 vim 打开一个档案就直接进入一般模式了(这是默认的模式)。在这个模式中，你可以使用『上下左右』按键来移动光标，你可以使用『删除字符』或『删除整行』来处理档案内容，也可以使用『复制、粘贴』来处理你的文件数据。
+   以 vim 打开一个文档就直接进入一般模式了(这是默认的模式)。在这个模式中，你可以使用『上下左右』按键来移动光标，你可以使用『删除字符』或『删除整行』来处理档案内容，也可以使用『复制、粘贴』来处理你的文件数据。
 
 2. 插入模式（编辑模式）
 
@@ -424,43 +424,25 @@ public class Hello{
 > 要先从进入正常模式才可以使用快捷键
 
 1. **拷贝当前行** `yy` , 拷贝当前行向下的 5 行 `5yy`，并粘贴 `p`
-
 2. **删除当前行** `dd` , 删除当前行向下的 5 行 `5dd`
-
 3. 删除当前行并进入编辑模式，`shift + s`
-
 4. 在文件中查**找某个单词**：命令行下 `/` 关键字 ， 回车 查找 , 输入 `n` 就是查找下一个
-
 5. **设置文件的行号**，**取消文件的行号**：命令行下`:set nu` 和 `:set nonu`
-
 6. 用快捷键跳到文档的**最末行**`shift + g`和**最首行**`gg`
-
 7. **撤销上一个动作**，在正常模式下输入 `u`
-
 8. 删除当前行及之后的所有内容，先输入`d`，再输入`G`
-
 9. 光标移到行尾，`shift + 4`
-
 10. 光标退到行尾，并进入编辑模式，`shift + a`
-
-11. 行内向前移动一个单词，`shift + b`
-
+11. 行内向前移动一个单词（根据空格判断是否为一个单词），`shift + b`
 12. 光标移动到行首，`0`（数字0）
-
 13. **取消着色标记**操作是 `:noh`
-
-14. 编辑 /etc/profile 文件，并将**光标移动到 第 20 行** `shift+g`
+14. 编辑 /etc/profile 文件，并将**光标移动到 第 20 行**
 
     - 第一步：显示行号 :set nu
       - 输入20，直接按回车的话，是从当前位置前进20行
-      - 数字+Enter 可以到 光标当前位置+数字 的那一行
-
     - 第二步：输入 20 这个数
-
-    - 第三步: 输入 shift+g
-
+- 第三步: 输入  `shift+g`
 15. 单行注释 `# 后面写注释`
-
 16. 多行注释：`:<<! 中间的代码 !`
 
 
@@ -476,7 +458,7 @@ public class Hello{
 ## 5.1、关机和重启
 
 ```shell
-# shutdown
+shutdown
   shutdown -h now # 立即关机
   shutdown -h 1 # 表示一分钟过后就关机
   shutdown -r now # 立即重启
@@ -485,7 +467,7 @@ reboot # 就是重启系统
 sync # 代表把内存的数据同步到磁盘上
 ```
 
-- **不管是重启还是关机，都应该先执行以下 sync 指令，把内存的数据写入磁盘，防止数据丢失**
+- **不管是重启还是关机，都应该先执行一下 sync 指令，把内存的数据写入磁盘，防止数据丢失**
 
 ## 5.2、用户登录和注销
 
@@ -528,7 +510,7 @@ sync # 代表把内存的数据同步到磁盘上
 使用命令 `passwd 用户名`
 
 ```
-passwd [-k] [-l] [-u [-f]] [-d] [-S] [username]
+passwd [-k] [-l] [-u [-f]] [-d] [-S] username
 -d 删除密码
 -f 强制执行
 -k 更新只能发送在过期之后
@@ -586,7 +568,7 @@ usermod -d 目录名 用户名         	# 改变该用户登录的初始目录
 usermod -G groupname username		# 修改用户到工作组，一个用户可以添加到多个工作组
 usermod -G 24,27 zhangjian			# 修改的时候也可以写组ID，多个用逗号隔开。注意：修改用户组、工作组会离开原来的组
 
-# 如果是想追加，要是用 选项参数：-a
+# 如果是想追加，要使用 选项参数：-a
 root@VM-16-9-ubuntu:~# usermod -a -G 4 zhangjian
 root@VM-16-9-ubuntu:~# id zhangjian
 uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),27(sudo)
@@ -599,7 +581,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 ### 6.8.1、/etc/passwd 文件
 
 - 用户（user）的配置文件，**记录用户的各种信息**
-- 每行的含义：`用户名:密码:用户id:组id:注释性描述::家目录:登录 Shell`
+- 每行的含义：`用户名:密码:用户id:组id:注释性描述::家目录:登录时运行的Shell`
 
 ### 6.8.2、/etc/group 文件
 
@@ -623,8 +605,8 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 - **七大运行级别**
 
   ```
-  0 ：关机
-  1 ：单用户【找回丢失密码】
+  0：关机
+  1：单用户【找回丢失密码】
   2：多用户状态没有网络服务
   3：多用户状态有网络服务
   4：系统未使用保留给用户 一般不使用
@@ -667,12 +649,12 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    使用方法：pwd
    ```
 
-2. **ls 命令** ，显示当前目录的所有文件和目录，包括隐藏的
+2. **ls 命令** ，显示当前目录的所有文件和目录
 
    ```
    使用方法：ls [选项] [目录或是文件]
    -a 显示当前目录所有的文件和目录，包括隐藏的
-   -l 以列表的方式显示信息
+   -l 以列表的方式显示文件和目录的详情
    -h 以合适的单位显示文件大小
    ```
 
@@ -680,7 +662,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
    ```
    cd [绝对路径|相对路径]
-   cd~ 或者 cd: 回到自己家目录
+   cd ~ 或者 cd 回到自己家目录
    cd .. 回到当前目录的上一级目录
    . 代表当前目录
    .. 代表上一级目录
@@ -693,7 +675,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    -p 创建多级目录，多级目录即创建一个目录后然后在这个目录下再创建一个目录，相当于创建两个目录
    ```
 
-5. **rmdir 命令**（remove directory），用于删除==空目录==
+5. **rmdir 命令**（remove directory），用于删除**空目录**
 
    ```
    rmdir [选项] 要删除的空目录
@@ -749,7 +731,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
 11. **more 命令**
 
-    more 指令是一个基于 VI 编辑器的文本过滤器，它以==全屏幕的方式按页显示文本文件的内容==
+    more 指令是一个基于 VI 编辑器的文本过滤器，它以**全屏幕的方式按页显示文本文件的内容**
 
     more 指令中内置了若干快捷键，详见操作文档
 
@@ -825,7 +807,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 17. **sed -i 命令**，替换文本内容
 
     ```shell
-    sed -i 's/原字符串/新字符串/' /home/1.txt   # 对文本中第一个查找到的原字符串进行替换
+    sed -i 's/原字符串/新字符串/' /home/1.txt   # 对文本中每一行首次出现的原字符串进行替换
     sed -i 's/原字符串/新字符串/g' /home/1.txt  # 对文本中所有的原字符串进行替换
     ```
 
@@ -835,14 +817,14 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
 18. **ln 命令**，给原文件创建一个链接
 
-    软链接也叫符号链接，类似于 windows 里的快捷方式，主要存放了链接其他文件的路径
+    软链接也叫符号链接，类似于 windows 里的快捷方式。本质上是创建了一个 Link 类型的目录项，里面存放了目标文件的路径。
 
-    硬连接指通过索引节点来进行链接
+    硬连接指通过索引结点来进行链接。创建硬连接时，在当前目录表新增一个目录项，同时索引结点技术变量count加1。
 
     [关于硬连接和软连接的详细介绍](https://www.cnblogs.com/songgj/p/9115954.html)
 
     ```
-    ln [参数] [原文件或目录] [目标文件或目录]  
+    ln [参数] [目标文件或目录] 链接名
     -i 交互模式，文件存在则提示用户是否覆盖
     -s 软链接(符号链接)
     -d 允许超级用户制作目录的硬链接
@@ -907,13 +889,13 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
 2. **locate 命令**，快速定位文件路径
 
-   locate 指令利用==事先建立的系统中所有文件名称及路径的 locate 数据库==实现快速定位给定的文件
+   locate 指令利用**事先建立的系统中所有文件名称及路径的 locate 数据库**实现快速定位给定的文件
 
    Locate 指令无需遍历整个文件系统，查询速度较快
 
    为了保证查询结果的准确度，管理员**必须定期更新** locate 时刻
 
-   由于 locate 指令基于数据库进行查询，所以==第一次运行前，必须使用 updatedb 指令创建 locate 数据库==。
+   由于 locate 指令基于数据库进行查询，所以**第一次运行前，必须使用 updatedb 指令创建 locate 数据库**。
 
    ```
    locate 搜索文件
@@ -941,7 +923,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
 1. **gzip / gunzip 指令**
 
-   gzip 用于==压缩文件==， gunzip 用于==解压缩==
+   gzip 用于**压缩文件**， gunzip 用于**解压缩**
 
    压缩完成后，原来的文件就没了，取而代之的是对应的压缩文件，不会保留原来的文件
 
@@ -952,38 +934,42 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
 2. **zip / unzip 指令**
 
-   zip 用于==压缩文件==， unzip 用于==解压缩==，这个在项目打包发布中很有用的
+   zip 用于**压缩文件**， unzip 用于**解压缩**，这个在项目打包发布中很有用的
 
    ```
    zip [选项] XXX.zip 将要压缩的内容    压缩文件和目录的命令
    unzip [选项] XXX.zip         解压缩文件
-   zip ==>  -r：递归压缩，即压缩目录
-   unzip ==>  -d<目录> ：指定解压后文件的存放目录
-   例： zip -r home.zip /home/   ==>   将 /home 下的 所有文件进行压缩成 home.zip
-   例： unzip -d /home/ home.zip   ==>   将 mypackge.zip 解压到 /home 目录下
+   zip -r：递归压缩，即压缩目录
+   unzip -d<目录> ：指定解压后文件的存放目录
+   
+   例： zip -r home.zip /home/   # 将 /home 下的 所有文件进行压缩成 home.zip
+   例： unzip -d /home/ home.zip   # 将 mypackge.zip 解压到 /home 目录下
    ```
 
 3. **tar 指令**，打包指令
 
-   最后打包后的文件是`.tar.gz`的文件
+   打包且后的文件是`.tar.gz`的文件
 
    ```
-   tar [选项] XXX.tar.gz 打包的内容     打包目录，压缩后的文件格式.tar.gz
-   -c 产生 .tar 打包文件
+   tar [选项] 打包后的文件名[.tar.gz/.tar] 打包的内容
+   -c create 产生 .tar 打包文件
    -v 显示详细信息
-   -f 指定压缩后的文件名
-   -z 打包同时压缩
-   -x 解包 .tar 文件
+   -f filename 指定压缩后的文件名
+   -z gzip 打包同时压缩
+   -x extract 解包 .tar 文件
+   -t list 
+   -j bzip2 
+   -J xz
    
-   -c create -t list -x extract -z gzip -j bzip2 -J xz -f filename
-   
-   例1 -> tar -zcvf a.tar.gz a1.txt a2.txt   ==>  将 a1.txt 和 a2.txt 压缩成 a.tar.gz
-   例2 -> tar -zcvf myhome.tar.gz /home/   ==>  将 /home/ 目录下所有文件打包压缩成 myhome.tar.gz
-   例3 -> tar -zxvf a.tar.gz   ==>  将 a.tar.gz 解压到当前目录
-   例4 -> tar -zxvf myhome.tar.gz -C /home/   ==>  将 myhome.tar.gz 解压到 /home/ 目录下
-   																								-C 应该是change，改变目录
-   
-   指定解压缩的目标目录一定要事先存在
+   例1:
+   	tar -zcvf a.tar.gz a1.txt a2.txt   将 a1.txt 和 a2.txt 压缩成 a.tar.gz
+   例2:
+   	tar -zcvf myhome.tar.gz /home/ 		将 /home/ 目录下所有文件打包压缩成 myhome.tar.gz
+   例3:
+   	tar -zxvf a.tar.gz  将 a.tar.gz 解压到当前目录
+   例4:
+   	tar -zxvf myhome.tar.gz -C /home/  将 myhome.tar.gz 解压到 /home/ 目录下。-C 应该是change，改变目录
+   	# 指定解压缩的目标目录一定要事先存在
    ```
    
 
@@ -1112,7 +1098,7 @@ total 57168  # 当前目录下所有文件大小的总和。该值 默认单位�
 
 > u：所有者 g：所在组 o：其他人 a：所有人(u、g、o 的总和)
 
-- chmod u=rwx,g=rx,o=x 文件/目录名 => 给所有者读写操作的权限，给所在组可读、可执行权限，给其他人执行的权限
+- chmod u=rwx,g=rx,o=x 文件/目录名    给所有者读写操作的权限，给所在组可读、可执行权限，给其他人执行的权限
 
   ```shell
   root@VM-16-9-ubuntu:~# chmod u=rwx,g=rx,o=x filebeat-5.4.0-linux-x86_64.tar.gz
@@ -1120,7 +1106,7 @@ total 57168  # 当前目录下所有文件大小的总和。该值 默认单位�
   -rwxr-x--x 1 ubuntu root 8774763 May 15  2018 filebeat-5.4.0-linux-x86_64.tar.gz
   ```
 
-- chmod o+w 文件目录名 => 给其他人增加写权限
+- chmod o+w 文件目录名    给其他人增加写权限
 
   ```shell
   root@VM-16-9-ubuntu:~# chmod o+w filebeat-5.4.0-linux-x86_64.tar.gz
@@ -1128,7 +1114,7 @@ total 57168  # 当前目录下所有文件大小的总和。该值 默认单位�
   -rwxr-x-wx 1 ubuntu root 8774763 May 15  2018 filebeat-5.4.0-linux-x86_64.tar.gz
   ```
 
-- chmod a-x 文件目录名 => 给所有人减少写权限
+- chmod a-x 文件目录名    给所有人减少写权限
 
   ```shell
   root@VM-16-9-ubuntu:~# chmod a-x filebeat-5.4.0-linux-x86_64.tar.gz
@@ -1163,7 +1149,7 @@ total 24
 drwxr-xr-x 2 root root  4096 Nov 26 11:25 apps
 -rw-r--r-- 1 root root 18617 Nov 21 00:29 get-docker.sh
 
-root@VM-16-9-ubuntu:~# ls -l apps  # ls 后面如果接目录，那么展示的内容是目录中文件的详情
+root@VM-16-9-ubuntu:~# ls -l apps  # ls 后面如果接目录，那么展示的内容是目录中文件的详情；文件则只展示指定文件的信息。
 total 32860
 -rwxr-x--x 1 ubuntu root  8774763 May 15  2018 filebeat-5.4.0-linux-x86_64.tar.gz
 -rw-r--r-- 1 root   root 24868974 Mar 31  2020 filebeat-7.6.2-linux-x86_64.tar.gz
@@ -1233,37 +1219,40 @@ total 32860
 - crontab -e 进入编辑模式
 - 输入代码：`*/1 * * * * ls –l /etc/ > /tmp/to.txt`
 - 按esc，再按i/a/o，就进入输入模式。按esc再按：进入末行，按esc，按R进入替换模式
-- 当保存退出后就程序
-- 在每一分钟都会自动的调用 ls -l /etc >> /tmp/to.txt
+- 当保存退出
+- 在每一分钟系统都会自动的调用 ls -l /etc >> /tmp/to.txt
 
 参数说明：
 
 1. 五个占位符
-   1. 第一个 `*` => 一小时的第几分钟 0-59
-   2. 第二个 `*` => 一天的第几小时 0-23
-   3. 第三个`*` => 一个月当中的第几天 1-31
-   4. 第四个 `*` => 一年当中的第几月 1-12
-   5. 第五个 `*` => 一周当中的星期几 0-7（0和7都代表星期日）
+   1. 第一个 `*`  一小时的第几分钟 0-59
+   2. 第二个 `*`  一天的第几小时 0-23
+   3. 第三个 `*`  一个月当中的第几天 1-31
+   4. 第四个 `*`  一年当中的第几月 1-12
+   5. 第五个 `*`  一周当中的星期几 0-7（0和7都代表星期日）
+   
 2. 特殊符号的说明
    1. `*` 号代表任何时间
    2. `,` 号代表不连续的时间
-   3. `-`号代表连续的时间范围
-   4. `*/n`号代表没隔多久就执行一次
+   3. `-` 号代表连续的时间范围
+   4. `*/n` 号代表没隔多久就执行一次
+   
 3. 表达式例子：
 
-```
-45 22 * * * 命令   ==>  每天 的 22点45分 执行命令
-0 17 * * 1 命令   ==>  每周一 的 17点0分 执行命令
-0 5 1,15 * * 命令   ==>  每月 的 1号和15号 的 凌晨5点0分 执行命令
-40 4 * * 1-5 命令   ==>  每周一到周五 的 凌晨4点40分 执行命令
-*/10 4 * * * 命令   ==>  每天的凌晨4点，每隔10分钟 执行一次命令
-0 0 1,15 * 1 命令   ==>  每月的1号和15号，每周一的0点0分都会执行命令
-注意:星期几和几号最好不要同时出现，因为他们定义的都是天，很容易产生混乱
-```
+   ```shell
+   45 22 * * *				# 每天 的 22点45分 执行命令
+   0 17 * * 1				# 每周一 的 17点0分 执行命令
+   0 5 1,15 * *			# 每月 的 1号和15号 的 凌晨5点0分 执行命令
+   40 4 * * 1-5			# 每周一到周五 的 凌晨4点40分 执行命令
+   */10 4 * * *			# 每天的凌晨4点，每隔10分钟 执行一次命令
+   0 0 1,15 * 1			# 每月的1号和15号，每周一的0点0分都会执行命令
+   
+   # 注意:星期几和几号最好不要同时出现，因为他们定义的都是天，很容易产生混乱
+   ```
 
+   
 
-
-## 10.4、应用实例
+## 10.4、应用示例
 
 ### 10.4.1、示例一
 
@@ -1400,7 +1389,7 @@ crontab -l -u ubuntu  # 列出 用户 ubuntu 的 cron 任务
     >
     > SCSI硬盘和普通IDE硬盘相比有很多优点：接口速度快，并且由于主要用于服务器，因此硬盘本身的性能也比较高，硬盘转速快，缓存容量大，CPU占用率低，扩展性远优于IDE硬盘，并且支持 热插拔。
 
-  - 对于 IDE 硬盘，驱动器标识符为`hdx~`，其中`hd`表明分区所在设备的类型，这里是指 IDE 硬盘。`x`为盘号（**a 为基本盘，b 为基本从属盘，c 为辅助主盘，d 为辅助从属盘**）,`~`代表分区，**前四个分区用数字 1 到 4 表示**，它们是主分区或扩展分区，**从 5 开始就是逻辑分区**。例如：hda3 表示为第一个 IDE 硬盘上的第三个主分区或扩展分区,hdb2 表示为第二个 IDE 硬盘上的第二个主分区或扩展分区
+  - 对于 IDE 硬盘，驱动器标识符为`hdx~`，其中`hd`表明分区所在设备的类型，这里是指 IDE 硬盘。`x`为盘号（**a 为基本盘，b 为基本从属盘，c 为辅助主盘，d 为辅助从属盘**）,`~`代表分区，**前四个分区用数字 1 到 4 表示**，它们是主分区或扩展分区，**从 5 开始就是逻辑分区**。例如：hda3 表示为第一个 IDE 硬盘上的第三个主分区或扩展分区，hdb2 表示为第二个 IDE 硬盘上的第二个主分区或扩展分区。
 
   - 对于 SCSI 硬盘则标识为`sdx~`，SCSI 硬盘是用`sd`来表示分区所在设备的类型的，其余则和 IDE 硬盘的表示方法一样。
 
@@ -1542,6 +1531,24 @@ crontab -l -u ubuntu  # 列出 用户 ubuntu 的 cron 任务
   16K	/opt
   16K	total
   
+  # 查看当前路径下所有目录的磁盘占用情况。这里的用户不是root用户。
+  ubuntu@VM-16-9-ubuntu:/var/local/myapp$ du -sh *
+  41M	allure
+  8.0K	docker_demo
+  1.1G	elasticsearch
+  784M	fdfs
+  32K	filebeat
+  1.2M	grafana
+  47M	influxdb
+  du: cannot read directory 'jenkins/jenkins_home/users/zhangjian_5534118775977172211': Permission denied
+  du: cannot read directory 'jenkins/jenkins_home/secrets': Permission denied
+  427M	jenkins
+  454M	mysql
+  60K	nginx
+  13M	nmon
+  460K	redis
+  68K	TP_server
+  
   # 统计/home 文件夹下文件的个数 
   root@VM-16-9-ubuntu:~/apps# ls -l /home | grep "^-" | wc -l
   0			# 家目录下都是以用户命名的文件夹
@@ -1558,7 +1565,7 @@ crontab -l -u ubuntu  # 列出 用户 ubuntu 的 cron 任务
   root@VM-16-9-ubuntu:~# ls -lR /home | grep "^d" | wc -l
   4
   ```
-
+  
   
 
 # 12、网络配置
@@ -1588,7 +1595,7 @@ ping ip地址
 2. 通过**修改配置文件配置 静态IP**
 
    文件位置：/etc/sysconfig/network-scripts/ifcfg-eth0
-   第一个显卡就是eth0，第二个就是eth1
+   第一个网卡就是eth0，第二个就是eth1
    
    例：要将 ip 地址配置成静态的，ip 地址为 192.168.184.130
    
@@ -1618,10 +1625,10 @@ ping ip地址
 
 ## 13.1、进程的基本介绍
 
-- 在 LINUX 中，**每个执行的程序（代码）都称为一个进程**。每一个进程都**分配一个 ID 号**
-- **每一个进程，都会对应一个父进程，而这个父进程可以复制多个子进程**
-- **每个进程都可能以两种方式存在的，前台与后台**。所谓前台进程就是用户目前的屏幕上可以进行操作的。后台进程则是实际在操作，但由于屏幕上无法看到的进程，通常使用后台方式执行
-- **一般系统的服务都是以后台进程的方式存在，而且都会常驻在系统中**。直到关机才才结束
+- 在 LINUX 中，**每个执行的程序（代码）都称为一个进程**。每一个进程都**分配一个 ID 号**。
+- **每一个进程，都会对应一个父进程，而这个父进程可以复制多个子进程**。
+- **每个进程都可能以两种方式存在的，前台与后台**。
+- **一般系统的服务都是以后台进程的方式存在，而且都会常驻在系统中**。直到关机才才结束。
 
 
 
@@ -1629,7 +1636,7 @@ ping ip地址
 
 **ps 命令** 
 
-> -a  显示当前终端所有的进程信息
+> -a  显示当前终端所有的进程信息，否则会打印所有的进程
 > -u  以用户的格式显示进程信息
 > -x  显示后台进程运行的参数
 > -e  显示所有进程
@@ -1643,7 +1650,7 @@ ubuntu@VM-16-9-ubuntu:~$ ps
 18006 pts/1    00:00:00 bash
 19738 pts/1    00:00:00 ps
 
-# PID   进程识别号
+# PID   进程号
 # TTY   终端机号
 # TIME  此进程所消CPU时间
 # CMD   正在执行的命令或进程名
@@ -1759,15 +1766,15 @@ pstree [选项]
 
 ## 13.5、服务管理
 
-- **服务(service) 本质就是进程**，但是是运行在后台的，通常都会监听某个端口，等待其它程序的请求，比如（mysql、sshd、防火墙等），因此我们又称为**守护进程**，是 Linux 中非常重要的知识点。
+- **服务(service) 本质就是进程**，但是是运行在后台的，通常都会监听某个端口，等待其它程序的请求，比如（mysql、sshd、防火墙等）。
 
-```shell
-service 服务名 [start | stop | restart | reload | status]
+  ```shell
+  service 服务名 [start | stop | restart | reload | status]
+  
+  # CentOS7.0 后不再使用 service，而是 systemctl
+  ```
 
-# CentOS7.0 后不再使用 service，而是 systemctl
-```
-
-
+  
 
 **查看服务名：**
 
@@ -1852,7 +1859,7 @@ service iptables start
   Trying 101.43.61.175...
   Connected to 101.43.61.175.
   Escape character is '^]'.
-  ... # 这里就可以输入访问接口的信息
+  ... # 这里就可以输入访问端口的信息
   
   # 连接不可用的端口
   ubuntu@VM-16-9-ubuntu:~$ telnet 121.4.47.229 3301
@@ -1864,11 +1871,11 @@ service iptables start
 
 ## 13.7、**chkconfig 指令**
 
-- 通过`chkconfig` 命令可以**给每个服务的各个运行级别设置自启动/关闭**
+- 通过`chkconfig` 命令可以 **为每个服务 在各个运行级别下 设置 自启动/关闭**
 - 但是这个指令只能在CentOS中使用
 
 ```shell
-# 查看服务 
+# 当前系统所有服务的各个运行级别的运行状态
 chkconfig --list|grep xxx
 
 # 查看服务
@@ -1876,14 +1883,6 @@ chkconfig 服务名 --list
 
 # 修改服务在某个运行级别下的自启动
 chkconfig --level 5 服务名 on/off
-
-例子：
-案例 1： 请显示当前系统所有服务的各个运行级别的运行状态  ->   chkconfig --list
-案例 2：请查看 sshd 服务的运行状态  ->   service sshd status
-案例 3： 将 sshd 服务在运行级别 5 下设置为不自动启动，看看有什么效果？  ->   chkconfig --level 5 sshd off
-案例 4： 当运行级别为 5 时，关闭防火墙  ->   chkconfig --level 5 iptables off
-案例 5： 在所有运行级别下，关闭防火墙  ->   chkconfig iptables off
-案例 6： 在所有运行级别下，开启防火墙  ->   chkconfig iptables on3
 ```
 
 - chkconfig 重新设置服务后自启动或关闭，需要重启机器 reboot 才能生效
@@ -1894,7 +1893,7 @@ chkconfig --level 5 服务名 on/off
 
 - top 与 ps 命令很相似，它们都用来显示正在执行的进程
 - top 与 ps 最大的不同之处，在于 top 在执行一段时间可以更新正在运行的的进程
-- 有点类似于Windows下的任务管理器
+- 有点类似于任务管理器
 
 ```shell
 top [选项]
@@ -1909,8 +1908,8 @@ top [选项]
 # M 以内存使用率排序
 # N 以PID排序
 # q 退出top
-# 输入u后输入某个用户名  =>  查看该用户名的服务
-# 输入k，回车，再输入一个进程ID号  =>  终止指定的进程
+# 输入u后输入某个用户名，查看该用户名的服务
+# 输入k，回车，再输入一个进程ID号，终止指定的进程
 ```
 
 
@@ -1985,7 +1984,7 @@ wget 安装包地址		# 不仅仅是rpm包，wget可以从互联网上下载任�
 rpm -ivh RPM包的全路径名称
 
 # i install 安装
-# v verbose 提示
+# v verbose 展示详情
 # h hash 进度条
 ```
 
@@ -2010,7 +2009,7 @@ rpm -e RPM包名
 # 15、YUM
 
 - Yum 是一个 **Shell 前端软件包管理器**
-- Yum 基于 RPM 包管理，**能够从指定的服务器自动下载 RPM 包并且安装**，可以自动处理依赖性关系，并且一次安装所有依赖的软件包。**使用 yum 的前提是已经联网**。
+- Yum 基于 RPM 包管理，**能够从指定的服务器自动下载 RPM 包并且安装**，可以自动处理依赖性关系，并且一次安装所有依赖的软件包。**使用 yum 的前提是已经联网**
 
 ```shell
 # 查询 yum 服务器是否有需要安装的软件
@@ -2018,6 +2017,9 @@ yum list | grep xx   # xx可以只是安装包的部分关键字
 
 # 下载安装指定的 yum 包
 yum install xxx 
+
+# 卸载指定 yum 包
+yum uninstall xxx
 ```
 
 
@@ -2030,7 +2032,7 @@ yum install xxx
 
 # 17、Shell编程
 
-## 17.1、为什么要学Shell编程
+## 17.1、Shell能做什么
 
 1. Linux 运维工程师在进行服务器集群管理时，需要**编写 Shell 程序来进行服务器管理**。
 2. 对于程序员来说，有时需要编写一些 **Shell 脚本** 进行程序或者是服务器的维护，比如编写一个定时备份数据库的脚本。
@@ -2067,7 +2069,7 @@ yum install xxx
 
       ```shell
       # 给所有者一个执行权限
-      chmod 744 hello.sh
+      chmod u+x hello.sh
       
       # 相对路径执行
       ubuntu@VM-16-9-ubuntu:~/learning$ ./hello.sh
@@ -2081,12 +2083,11 @@ yum install xxx
    
       ```shell
       # 取消 文件拥有者的可执行权限
-      ubuntu@VM-16-9-ubuntu:~/learning$ chmod 644 hello.sh
+      ubuntu@VM-16-9-ubuntu:~/learning$ chmod u-x hello.sh
       
       ubuntu@VM-16-9-ubuntu:~/learning$ ls -l
-      total 168
-      -rw-rw-r-- 1 ubuntu ubuntu 166592 Nov 22 15:24 apic36746.jpg
-      -rw-r--r-- 1 ubuntu ubuntu     32 Nov 29 10:41 hello.sh
+      total 4
+      -rw-rw-r-- 1 ubuntu ubuntu 33 Jan  7 10:54 hello.sh
       
       # 通过相对路径执行
       ubuntu@VM-16-9-ubuntu:~/learning$ sh ./hello.sh
@@ -2095,7 +2096,7 @@ yum install xxx
       # 通过绝对路径执行
       sh /home/ubuntu/learning/hello.sh
       ```
-   
+      
    3. **两种执行shell脚本的方式的区别**
    
       1. 运行`sh ./hello.sh` 表示用 指定的 解释器 sh 来解释脚本；
@@ -2119,7 +2120,7 @@ yum install xxx
          /usr/bin/tmux
          /usr/bin/screen
          ```
-
+   
 4. `&` 后台运行
 
    在命令后面加上 `&` 符号表示在后台运行
@@ -2210,12 +2211,12 @@ ubuntu@VM-16-9-ubuntu:~$ unset name
 
 **赋值时使用引号：**
 
-变量赋值时，字符串尽量使用引号包起来，不仅更加规范，不同的引号还有特殊的作用：
+变量赋值时，字符串尽量使用引号包起来，更加规范。不同的引号还有特殊的作用：
 
 - **双引号：**允许通过$符号引用其他变量值
 
 - **单引号：**禁止引用其他变量值，$视为普通字符
-- **反撇号：**命令替换，提取命令执行后的输出结果
+- **反撇号：**提取命令执行后的输出结果
 
 ```shell
 # 双引号定义不同字符串
@@ -2288,26 +2289,26 @@ hello.sh
     </tr>
     <tr>
     	<td>${string:position}</td>
-      <td>从下标 position 处开始提取字符串，直到结束。包含 position 索引</td>
+      <td>从下标 position 处开始提取字符串，直到结束。包含 position 处的值，字符串索引从 1 开始。</td>
     </tr>
     <tr>
     	<td>${string:position:len}</td>
-      <td>从下标 position 处开始提取字符串，提取 len 个。包含 position 索引</td>
+      <td>从下标 position 处开始提取字符串，提取 len 个。包含 position 处的值</td>
     </tr>
     <tr>
-    	<td>${string#substring}</td>
+    	<td>${string#pattern}</td>
       <td>从开头删除最短匹配字串</td>
     </tr>
     <tr>
-    	<td>${string##substring}</td>
+    	<td>${string##pattern}</td>
       <td>从开头删除最长匹配字串</td>
     </tr>
     <tr>
-    	<td>${string%substring}</td>
+    	<td>${string%pattern}</td>
       <td>从结尾删除最短匹配字串</td>
     </tr>
     <tr>
-    	<td>${string%%substring}</td>
+    	<td>${string%%pattern}</td>
       <td>从结尾删除最长匹配字串</td>
     </tr>
   </tbody>
@@ -2345,7 +2346,7 @@ cdf
 
 
 
-### 17.4.5、扩展：Shell 数组
+### 17.4.5、Shell 数组
 
 **数组定义**
 
@@ -2497,11 +2498,11 @@ Java HotSpot(TM) 64-Bit Server VM 18.9 (build 11.0.2+9-LTS, mixed mode)
 
 ### 17.6.1、介绍
 
-当我们执行一个 shell 脚本时，如果希望 **获取到命令行的参数信息**，就可以使用到位置参数变量
+当我们执行一个 shell 脚本时，如果希望 **获取到命令行的参数信息**，就需要使用位置参数变量
 
 **比如 ：**
 
-`./positionParams.sh 10 20 30 44` ，这个就是一个执行 shell 的命令行，可以在 myshell 脚本中获取到参数信息
+`./positionParams.sh 10 20 30 44` ，这个就是一个执行 shell 的命令行，可以在脚本中获取到参数信息
 
 
 
@@ -2606,7 +2607,6 @@ ubuntu@VM-16-9-ubuntu:~/learning$ ./positionParams.sh 10 20 30 xiaozhang wuji
    echo "系统预定义变量"
    echo "=============="
    
-   echo "当前进程名称：$0"
    echo "当前进程号：$$"
    echo "最后一个进程号：$!"
    echo "最后一次命令执行结果的状态：$?"
@@ -2618,7 +2618,6 @@ ubuntu@VM-16-9-ubuntu:~/learning$ ./positionParams.sh 10 20 30 xiaozhang wuji
    ubuntu@VM-16-9-ubuntu:~/learning$ ./test.sh
    系统预定义变量
    ==============
-   当前进程名称：./test.sh
    当前进程号：14873
    最后一个进程号：
    最后一次命令执行结果的状态：0
@@ -2633,7 +2632,7 @@ ubuntu@VM-16-9-ubuntu:~/learning$ ./positionParams.sh 10 20 30 xiaozhang wuji
 
 1. **基本介绍**
 
-   通过 运算操作符 ，可以完成 对一些预算表达式的
+   通过 运算操作符 ，可以完成对一些表达式的运算
 
 2. **基本语法**
 
@@ -2923,15 +2922,19 @@ esac
 ```shell
 #!/bin/bash
 
-case $1 in
-	"1")
-		echo "今天周一"
+echo "输入性别，给你算命！"
+
+read -p "您的性别是：" SEX
+
+case ${SEX} in
+	"男")
+		echo "你是个男人，很棒！！"
 		;;
-	"2")
-		echo "今天周二"
+	"女")
+		echo "你是女人，很棒！！"
 		;;
-	*)		# * 表示任意值
-		echo "我管你周几"
+	*)
+		echo "我请问你是什么人！！"
 		;;
 esac
 ```
@@ -2941,15 +2944,19 @@ esac
 **测试：**
 
 ```shell
-ubuntu@VM-16-9-ubuntu:~/learning$ ./logicTest02.sh 1
-今天周一
-ubuntu@VM-16-9-ubuntu:~/learning$ ./logicTest02.sh 2
-今天周二
-ubuntu@VM-16-9-ubuntu:~/learning$ ./logicTest02.sh 3
-我管你周几
+ubuntu@VM-16-9-ubuntu:~/learning$ ./case.sh
+输入性别，给你算命！
+您的性别是：男
+你是个男人，很棒！！
+ubuntu@VM-16-9-ubuntu:~/learning$ ./case.sh
+输入性别，给你算命！
+您的性别是：女
+你是女人，很棒！！
+ubuntu@VM-16-9-ubuntu:~/learning$ ./case.sh
+输入性别，给你算命！
+您的性别是：住
+我请问你是什么人！！
 ```
-
-
 
 
 

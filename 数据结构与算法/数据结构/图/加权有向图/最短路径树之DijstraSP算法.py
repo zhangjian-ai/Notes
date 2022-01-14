@@ -60,7 +60,7 @@ class DijkstraSP:
         self.dist_to[s] = 0.0
         self.queue.insert(s)
 
-        # 遍历最小索引优先队列的中的顶点，对其进行松弛
+        # 遍历最小优先队列的中的顶点，对其进行松弛
         while not self.queue.is_empty:
             v = self.queue.del_min()
             self.relax(G, v)

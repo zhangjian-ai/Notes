@@ -2,7 +2,7 @@
 
 ## 入门介绍
 
-Elasticsearch 是一个分布式可扩展的实时搜索和分析引擎,一个建立在全文搜索引擎 Apache Lucene(TM) 基础上的搜索引擎.当然 Elasticsearch 并不仅仅是 Lucene 那么简单，它不仅包括了全文搜索功能，还可以进行以下工作:
+Elasticsearch 是一个分布式可扩展的实时搜索和分析引擎,一个建立在全文搜索引擎 Apache Lucene(TM) 基础上的搜索引擎。当然 Elasticsearch 并不仅仅是 Lucene 那么简单，它不仅包括了全文搜索功能，还可以进行以下工作:
 
 - 分布式实时文件存储，并将每一个字段都编入索引，使其可以被搜索。
 - 实时分析的分布式搜索引擎。
@@ -1417,7 +1417,7 @@ ElasticSearch + FileBeat + Kibana 搭建一套日志收集系统，就是 大家
 
 EFK和大名鼎鼎的ELK只有一个区别，那就是 EFK 把 ELK 的 Logstash 替换成了 FileBeat，因为Filebeat相对于Logstash来说有2个好处：
 
-1. 侵入低，无需修改程序目前任何代码和配置
+1. 侵入低，无需修改当前程序的任何代码和配置
 2. 相对于Logstash来说性能高，Logstash对于IO占用很大
 
 当然，FileBeat也并不是完全好过Logstash，毕竟Logstash对于日志的格式化这些相对FileBeat好很多，FileBeat只是将日志从日志文件中读取出来，当然如果你日志本身是有一定格式的，FileBeat也可以格式化，但是相对于Logstash来说，还是差一点。
@@ -1449,7 +1449,7 @@ EFK和大名鼎鼎的ELK只有一个区别，那就是 EFK 把 ELK 的 Logstash 
      multiline.negate: true
      multiline.match: after
    
-   ## 设置kibana的地址，开始filebeat的可视化  
+   ## 设置kibana的地址，开启filebeat的可视化  
    setup.kibana:
        host: "http://101.43.61.175:5601"
        username: "elastic"   # kibana 服务用户名
