@@ -30,7 +30,9 @@
 
 ### 安装Jmeter
 
-- 下载Jmeter安装包： **http://jmeter.apache.org/ **
+- 下载Jmeter安装包： http://jmeter.apache.org/ 
+
+- Jmeter历史版本：http://archive.apache.org/dist/jmeter/binaries/
 
 - Jmeter安装包解压即可使用。为了cmd能够全局使用，将启动文件配置到环境变量。
 

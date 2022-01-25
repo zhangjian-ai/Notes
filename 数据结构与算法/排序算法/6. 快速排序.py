@@ -63,9 +63,42 @@ def quicksort(a, l, m):
     return p2
 
 
+class Solution:
+    def merge(self, intervals: list) -> list:
+        self.dfs(intervals, 0, len(intervals) - 1)
+        return intervals
+
+    def dfs(self, intervals: list, start: int, end: int):
+        if start >= end:
+            return
+
+        p1 = start
+        p2 = end
+        s = intervals[start]
+
+        while p1 < p2:
+            while p1 < p2 and intervals[p1] <= s:
+                p1 += 1
+
+            while p1 < p2 and intervals[p2] >= s:
+                p2 -= 1
+
+            if p1 != p2:
+                intervals[p1], intervals[p2] = intervals[p2], intervals[p1]
+
+            elif intervals[p1] < s:
+                intervals[start], intervals[p1] = intervals[p1], intervals[start]
+
+        self.dfs(intervals, start, p1 - 1)
+        self.dfs(intervals, p1, end)
+
+
 if __name__ == '__main__':
     a = [3, 4, 2, 1, 7, 5, 10, 22, 17, 23, 14, 6, 9, 16, 27, 33, 31, 1, 13, 6, 7]
+    b = [10, 7, 9, 11, 23, 15, 7, 2, 12, 17, 14, 13, 22, 6, 20, 1, 5, 8, 0, 3, 3, 2, 19, 4]
 
-    divide(a, 0, len(a) - 1)
+    divide(b, 0, len(b) - 1)
+    s = Solution()
 
-    print(a)
+    print(s.merge(a))
+    print(b)

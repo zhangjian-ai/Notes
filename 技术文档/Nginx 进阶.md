@@ -462,14 +462,14 @@ http {
 
 ```shell
 # last的作用是终止在当前块中继续执行语句
-rewrite ^/images/(.*)_(\d+)x(\d+).(png|jpg|gif) /resizer/1.4?width=$2&height=$3 last;
+rewrite '^/images/(.*)_(\d+)x(\d+).(png|jpg|gif)' /resizer/$1.$4?width=$2&height=$3 last;
 ```
 
 
 
 #### try_files
 
-Nginx的配置语法灵活，可控制度非常高。在0.7以后的版本中加入了一个try_files指令，配合命名location，可以部分替代原本常用的rewrite配置方式，提高解析效率。
+Nginx的配置语法灵活，可控制度非常高。在0.7以后的版本中加入了一个try_files指令，配合location，可以部分替代原本常用的rewrite配置方式，提高解析效率。
 
 **语法：**
 
@@ -583,8 +583,8 @@ worker_rlimit_nofile 65535;
 
 events
 {
-    #参考事件模型，use [ kqueue | rtsig | epoll | /dev/poll | select | poll ]; epoll模型
-    #是Linux 2.6以上版本内核中的高性能网络I/O模型，linux建议epoll，如果跑在FreeBSD上面，就用kqueue模型。
+    #参考事件模型，use [ kqueue | rtsig | epoll | /dev/poll | select | poll ];
+    #epoll模型 是Linux 2.6以上版本内核中的高性能网络I/O模型，linux建议epoll，如果跑在FreeBSD上面，就用kqueue模型。
     #补充说明：
     #与apache相类，nginx针对不同的操作系统，有不同的事件模型
     #A）标准事件模型
@@ -597,16 +597,17 @@ events
     use epoll;
 
     #单个进程最大连接数（最大连接数=连接数*进程数）
-    #根据硬件调整，和前面工作进程配合起来用，尽量大，但是别把cpu跑到100%就行。每个进程允许的最多连接数，理论上每台nginx服务器的最大连接数为。
-    worker_connections 65535;
+    #根据硬件调整，和前面工作进程配合起来用，尽量大，但是别把cpu跑到100%就行。每个进程允许的最多连接数，理论上每台nginx服务器的最大连接数为 65535，通常建议配置为 1024。
+    worker_connections 1024;
 
     #keepalive超时时间。
     keepalive_timeout 60;
 
     #客户端请求头部的缓冲区大小。这个可以根据你的系统分页大小来设置，一般一个请求头的大小不会超过1k，不过由于一般系统分页都要大于1k，所以这里设置为分页大小。
-    #分页大小可以用命令getconf PAGESIZE 取得。
+    #分页大小可以用shell命令 getconf PAGESIZE 取得。
     #[root@web001 ~]# getconf PAGESIZE
     #4096
+    #
     #但也有client_header_buffer_size超过4k的情况，但是client_header_buffer_size该值必须设置为“系统分页大小”的整倍数。
     client_header_buffer_size 4k;
 
@@ -1211,7 +1212,7 @@ Nginx: 采用单线程来异步非阻塞处理请求(管理员可以配置Nginx�
 
 系统中的CPU核心数: `grep processor /proc/cpuinfo | awk '{print $3}'`
 
-- 优化化worker_connections
+- 优化worker_connections
 
 Nginx Web服务器可以同时提供服务的客户端数。与worker_processes结合使用时，获得每秒可以服务的客户端数
 

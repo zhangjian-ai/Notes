@@ -47,10 +47,10 @@ DevOps 的三大支柱之中，即人（People）、流程（Process）和平台
 
 1. 查看关联的远程仓库的名称：`git remote`
 2. 查看关联的远程仓库的详细信息：`git remote -v`
-3. 添加远程仓库的关联：`git remote add origin <远程仓库地址>`
+3. 添加远程仓库的关联：`git remote add <远程仓库名称> <远程仓库地址>`
 4. 删除远程仓库的关联：`git remote remove <远程仓库名称>`
-5. 修改远程仓库的关联：`git remote set-url origin <新的远程仓库地址>`
-6. 更新远程仓库的分支：`git remote update origin --prune`
+5. 修改远程仓库的关联：`git remote set-url <远程仓库名称> <新的远程仓库地址>`
+6. 更新远程仓库的分支：`git remote update <远程仓库名称> --prune`
 
 
 
@@ -81,7 +81,7 @@ AutoTest_MeiDuo		AutomationTestPlat	Repo			automation_test		jmeter_ant		pypi
 
 ### git status
 
-`git status`命令的作用是显示文件状态，**红色表示工作目录的文件被修改但还没有提交到暂存区，绿色表示已经提交到暂存区。**
+`git status`命令的作用是查看工作区文件状态，**红色表示工作目录的文件被修改但还没有提交到暂存区，绿色表示已经提交到暂存区。**
 
 `git status`命令主要是查看 工作区 文件的修改状态。
 
@@ -237,7 +237,7 @@ c096fbc (HEAD -> master) first time commit   # commit id: c096fbc
 
 `git push <远程仓库名> <本地分支名>:<远程分支名>`
 
-1. 本地分支 可不写，默认是 **当前分支**；
+1. 本地分支名 可不写，默认是 **当前分支**；
 2. 远程分支 如果不存在，在 push 的时候将自动创建一个远程分支；
 3. 将本地仓库`master`分支的更新推送到远程仓库上：`git push origin master`，也可以直接使用`git push origin`，会将本地分支推送到与之存在追踪关系的远程分支；
 4. 删除远程`dev`分支：`git push origin --delete dev`。
@@ -247,7 +247,7 @@ c096fbc (HEAD -> master) first time commit   # commit id: c096fbc
 示例一：
 
 ```shell
-# 将本底仓库更新 推送到 远程仓库 的 master 分支
+# 将本地仓库更新 推送到 远程仓库 的 master 分支
 zhangjian@zhangjiandeMacBook-Pro Repo % git push origin master
 Enumerating objects: 3, done.
 Counting objects: 100% (3/3), done.
@@ -311,7 +311,7 @@ zhangjian@zhangjiandeMacBook-Pro Repo % git branch -a
 
 1. 查看本地分支：`git branch`
 2. 查看本地和远程分支：`git branch -a`
-3. 新建名字为`test`的本地分支：`git branch test`
+3. 基于源分支新建名字为`test`的本地分支，源分支是可选的，如果不写则默认基于master分支创建：`git branch test <源分支>`
 4. 将`test`分支名字改为`dev`：`git branch -m test dev`
 5. 删除名字为`dev`的本地分支：`git branch -d dev`
 
@@ -744,7 +744,7 @@ docker rmi ${IMAGE NAME/ID}                      #删除镜像
 docker rm ${CONTAINER NAME/ID}                   #删除容器
 docker save ${IMAGE NAME} > ${FILE NAME}.tar     #将镜像保存成文件
 docker load < ${FILE NAME}.tar                   #从文件加载镜像
-docker start/restart ${CONTAINER NAME/ID}                #运行一个以前运行过的容器
+docker start/restart ${CONTAINER NAME/ID}        #启动/重启一个以前运行过的容器
 docker stop ${CONTAINER NAME/ID}                 #停止一个正在运行的容器
 
 docker logs ${CONTAINER NAME/ID}                 #显示运行容器的日志
@@ -816,8 +816,8 @@ docker build
     docker build -t xx/gitlab .			# 构建时，可以指定镜像仓库（XX），不指定 tag 时，使用latest作为tag
     
 docker commit
-		# 参数：-a 提交的镜像作者；-c 使用Dockerfile指令来创建镜像；-m :提交时的说明文字；-p :在commit时，将容器暂停
 		# 将运行中的容器打包成一个镜像
+		# 参数：-a 提交的镜像作者；-c 使用Dockerfile指令来创建镜像；-m :提交时的说明文字；-p :在commit时，将容器暂停
 		docker commit -m "描述信息" 容器名/容器ID 镜像名:镜像Tag 
 		docker commit -m "description info" TP_web web:latest
 
@@ -835,7 +835,7 @@ docker cp
 		##将rabbitmq容器中的文件copy至本地路径
 		docker cp rabbitmq:/[container_path] [local_path]
 		
-		##将主机文件copy至rabbitmq容器
+		##将主机文件copy至rabbitmq容器的目录中（以/结尾表示目录）
 		docker cp [local_path] rabbitmq:/[container_path]/
 		
 		##将主机文件copy至rabbitmq容器，目录重命名为[container_path]（注意与非重命名copy的区别）
@@ -855,7 +855,7 @@ docker network
 		# 查看网络连接
 		docker network ls
 		
-		# 查看网络连接详情
+		# 检查网络连接详情
 		docker network inspect 网络名称/网络ID
 		
 		# 容器连接网络
