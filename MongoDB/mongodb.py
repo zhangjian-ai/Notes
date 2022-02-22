@@ -5,7 +5,7 @@ class MongoDb:
 
     def __init__(self):
         # 创建客户端
-        conn = MongoClient('127.0.0.1', 27017)
+        conn = MongoClient('101.43.61.175', 27017)
 
         # 链接一个数据库，如果数据库不存在，会自动创建
         db = conn.my_db
@@ -82,4 +82,22 @@ class MongoDb:
 if __name__ == '__main__':
     # MongoDb().insert()
 
-    MongoDb().query()
+    # MongoDb().query()
+
+    # 创建客户端
+    conn = MongoClient('101.43.61.175', 27017)
+
+    # 链接一个数据库，如果数据库不存在，会自动创建
+    db = conn.my_db
+
+    # 使用一个集合，没有则自动创建
+    my_set = db.test_set
+
+    from bson.objectid import ObjectId
+    # my_set.insert_one({"name": "zhangjian"})
+    # my_set.update_one({'_id': ObjectId('6204c1f181de152c57c30d20')}, {'$set': {'origin.height': "178"}})
+
+    # for i in my_set.find():
+    #     print(i)
+
+    print(type(my_set.find_one({'_id': ObjectId('6204c1f181de152c57c30d20')})))

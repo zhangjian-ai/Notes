@@ -479,6 +479,16 @@ csv循环取值：
 
 
 
+#### 六、gRPC 样本插件
+
+下载地址：https://github.com/zalopay-oss/jmeter-grpc-request/releases/download/v1.2.1/jmeter-grpc-request-v1.2.1.jar
+
+主要作用是用于gRPC接口测试。
+
+>需要准备对应服务的 proto 文件
+
+
+
 ### 11、BeanShell
 
 > - BeanShell是一种完全符合Java语法规范的脚本语言,并且又拥有自己的一些语法和方法;

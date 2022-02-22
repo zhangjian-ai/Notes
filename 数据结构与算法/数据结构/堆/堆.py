@@ -98,14 +98,18 @@ class Heap:
 
 if __name__ == '__main__':
     h = Heap(10)
-    h.insert("A")
-    h.insert("B")
-    h.insert("E")
-    h.insert("Q")
-    h.insert("G")
-    h.insert("Z")
-    h.insert("C")
-    h.insert("D")
+    # h.insert("B")
+    # h.insert("Z")
+    # h.insert("E")
+    # h.insert("A")
+    # h.insert("G")
+    # h.insert("C")
+    # h.insert("D")
+    # h.insert("Q")
+    for i in [4, 5, 1, 6, 2, 7, 3, 8]:
+        h.insert(i)
+
+    print(h.items)
 
     while h.N > 0:
         print(h.del_max(), end=" ")
