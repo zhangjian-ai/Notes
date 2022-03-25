@@ -2,7 +2,7 @@
 
 ## 入门介绍
 
-Elasticsearch 是一个分布式可扩展的实时搜索和分析引擎,一个建立在全文搜索引擎 Apache Lucene(TM) 基础上的搜索引擎。当然 Elasticsearch 并不仅仅是 Lucene 那么简单，它不仅包括了全文搜索功能，还可以进行以下工作:
+Elasticsearch 是一个分布式可扩展的实时搜索和分析引擎，一个建立在全文搜索引擎 Apache Lucene(TM) 基础上的搜索引擎。当然 Elasticsearch 并不仅仅是 Lucene 那么简单，它不仅包括了全文搜索功能，还可以进行以下工作:
 
 - 分布式实时文件存储，并将每一个字段都编入索引，使其可以被搜索。
 - 实时分析的分布式搜索引擎。
@@ -31,7 +31,7 @@ Elasticsearch 是一个分布式可扩展的实时搜索和分析引擎,一个�
 Elasticsearch		⇒ 索引(Index)		⇒ 类型(type)  ⇒ 文档(Docments)  ⇒ 字段(Fields)  
 ```
 
-一个 Elasticsearch 集群可以包含多个索引(数据库)，索引中包含了很多类型(表)（类型的概念将在 8.x 版本完全弃用，7.x 还可以使用但是已经开始提示即将弃用。那么之后 一个索引中就只有一个类型），这些类型中包含了很多的文档(行)，然后每个文档中又包含了很多的字段(列)。Elasticsearch的交互，可以使用Java API，也可以直接使用HTTP的Restful API方式，比如我们打算插入一条记录，可以简单发送一个HTTP的请求：
+一个 Elasticsearch 集群可以包含多个索引(数据库)，索引中包含了很多类型(表)（类型的概念将在 8.x 版本完全弃用，7.x 还可以使用但是已经开始提示即将弃用。那么之后 一个索引中就只有一个类型），这些类型中包含了很多的文档(行)，然后每个文档中又包含了很多的字段(列)。Elasticsearch的交互，可以使用各语言的 API，也可以直接使用HTTP的Restful API方式，比如我们打算插入一条记录，可以简单发送一个HTTP的请求：
 
 ```
 # 创建 索引为：megacorp  类型为：employee 文档ID为 1 的文档
@@ -90,7 +90,7 @@ PUT /megacorp/employee/1
 
     - _primary_term: 代表主分片上数据重新分配的次数。比如重启节点，重新分配都会触发这个参数累加。
 
-    - _routing: 路由规则，写入和查询要保证路由是一致。
+    - _routing: 路由规则，写入和查询要保证路由是一致的。
 
     - _source: 文档数据明细信息。
 
@@ -142,7 +142,7 @@ PUT /megacorp/employee/1
 >- **定义字段的数据类型**，比如字符串、数字、布尔
 >- **字段，倒排索引的相关配置**，比如设置某个字段为不被索引、记录 position 等
 
-tip：实例中会使用到基础的CRUD操作，建议先看 文档操作-基础CRUD部分。
+tip：示例中会使用到基础的CRUD操作，建议先看 文档操作-基础CRUD部分。
 
 
 
@@ -182,7 +182,7 @@ keyword 类型的字段只能通过精确值搜索到，用于过滤、排序、
 | integer | -2147483648 (-2^31^)           | 2147483647 (2^31^-1)          | 32 位有符号整数（4个字节），相当于MySQL中有符号的 int      |
 | long    | -9223372036854775808) (-2^63^) | 9223372036854775807 (2^63^-1) | 64 位有符号整数（8个字节），相当于MySQL中有符号的 bigint   |
 
-对于整数类型的字段，在满足需求的情况下，要尽可能选择范围小的数据类型。比如某个字段的取值最大值不会超过100，那么选择byte类型即可。迄今为止,吉尼斯世界记录的人类的年龄的最大值为134岁，对于年龄字段，short足矣。字段的长度越短，索引和搜索的效率越高。
+对于整数类型的字段，在满足需求的情况下，要尽可能选择范围小的数据类型。比如某个字段的取值最大值不会超过100，那么选择byte类型即可。迄今为止，吉尼斯世界记录的人类的年龄的最大值为134岁，对于年龄字段，short足矣。字段的长度越短，索引和搜索的效率越高。
 
 
 
@@ -243,10 +243,10 @@ Base64编码二进制值不能嵌入换行符`\n`
 
 | 类型            | 说明                                                         |
 | --------------- | ------------------------------------------------------------ |
-| `integer_range` | 32 位有符号整数的范围值，-2^31^ ~ 2^31^-1                    |
-| `long_range`    | 62 位有符号整数的范围值，-2^63^ ~ 2^63^-1                    |
-| `float_range`   | 32位单精度浮点数范围值                                       |
-| `double_range`  | 64位单精度浮点数范围值                                       |
+| `integer_range` | 32 位有符号整数的范围值，-2^31 ~ 2^31^-1                     |
+| `long_range`    | 64 位有符号整数的范围值，-2^63 ~ 2^63^-1                     |
+| `float_range`   | 32 位单精度浮点数范围值                                      |
+| `double_range`  | 64 位单精度浮点数范围值                                      |
 | `date_range`    | 以64位无符号整数形式表示的日期值范围                         |
 | `ip_range`      | [IPv4](https://link.segmentfault.com/?enc=GoO0bU%2BZp4wQiLtV4zySiA%3D%3D.f0kyZQccLY4mMb1z9031FKRO5V9azEkA0OfvTgjb01%2FZYbtMND8%2BFgrFTu1%2FEw2h) 或 [IPv6](https://link.segmentfault.com/?enc=ZlMxvi%2BDbZ7TItN44j3%2Byw%3D%3D.w5lpJP7xy4lf%2Fcl6C61fGub%2BZggFHHJXO362JRhp45DIU8CKg9CmGSVwY0sIJIeW) 的范围值 |
 
@@ -440,7 +440,8 @@ GET users/_mapping
 **示例：手动创建**
 
 ```json
-# 创建PUT demo
+# 创建
+PUT demo
 {
   "mappings": {
         "properties": {
@@ -459,7 +460,6 @@ GET users/_mapping
 
 # 查看
 GET demo/_mapping
-
 {
   "demo" : {
     "mappings" : {
@@ -540,7 +540,7 @@ GET demo/_mapping
 
 2. **index**
 
-   > index 参数默认值为true，如果设置为 false，那么 elasticsearch 不会为该属性创建索引，也就是说无法被当作住查询条件。
+   > index 参数默认值为true，如果设置为 false，那么 elasticsearch 不会为该属性创建索引，也就是说无法被当作主查询条件。
 
    ```json
    # 创建映射
@@ -952,7 +952,9 @@ Elasticsearch里除了上面说到用FST压缩term index外，对posting list也
 
 > 增量编码压缩，将大数变小数，按字节存储
 
-首先，Elasticsearch要求posting list是有序的(为了提高搜索的性能，再任性的要求也得满足)，这样做的一个好处是方便压缩，看下面这个图例： <img src="./images/20211101160520.jpg" alt="Alt text" style="zoom:50%;" />
+首先，Elasticsearch要求posting list是有序的(为了提高搜索的性能，再任性的要求也得满足)，这样做的一个好处是方便压缩，看下面这个图例： 
+
+<img src="./images/20211101160520.jpg" alt="Alt text" style="zoom:50%; float: left;" />
 
 如果数学不是体育老师教的话，还是比较容易看出来这种压缩技巧的。
 
@@ -1064,7 +1066,7 @@ Elasticsearch的索引思路:
 
 其中常用的是IKAnalyzer，但IK是第三方插件，需要安装。
 
-IK分词器主要是针对 ES 内置的分词器对中文分词不友好，会讲中文每个字都分成一个 term，导致检索出很多低匹配度的文档。
+IK分词器主要是针对 ES 内置的分词器对中文分词不友好，会将中文每个字都分成一个 term，导致检索出很多低匹配度的文档。
 
 ik分词器有以下两种模式：
 
@@ -1650,9 +1652,10 @@ EFK和大名鼎鼎的ELK只有一个区别，那就是 EFK 把 ELK 的 Logstash 
 **示例：创建**
 
 > - 支持自动生成文档ID和指定文档ID两种方式
-> - 通过调用 `post /users/_doc` , 系统会自动生成 document id
-> - 使用 `HTTP PUT user/_create/1` 创建时，URL中显示指定`_create`，此时如果该id已经存在，操作失败。
-> - Index 和 Create 不一样的地方：如果文档不存在，就索引新的文档。否则现有的文档会被删除，新的文档被索引。版本信息 +1。
+> - 使用 `POST /users/_doc` ，系统会自动生成 document id
+> - 使用`POST /users/_doc/1` 创建时，如果该ID文档不存在，就创建新的文档。否则会先删除现有文档，再重新创建一个新的文档，新文档的版本信息在原文档的基础上 +1。
+> - 使用 `PUT user/_create/1` 创建时，URL中显式指定`_create`，此时如果该ID已经存在，操作失败，因为此时操作类型是新增，不是更新。
+> - 使用`PUT user/_doc/1`更新时，如果该ID文档不存在，就创建新的文档。否则会先删除现有文档，再重新创建一个新的文档，新文档的版本信息在原文档的基础上 +1。
 
 ```json
 # ----------指定文档id------------
@@ -2049,7 +2052,7 @@ DSL 查询主要包含两种类型的查询语句：
 
 #### match_all
 
-> match_all：全部匹配。match_all: {} ,全部匹配时，match_all 可省略不写
+> match_all：全部匹配。match_all: {} ，全部匹配时，match_all 可省略不写
 
 ```json
 # --------全部匹配，也就是查询ALL----------

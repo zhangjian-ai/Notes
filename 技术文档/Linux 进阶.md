@@ -2298,22 +2298,23 @@ hello.sh
     </tr>
     <tr>
     	<td>${string#pattern}</td>
-      <td>从开头删除最短匹配字串</td>
+      <td>从开头删除最短匹配子串</td>
     </tr>
     <tr>
     	<td>${string##pattern}</td>
-      <td>从开头删除最长匹配字串</td>
+      <td>从开头删除最长匹配子串</td>
     </tr>
     <tr>
     	<td>${string%pattern}</td>
-      <td>从结尾删除最短匹配字串</td>
+      <td>从结尾删除最短匹配子串</td>
     </tr>
     <tr>
     	<td>${string%%pattern}</td>
-      <td>从结尾删除最长匹配字串</td>
+      <td>从结尾删除最长匹配子串</td>
     </tr>
   </tbody>
 </table>
+
 **示例：**
 
 ```shell
