@@ -1,0 +1,21 @@
+// 指定proto语法版本
+syntax = "proto3";
+
+package packages;
+
+// 定义服务
+service GreetService {
+  // 定义借口和数据类型
+  rpc sayHello(helloRequest) returns (helloResponse) {}
+}
+
+// 定义请求数据类型
+message helloRequest {
+  string name = 1;
+}
+
+// 定义响应数据类型
+message helloResponse {
+  string msg = 1;
+}
+
