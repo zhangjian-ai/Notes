@@ -164,7 +164,7 @@ brotli, roundrobin, pyzmq, psutil, msgpack, geventhttpclient, Flask-Cors, Flask-
 - 2、如果Locust文件位于子目录下且名称不是locustfile.py，可以使用-f命令启动上面的示例locust文件：
 
   ``` 
-   locust -f testscript/locusttest.py --host=https://www.cnblogs.com 
+  locust -f testscript/locusttest.py --host=https://www.cnblogs.com 
   ```
 
 - 3、如果要运行分布在多个进程中的Locust，通过指定`-master`以下内容来启动主进程 ：

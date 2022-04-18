@@ -211,7 +211,9 @@ zhangjian@zhangjiandeMacBook-Pro Repo % git status -s
 2. 将工作目录中修改后还未使用`git add .`命令添加到暂存区中的文件也提交到本地仓库：`git commit –a –m "message"`，该命令相当于以下两条命令：
    - `git add .`：把所有修改的信息添加到暂存区
    - `git add -m "message"`：将暂存区的修改提交到本地仓库
-3. 修改最后一次提交（可用于漏掉某个文件的提交或重新编辑信息）：`git commit --amend`
+3. 撤销上一次提交，并将暂存区文件重新提交（可用于漏掉某个文件的提交或重新编辑提交信息）：`git commit --amend`
+   - 如果是commit的内容需要修改，那么可以先修改好文件，然后`git add .`，再执行`git commit --amend`
+   - 执行`git commit --amend`后，可以重新编辑上一次的提交信息
 
 
 
@@ -473,7 +475,7 @@ zhangjian@zhangjiandeMacBook-Pro Repo % cat web.html
 
 
 
-### git merge
+### git merge/git rebase
 
 `git merge`命令的作用主要是分支的合并。
 
@@ -544,6 +546,23 @@ zhangjian@zhangjiandeMacBook-Pro Repo % cat web.html
 
 <p>在 hub 增加的一行，用于演示 合并 远程分支 到 本地分支</p>
 ```
+
+
+
+**git merge和git rebase的区别**
+
+> git merge和git rebase从最终效果来看没有任何区别，都是将不同分支的代码融合在一起。
+
+1. git log的区别
+   - merge：将子分支的所有提交 在主分支记录成一次commit，保留在主分支记录中。
+   - rebase：不会在主分支自动生成 commit记录，而是直接将分支中的内容排到master的记录之后。
+2. 处理冲突
+   - 使用merge命令合并分支，解决完冲突，执行git add .和git commit -m 'fix conflict'。这个时候会产生一个commit。
+   - 使用rebase命令合并分支，解决完冲突，执行git add .和git rebase --continue，不会产生额外的commit。这样的好处是，‘干净’，分支上不会有无意义的解决分支的commit；坏处，如果合并的分支中存在多个commit，需要重复处理多次冲突。分支会恢复到rebase开始前的状态 git rebase --abort。
+
+**注意点：**
+
+​		假如使用rebase，一定要遵守rebase黄金法则，共享的public分支不能rebase。通俗的说，当一个分支是一个人开发处理的，才可以rebase，假如一个分支被多个人共享开发，然后rebase，那就乱套了，处理起来复杂。
 
 
 
@@ -725,6 +744,67 @@ ad39985d (zhangjian 2021-12-02 22:16:06 +0800 2) <p>为tag示例添加一行</p>
 566527a2 (张建      2021-12-02 23:33:55 +0800 4)
 566527a2 (张建      2021-12-02 23:33:55 +0800 5) <p>在 hub 增加的一行，用于演示 合并 远程分支 到 本地分支</p>
 ```
+
+
+
+### git submodule
+
+> 该命令的作用主要是在当前主项目中，引入其他的git仓库，这个子仓库作为一个独立的仓库存在于主项目中。适用于主工程中引入其他library库。
+>
+> 子模块的更新需要在自模块目录下单独执行，主项目的更新提交不会影响子模块的版本，二者相互独立。
+
+#### 添加子模块
+
+执行添加命令成功后，可以在当前路径中看到一个.gitsubmodule文件，里面记录的就是自模块相关的信息
+
+```shell
+git submodule add <url> <path>
+
+# url：子模块仓库地址
+# path：子模块存放的本地路径
+
+# 如果在添加子模块的时需要指定同步代码的具体分之，可以利用 -b 参数
+git submodule add -b <branch> <url> <path>
+```
+
+
+
+#### 初始化
+
+当我们add子模块之后，会发现文件夹下没有任何内容。这个时候我们需要再执行下面的指令添加源码。
+
+```shell
+# 进入到子模块目录下执行下面的命令，即 add 时的 path
+git submodule update --init --recursive
+```
+
+这个命令是下面两条命令的合并版本
+
+```shell
+git submodule init
+git submodule update
+```
+
+
+
+#### 更新
+
+引入了别人的仓库后，如果该仓库作者进行了更新，我们需要手动进行同步更新
+
+```shell
+# 进入子模块目录执行
+git pull
+```
+
+
+
+#### 删除
+
+1. 删除子模块目录及源码`rm -rf 子模块目录`
+2. 删除.gitmodules中的对应子模块内容`vi .gitmodules`
+3. 删除.git/config配置中的对应子模块内容`vi .git/config`
+4. 删除.git/modules/下对应子模块目录`rm -rf .git/modules/子模块目录`
+5. 删除git索引中的对应子模块`git rm --cached 子模块目录`
 
 
 
@@ -1083,3 +1163,152 @@ LXC 与虚拟机的不同之处在于，它是一个操作系统级别的虚拟�
 
 
 # Kubernates
+
+## 常用命令
+
+### 查询类命令
+
+```shell
+# 获取节点和服务版本信息
+kubectl get nodes
+# 获取节点和服务版本信息，并查看附加信息
+kubectl get nodes -o wide
+# 获取pod信息，默认是default名称空间
+kubectl get pod
+# 获取pod信息，默认是default名称空间，并查看附加信息【如：pod的IP及在哪个节点运行】
+kubectl get pod -o wide
+# 获取指定名称空间的pod
+kubectl get pod -n <namespaces>
+# 获取指定名称空间中的指定pod
+kubectl get pod podName -n <namespaces>
+# 获取所有名称空间的pod
+kubectl get pod -A 
+# 查看pod的详细信息，以yaml格式或json格式显示
+kubectl get pods -o yaml
+kubectl get pods -o json
+
+# 查看pod的标签信息
+kubectl get pod -A --show-labels 
+# 根据Selector（label query）来查询pod
+kubectl get pod -A --selector="k8s-app=kube-dns"
+
+# 查看运行pod的环境变量
+kubectl exec podName env
+# 查看指定pod的日志
+kubectl logs -f --tail 500 -n <namespaces> <podname>
+ 
+# 查看所有名称空间的service信息
+kubectl get svc -A
+# 查看指定名称空间的service信息
+kubectl get svc -n <namespaces>
+
+# 查看componentstatuses信息
+kubectl get cs
+# 查看所有configmaps信息
+kubectl get cm -A
+# 查看所有serviceaccounts信息
+kubectl get sa -A
+# 查看所有daemonsets信息
+kubectl get ds -A
+# 查看所有deployments信息
+kubectl get deploy -A
+# 查看所有replicasets信息
+kubectl get rs -A
+# 查看所有statefulsets信息
+kubectl get sts -A
+# 查看所有jobs信息
+kubectl get jobs -A
+# 查看所有ingresses信息
+kubectl get ing -A
+# 查看有哪些名称空间
+kubectl get ns
+
+# 查看pod的描述信息
+kubectl describe pod <podName>
+kubectl describe pod -n <namespaces> <podname>
+
+# 查看node或pod的资源使用情况
+# 需要heapster 或metrics-server支持
+kubectl top node
+kubectl top pod 
+
+# 查看指定命令空间下指定pod下的容器信息
+kubectl describe pod <podname> -n <namespaces> |grep container
+
+# 查看集群信息
+kubectl cluster-info   或  kubectl cluster-info dump
+
+# 查看各组件信息【172.16.1.110为master机器】
+kubectl -s https://172.16.1.110:6443 get componentstatuses
+```
+
+
+
+### 操作类命令
+
+```shell
+# 创建资源
+kubectl create -f xxx.yaml
+
+# 应用资源
+kubectl apply -f xxx.yaml
+
+# 应用资源，该目录下的所有 .yaml, .yml, 或 .json 文件都会被使用
+kubectl apply -f <directory>
+
+# 创建test名称空间
+kubectl create namespace test
+
+# 删除资源
+kubectl delete -f xxx.yaml
+kubectl delete -f <directory>
+
+# 删除指定的pod
+kubectl delete pod podName
+
+# 删除指定名称空间的指定pod
+kubectl delete pod -n <namespaces> podName
+
+# 删除其他资源
+kubectl delete svc svcName
+kubectl delete deploy deployName
+kubectl delete ns nsName
+
+# 强制删除
+kubectl delete pod podName -n nsName --grace-period=0 --force
+kubectl delete pod podName -n nsName --grace-period=1
+kubectl delete pod podName -n nsName --now
+
+# 编辑资源
+kubectl edit pod podName -n <namespaces>
+```
+
+
+
+### 进阶类命令
+
+```shell
+# kubectl exec：进入pod启动的容器
+kubectl exec -it podName -n <namespaces> /bin/sh    #进入容器
+kubectl exec -it podName -n <namespaces> /bin/bash  #进入容器
+
+# kubectl label：添加label值
+kubectl label nodes k8s-node01 zone=north  #为指定节点添加标签 
+kubectl label nodes k8s-node01 zone-       #为指定节点删除标签
+kubectl label pod podName -n nsName role-name=test    #为指定pod添加标签
+kubectl label pod podName -n nsName role-name=dev --overwrite  #修改lable标签值
+kubectl label pod podName -n nsName role-name-        #删除lable标签
+
+# kubectl滚动升级； 
+通过 kubectl apply -f myapp-deployment-v1.yaml 启动deploy
+kubectl apply -f myapp-deployment-v2.yaml     #通过配置文件滚动升级
+kubectl set image deploy/myapp-deployment myapp="registry.cn-beijing.aliyuncs.com/google_registry/myapp:v3"   #通过命令滚动升级
+kubectl rollout undo deploy/myapp-deployment 或者 kubectl rollout undo deploy myapp-deployment    #pod回滚到前一个版本
+kubectl rollout undo deploy/myapp-deployment --to-revision=2  #回滚到指定历史版本
+
+# kubectl scale：动态伸缩
+kubectl scale deploy myapp-deployment --replicas=5 
+#动态伸缩【根据资源类型和名称伸缩，其他配置「如：镜像版本不同」不生效】
+kubectl scale --replicas=8 -f myapp-deployment-v2.yaml  
+```
+

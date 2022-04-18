@@ -26,7 +26,34 @@
 
 - Windows 安装大同小异，环境变量再计算机 -> 高级选项中配置即可。
 
+- Mac M1 芯片安装JDK，安装包区别于Intel，其他同上
 
+  - 下载安装包：https://www.azul.com/downloads/?package=jdk
+
+
+
+
+可能遇到的问题：
+
+1. 每次Mac睡眠或重启后，都需要手动 source ～/.zprofile 配置才会生效。
+
+   ```shell
+   # 进入/etc目录 
+   cd /etc 
+   
+   # 修改系统 profile 文件的写权限 
+   sudo chmod o+w profile 
+   
+   # 编辑 profile ，添加如下内容。 
+   # 本质就是在初始化系统级的 profile 时，顺带初始化用户级的 profile 文件 
+   source ～/.zprofile 
+   
+   # source profile 并恢复权限 
+   source profile 
+   sudo chmod o-w profile  
+   ```
+
+   
 
 ### 安装Jmeter
 

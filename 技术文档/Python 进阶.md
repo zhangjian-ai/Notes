@@ -2190,3 +2190,82 @@ python -m module_name
 ```python
 python /path/to/module.py
 ```
+
+
+
+
+
+### 29、向py文件传递参数
+
+在运行py文件时，尤其是作为一些脚本运行时，需要向py文件内部传递一些参数。
+
+下面直接通过示例，演示两种参数传递的方式。
+
+
+
+**示例一：传递位置参数**
+
+```python
+# demo.py
+if __name__ == '__main__':
+    import sys
+		
+    # 通过 sys 模块，调用argv获取位置参数。和 shell 一样，位置参数下标从 1 开始
+    addr = sys.argv[1]
+    mobile = sys.argv[2]
+
+    print(addr, mobile)
+
+# cmd
+(venv) seeker@SeekerdeMacBook-Pro Notes % python -m demo 中国 32323213231111                       
+中国 32323213231111
+```
+
+
+
+**示例二：传递具名参数**
+
+```python
+# demo.py
+if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--name", type=str)
+    parser.add_argument("--age", type=int, help="年龄", default=18)
+
+    args = parser.parse_args()
+		
+    # 通过 . 号运算符，获取具名参数
+    print(args.name, args.age)
+    
+# cmd
+(venv) seeker@SeekerdeMacBook-Pro Notes % python -m demo --name=四川 --age=22
+四川 22
+```
+
+
+
+
+
+### 30、离线环境安装环境依赖库
+
+在实际业务需求中，往往会需要到客户现场部署环境，且没有外网。那么这时候就需要提前把依赖包准备好。
+
+我们可以通过以下三步实现项目中的依赖安装。
+
+```python
+# 前两步需要在有网的开发环境下进行
+
+# 1. 先生成当前项目依赖库的文档
+pip3 freeze > requirements.txt
+
+# 2. 构建由 .whl 文件，放到一个文件夹
+#    --wheel-dir 表示文件输出的目录（不存在时自动创建）， -r 指明依赖文档路径。
+pip3 wheel --wheel-dir packges -r requirements.txt
+
+# 3. 到客户现场时，执行离线安装即可
+#    --no-index 配合 --find-links 使用，--find-links 赋值 .whl 文件所在的文件夹路径
+pip3 install --no-index --find-links=packges
+```
+
