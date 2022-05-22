@@ -2254,6 +2254,10 @@ if __name__ == '__main__':
 
 我们可以通过以下三步实现项目中的依赖安装。
 
+> pip install 时，更改到国内镜像仓库，速度更快
+>
+> pip3 install gevent -i https://pypi.tuna.tsinghua.edu.cn/simple
+
 ```python
 # 前两步需要在有网的开发环境下进行
 
