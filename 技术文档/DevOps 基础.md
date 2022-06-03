@@ -61,7 +61,7 @@ DevOps 的三大支柱之中，即人（People）、流程（Process）和平台
 语法：
 
 ```shell
-git clone url [自定义本地项目目录名称]
+git clone [-b <分支名>] url [自定义本地项目目录名称]
 ```
 
 示例：
@@ -75,6 +75,9 @@ warning: You appear to have cloned an empty repository.
 # 当前目录已创建了一个本地目录
 zhangjian@zhangjiandeMacBook-Pro PycharmProjects % ls
 AutoTest_MeiDuo		AutomationTestPlat	Repo			automation_test		jmeter_ant		pypi
+
+# 通常克隆时，建议只克隆master分支，其他远程分支不需要克隆
+git clone -b master git@github.com:zhangjian-ai/Repo.git
 ```
 
 
