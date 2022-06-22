@@ -3,6 +3,7 @@
 ### 简介
 
 - Locust（俗称 蝗虫）一个轻量级的开源压测工具，基本功能是用Python代码描述所有测试。不需要笨拙的UI或庞大的XML，只需简单的代码即可。
+- 优秀的博客：https://blog.csdn.net/swinfans/article/details/88915176
 
 ### 安装依赖库
 
@@ -133,7 +134,7 @@ brotli, roundrobin, pyzmq, psutil, msgpack, geventhttpclient, Flask-Cors, Flask-
 > - --web-host=WEB_HOST    指定运行 Locust Web 页面的主机，默认为空 ''。
 > - -P PORT, --port=PORT, --web-port=PORT    指定 --web-host 的端口，默认是8089
 > - -f LOCUSTFILE, --locustfile=LOCUSTFILE    指定运行 Locust 性能测试文件，默认为: locustfile.py
-> - --csv=CSVFILEBASE, --csv-base-name=CSVFILEBASE    以CSV格式存储当前请求测试数据。
+> - --csv=CSVFILEBASE, --csv-base-name=CSVFILEBASE    以CSV格式存储当前请求测试结果数据。
 > - --master    Locust 分布式模式使用，当前节点为 master 节点。
 > - --worker    Locust 分布式模式使用，当前节点为 slave 节点。
 > - --master-host=MASTER_HOST    分布式模式运行，设置 master 节点的主机或 IP 地址，只在与 --slave 节点一起运行时使用，默认为：127.0.0.1.
