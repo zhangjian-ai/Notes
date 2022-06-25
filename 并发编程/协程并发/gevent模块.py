@@ -1,6 +1,11 @@
 # gevent.monkey.patch_all()  在文件开头执行，帮助实现协程遇到I/O时自动切换
 #   - 因为协程间的切花是由用户控制，很多细小的I/O操作很难界定，所以引入该模块
 
+
+# 如果项目使用的是gRPC协议，那么还需要在打补丁之前，为gRPC的标准库打上补丁使其与gevent兼容
+import grpc.experimental.gevent as grpc_gevent
+grpc_gevent.init_gevent()
+
 import gevent
 from gevent import monkey
 

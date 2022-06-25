@@ -907,7 +907,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
    grep 过滤查找 ， 管道符`|`，表示**将前一个命令的处理结果输出传递给后面的命令处理**
 
-   ```
+   ```shell
    grep [选项] 查找内容 源文件
    -n 显示匹配行及行号
    -i 忽略字母大小写
@@ -917,6 +917,106 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    
    例：cat hello.txt | grep -n yes  在 hello.txt 文件中，查找 "yes" 所在行，并且显示行号
    ```
+
+4. **sort**  指令
+
+   > **参数说明**：
+   >
+   > - -b 忽略每行前面开始出的空格字符。
+   > - -c 检查文件是否已经按照顺序排序。
+   > - -d 排序时，处理英文字母、数字及空格字符外，忽略其他的字符。
+   > - -f 排序时，将小写字母视为大写字母。
+   > - -i 排序时，除了040至176之间的ASCII字符外，忽略其他的字符。
+   > - -m 将几个排序好的文件进行合并。
+   > - -M 将前面3个字母依照月份的缩写进行排序。
+   > - -n 依照数值的大小排序。
+   > - -u 意味着是唯一的(unique)，输出的结果是去完重了的。
+   > - -o<输出文件> 将排序后的结果存入指定的文件。
+   > - -r 以相反的顺序来排序。
+   > - -t<分隔字符> 指定排序时所用的栏位分隔字符。
+   > - +<起始栏位>-<结束栏位> 以指定的栏位来排序，范围由起始栏位到结束栏位的前一栏位。
+   > - --help 显示帮助。
+   > - --version 显示版本信息。
+   > - [-k field1[,field2]] 按指定的列进行排序。
+
+   ```shell
+   # 源文件
+   [ops@cvm-k8s-node-node1 ~]$ cat test.txt 
+   hello world
+   this is a test 
+   so,dont't be worry!
+   
+   # 排序查看结果
+   [ops@cvm-k8s-node-node1 ~]$ cat test.txt | sort
+   hello world
+   so,dont't be worry!
+   this is a test 
+   
+   # 还可以直接给文件排序后输出，不修改源文件
+   [ops@cvm-k8s-node-node1 ~]$ sort test.txt 
+   hello world
+   so,dont't be worry!
+   this is a test 
+   ```
+
+5. **uniq** 去重指令
+
+   > - -c或--count 在每列旁边显示该行重复出现的次数。
+   > - -d或--repeated 仅显示重复出现的行列。
+   > - -f<栏位>或--skip-fields=<栏位> 忽略比较指定的栏位。
+   > - -s<字符位置>或--skip-chars=<字符位置> 忽略比较指定的字符。
+   > - -u或--unique 仅显示出一次的行列。
+   > - -w<字符位置>或--check-chars=<字符位置> 指定要比较的字符。
+   > - --help 显示帮助。
+   > - --version 显示版本信息。
+   > - [输入文件] 指定已排序好的文本文件。如果不指定此项，则从标准读取数据；
+   > - [输出文件] 指定输出的文件。如果不指定此选项，则将内容显示到标准输出设备（显示终端）。
+
+   ```shell
+   # 源文件
+   [ops@cvm-k8s-node-node1 ~]$ cat test.txt 
+   test 30  
+   test 30  
+   test 30  
+   Hello 95  
+   Hello 95  
+   Hello 95  
+   Hello 95  
+   Linux 85  
+   Linux 85 
+   
+   # 去重并统计重复出现的次数
+   [ops@cvm-k8s-node-node1 ~]$ cat test.txt | uniq -c
+         3 test 30  
+         4 Hello 95  
+         2 Linux 85  
+         
+   # 还可以直接去重后输出
+   [ops@cvm-k8s-node-node1 ~]$ uniq test.txt 
+   test 30  
+   Hello 95  
+   Linux 85  
+   ```
+
+6. **wc** 统计指令
+
+   > - -c或--bytes或--chars 只显示Bytes数。
+   > - -l或--lines 显示行数。
+   > - -w或--words 只显示字数。
+   > - --help 在线帮助。
+   > - --version 显示版本信息。
+
+   ```shell
+   # 统计输出的行数
+   [ops@cvm-k8s-node-node1 ~]$ cat test.txt | wc -l
+   9
+   
+   # 直接统计文件内容
+   [ops@cvm-k8s-node-node1 ~]$ wc -l test.txt 
+   9 test.txt
+   ```
+
+   
 
 
 

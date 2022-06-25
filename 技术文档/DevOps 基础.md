@@ -62,6 +62,9 @@ DevOps 的三大支柱之中，即人（People）、流程（Process）和平台
 
 ```shell
 git clone [-b <分支名>] url [自定义本地项目目录名称]
+
+# 当项目持续迭代，首次克隆项目可能有好几个G，那么此时则可以只克隆一个分支，且只可能最近一次提交的版本，可以极大的提高首次可能速度
+ git clone -b <分支名> --single-branch --depth=1 <url>
 ```
 
 示例：
