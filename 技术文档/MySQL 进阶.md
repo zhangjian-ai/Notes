@@ -300,7 +300,7 @@
 #### 第三范式（3NF）
 
 - 第三范式是在第二范式的基础上建立的
-- 要求是一个数据表中不包含已在其他表中包含的非主键信息。即数据不能存在传递关系，每个属性都跟主键有直接关系而不是间接关系。例如：有一个商品表，记录 商品ID（主键）、商品名称。那么在订单表中，就只能出现 商品ID ，不能再出现商品名称 或只出现商品名称。
+- 要求是一个数据表中不包含已在其他表中包含的非主键信息。即数据不能存在传递关系，每个属性都跟主键有直接关系而不是间接关系。例如：有一个商品表，记录 商品ID（主键）、商品名称。那么在订单表中，就只能出现 商品ID ，不能再出现 商品名称 或只出现商品名称。
 
 ### 反范式化设计
 
@@ -385,7 +385,7 @@ DECIMAL 类型用于存储精确的小数。但因为CPU不支持对DECIMAL的�
 
     在5.0或更高的版本中，MySQL在存储和检索时会保留末尾空格。InnoDB则更灵活，它可以把长的VARCHAR存储为BLOB。
 
-  - **CHAR: **定长，当存储CHAR值时，MySQL会删除所有的末尾空格。定长的CHAR类型不容易产生碎片，对于非常短的列，CHAR比VARCHAR在存储空间上也更有效率，VACHAR还有一个或两个记录长度的额外字节。CHAR适合存储很短的字符串，或者所有值都接近同一个长度。例如：**CHAR非常适合存储密码的MD5值，因为这是一个定长的值。CHAR会根据需要采用空格填充以方便比较。**
+  - **CHAR: **定长，当存储CHAR值时，MySQL会删除所有的末尾空格。定长的CHAR类型不容易产生碎片，对于非常短的列，CHAR比VARCHAR在存储空间上也更有效率，VARCHAR还有一个或两个记录长度的额外字节。CHAR适合存储很短的字符串，或者所有值都接近同一个长度。例如：**CHAR非常适合存储密码的MD5值，因为这是一个定长的值。CHAR会根据需要采用空格填充以方便比较。**
 
   与CHAR和VARCHAR类似的类型还有BINARY和VARBINARY，它们存储的是二进制字符串。二进制字符串中存储的是字节码而不是字符。
 
@@ -521,7 +521,7 @@ DECIMAL 类型用于存储精确的小数。但因为CPU不支持对DECIMAL的�
 >
 > 在可以满足值的范围需求，并且预留未来增长空间的前提下，应该选择最小的数据类型。
 
-- 整数通常是标识列最好的选择，因为它们很快而且可以使用`AUTO_INCREMENT`。
+- 整数类型通常是标识列最好的选择，因为它们很快而且可以使用`AUTO_INCREMENT`。
 - ENUM和SET是最糟糕的选择了。
 - 如果可能也尽可能避免使用字符串作为标识列，因为它们很消耗空间并且通常比数字类慢。
 
@@ -630,9 +630,9 @@ DECIMAL 类型用于存储精确的小数。但因为CPU不支持对DECIMAL的�
        seat int,
        age int,
        majorId int,
-       constraint pk primary key(id),    #约束名随意，主键不生效，但不报错。
-       constraint uq unique(seat),    #唯一约束
-       key(gender),
+       constraint pk primary key(id),    # 约束名随意，主键不生效，但不报错。
+       constraint uq unique(seat),    # 唯一约束
+       key(gender),  # 不主动指定约束名时，约束名默认同列名一致
        constraint fk_stuinfo_major foreign key(majorId) references major(id)    #外键约束
        );
   ```
@@ -743,7 +743,6 @@ create table `xiaodi` (
 	constraint `fk_xd_dg` foreign key (`dage_id`) references `dage` (`id`) on update cascade on delete restrict
 )engine=InnoDB default charset=utf8;
 
-
 # 插入数据
 insert into dage(name) values ('yanguo');
 insert into xiaodi(name, dage_id) values('xuzu', 1);
@@ -790,7 +789,7 @@ Empty set (0.00 sec)
 - **隔离性（Isolation）**：通常来说，一个事务所做的修改在最终提交之前，对其他事务是不可见的。要实现事物的隔离，就必须要求事物的执行是串行的；但是串行执行事物，与会严重影响数据库性能。所以很多时候，会选择牺牲部分隔离性，来提升数据库性能，也因此会带来以下一些问题。
   - **丢失更新:** 当两个或多个事物修改同一行数据，先修改的值，会被后面的事物修改的值覆盖。
   - **脏读：**一个事物读取到了另外一个事物修改但是未提交的数据。
-  - **不可重复读：**当事物内相同的记录被检索两次，且两次得到的结果不一致，比如：同一行中的某个前后两次读取到的结果不一样，称之为不可重复读。
+  - **不可重复读：**当事物内相同的记录被检索两次，且两次得到的结果不一致，比如：同一行中的某列的值前后两次读取到的结果不一样，称之为不可重复读。
   - **幻读：**当某个事务A在读取某个范围内的记录时，另外一个事务B又在该范围插入新的记录，当事务A再次读取该范围的记录时，会产生幻行。在SQL 92 标准中，幻读是指在同一事物中，两次执行检索到的记录条数不一样（新增/减少）；而在MYSQL的标准中，幻读强调第二次检索时，检索到了第一次检索不存在的记录，而把丢失第一次检索记录归到不可重复读。
 
 
@@ -1142,10 +1141,11 @@ Index_comment:
   # 创建复合索引
   create index idx_name_email_status ON tbl_seller(name, email, status);
   
-  # 查询时使用下面的where条件组合时，将使用索引。原理就是最左索引。
+  # 查询时使用下面的where条件组合时，将使用索引。原理就是最左前缀。
   	name;
   	name, email;
   	name, email, status;  
+  	name, status; # 这里只有name满足了最左前缀，因此只有name列会使用索引，中间缺失列后面的列都不会再使用索引。
   ```
 
 
@@ -1198,8 +1198,7 @@ mysql> select * from view_city_country;
 UPDATE view_city_country set city_name = '西安市' where city_id = 1;
 
 mysql> insert into vs(id, name) values (6, '赵飞燕');
-ERROR 1423 (HY000): Field of view 'test_01.vs' underlying table doesn't have a default value
-
+ERROR 1423 (HY000): Field of view 'test_01.vs' underlying table doesn‘t have a default value
 
 ## 查看视图
 mysql> show tables;
@@ -1228,7 +1227,7 @@ Query OK, 0 rows affected (0.02 sec)
 
 ### 存储过程和函数
 
-> ​		存储过程和函数是 事先经过编译并存储在数据库中的一段SQL语句的集合（存储过程和函数 仅在创建时编译一次，后续调用不再需要编译），调用存储过程和函数可以简化应用开发人员的很多工作，减少数据在数据库和应用之间的传输，对于提高数据处理的效率是有好处的。
+> ​		存储过程和函数是 事先经过编译并存储在数据库（SQL Interface 组件）中的一段SQL语句的集合（存储过程和函数 仅在创建时编译一次，后续调用不再需要编译），调用存储过程和函数可以简化应用开发人员的很多工作，减少数据在数据库和应用之间的传输，对于提高数据处理的效率是有好处的。
 >
 > ​		存储过程和函数的区别在于函数必须有返回值，而存储过程没有。
 >
@@ -1770,7 +1769,7 @@ mysql> call proc_test16();
 +---------------------+
 1 row in set (0.00 sec)
 
-Query OK, 0 rows affected (0.00 sec)存储函数
+Query OK, 0 rows affected (0.00 sec)
 ```
 
 
@@ -1968,7 +1967,7 @@ undo log不是redo log的逆向过程，其实它们都算是用来恢复的日�
 
 **1. redo log通常是物理日志，记录的是数据页的物理修改，而不是某一行或某几行修改成怎样怎样，它用来恢复提交后的物理数据页(恢复数据页，且只能恢复到最后一次提交的位置)。**
 
-**2. undo log用来回滚行记录到某个版本。undo log一般是逻辑日志，根据每行记录进行记录。**
+**2. undo log用来回滚行记录到某个版本。undo log一般是逻辑日志，根据每行数据的修改进行记录。**
 
 
 
@@ -2200,7 +2199,7 @@ mysql> explain select * from t_role where id = (select role_id from user_role wh
   </tr>
   <tr>
   	<td>UNION</td>
-    <td>若第二个select出现在UNION之后，该查询标记为UNION；若UNION包含在from子句的查询中，外层select将被标记为DRUIVED</td>
+    <td>若第二个select出现在UNION之后，该查询标记为UNION；若UNION包含在from子句的查询中，外层select将被标记为DRIVED</td>
   </tr>
   <tr>
   	<td>UNION RESULT</td>
@@ -2211,6 +2210,7 @@ mysql> explain select * from t_role where id = (select role_id from user_role wh
     <td>子查询中的第一个SELECT，取决于外面的查询。即会先执行外部的查询，然后再循环执行内部的查询。</td>
   </tr>
 </table>
+
 
 
 示例：
@@ -4055,7 +4055,7 @@ mysql> select * from t_role limit 1;
 
 # A中，不能更新被锁表
 mysql> update t_user set name = 'xiaozhang' where id = 1;
-ERROR 1099 (HY000): Table 't_user' was locked with a READ lock and can't be updated
+ERROR 1099 (HY000): Table 't_user' was locked with a READ lock and cant be updated
 
 # B中，更新被锁表时将会被阻塞，直到A中释放锁，B才能获得锁
 mysql> update t_user set name = 'xiaozhang' where id = 1;
