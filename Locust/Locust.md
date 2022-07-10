@@ -142,8 +142,8 @@ brotli, roundrobin, pyzmq, psutil, msgpack, geventhttpclient, Flask-Cors, Flask-
 > - --master-bind-host=MASTER_BIND_HOST    Interfaces (hostname, ip) that locust master should bind to. Only used when running with --master. Defaults to * (all available interfaces).
 > - --master-bind-port=MASTER_BIND_PORT    Port that locust master should bind to. Only used when running with --master. Defaults to 5557. Note that Locust will also use this port + 1, so by default the master node will bind to 5557 and 5558.
 > - --expect-slaves=EXPECT_SLAVES    How many slaves master should expect to connect before starting the test (only when --no-web used).
-> - --no-web    no-web 模式运行测试，需要 -c 和 -r 配合使用.
-> - -c NUM_CLIENTS, --clients=NUM_CLIENTS    指定并发用户数，作用于 --no-web 模式。
+> - --headless    no-web 模式运行测试，需要 -c 和 -r 配合使用.
+> - -u 指定并发用户数，作用于 no-web 模式。
 > - -r HATCH_RATE, --hatch-rate=HATCH_RATE    指定每秒启动的用户数，作用于 --no-web 模式。
 > - -t RUN_TIME, --run-time=RUN_TIME    设置运行时间, 例如： (300s, 20m, 3h, 1h30m). 作用于 --no-web 模式。
 > - -L LOGLEVEL, --loglevel=LOGLEVEL    选择 log 级别（DEBUG/INFO/WARNING/ERROR/CRITICAL）. 默认是 INFO.

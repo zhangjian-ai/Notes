@@ -2233,15 +2233,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--name", type=str)
     parser.add_argument("--age", type=int, help="年龄", default=18)
+    parser.add_argument("--nums", nargs="+")  # 不指定type默认是str，“+” 表示至少传一个值，否则报错
 
     args = parser.parse_args()
 		
     # 通过 . 号运算符，获取具名参数
-    print(args.name, args.age)
+    print(args.name, args.age, args.nums)
     
 # cmd
-(venv) seeker@SeekerdeMacBook-Pro Notes % python -m demo --name=四川 --age=22
-四川 22
+(venv) seeker@SeekerdeMacBook-Pro Notes % python -m demo --name 四川 --age 22 --nums 1 2 3 4 5
+四川 22 ['1', '2', '3', '4', '5']
 ```
 
 
