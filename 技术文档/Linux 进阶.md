@@ -767,6 +767,16 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
     q  离开less这个程序
     ```
 
+12. **tee 命令**
+
+    该命令可以从标准输入中读入信息并将其写入标准输出或文件中，具体用法如下：
+
+    ```shell
+    $ echo "第三条信息" | sudo tee -a test.asc
+    
+    # tee 命令的 "-a" 选项的作用等同于 ">>" 命令，如果去除该选项，那么 tee 命令的作用就等同于 ">" 命令。
+    ```
+    
 13. `> 命令`和`>> 命令`
 
     `> 命令` **输出重定向** : 会将原来的文件的内容覆盖
@@ -945,6 +955,22 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    
    例：cat hello.txt | grep -n yes  在 hello.txt 文件中，查找 "yes" 所在行，并且显示行号
    ```
+
+   grep 命令基本 正则表达式 搜索多个匹配模式的语法如下：
+
+   - 普通模式下的多值匹配。这里需要注意的是，始终要用单引号将正则表达式括起来，因为单引号内的内容均视为原始字符串；同时需要转义OR运算符(|)，否则将被解释为管道符。
+
+     ```shell
+     $ grep 'pattern1\|pattern2' filename 
+     ```
+
+   - 用 grep -E(或 --extended-regexp )选项，模式解释为扩展正则表达式。使用扩展正则表达式时，不需要对 OR 运算符 (|) 进行转义。
+
+     ```shell
+     $ grep -E 'pattern1|pattern2' file
+     ```
+
+     
 
 4. **sort**  指令
 
@@ -2208,7 +2234,7 @@ yum uninstall xxx
       Hello World!
       ```
    
-   2. **输入指令**：`sh 脚本路径` 这样可以不用赋予脚本执行权限，直接执行，但是**不推荐**
+   2. **输入指令**：`bash/sh 脚本路径` 这样可以不用赋予脚本执行权限，直接执行，但是**不推荐**
    
       ```shell
       # 取消 文件拥有者的可执行权限
@@ -2249,6 +2275,13 @@ yum uninstall xxx
          /usr/bin/tmux
          /usr/bin/screen
          ```
+         
+      3. `-c` 选项。它可以让 bash 将一个字串作为完整的命令来执行
+      
+         ```shell
+         # 这里就让当前进程不挂断
+         sh -c "while true;do sleep 1;done"
+         ```
    
 4. `&` 后台运行
 
@@ -2278,8 +2311,6 @@ yum uninstall xxx
    ```
 
    
-
-
 
 ## 17.4、Shell的变量
 
