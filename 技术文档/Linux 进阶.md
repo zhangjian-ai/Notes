@@ -755,10 +755,10 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
     less 指令在显示文件内容时，并不是一次将整个文件加载之后才显示，而是**根据显示需要加载内容**，**对于显示大型文件具有较高的效率**
 
-    ```
+    ```shell
     less 要查看的文件
     
-    常用快捷键
+    # 常用快捷键
     空格键    向下翻一页
     pagedown  向下翻一页
     pageup    向上翻一页

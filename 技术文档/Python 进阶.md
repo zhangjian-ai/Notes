@@ -2016,6 +2016,8 @@ c = a
 print(a == b)  # True
 print(a is b)  # False
 print(a is c)  # True   变量a 和 变量c 都指向内存中同一个列表对象
+
+# 不可变对象的id值在python中是一样的。下面介绍可变对象和不可变对象
 ```
 
 
