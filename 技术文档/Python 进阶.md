@@ -1186,7 +1186,7 @@ print(d.n)
 
 ### 16、Python中的get、set方法
 
-> 相关方法：property、setter、getter、deleter 、`__getattr__`、`__setattr__`
+> 相关方法：property、setter、getter、deleter 、`__getattr__`、`__setattr__`、`__getattribute__`
 
 - **property 作为方法使用**
 
@@ -1331,6 +1331,22 @@ print(d.n)
       '''
       ```
       
+    
+  - `__getattribute__`
+  
+    - `_getattribute__`是属性访问拦截器（拦截点号运算），当属性被实例访问时（不管有没有这样的属性），会自动调用
+  
+    - 使用类名调用类属性时，不会经过`__getattribute__`方法，只有实例对象对属性的调用（包括调用类属性）时触发
+    
+    - `__getattribute__`方法优先级比`__getattr__`高，只有在`__getattribute__`方法中找不到对应的属性时，才会调用`__getattr__`
+    
+    - 重写`__getattribute__`时，注意规避死循环，方法内部用object获取属性值
+    
+      ```python
+      ```
+    
+      
+    
       
 
 ### 17、强引用、弱应用 及 weakref 模块
