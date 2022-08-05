@@ -1343,6 +1343,34 @@ print(d.n)
     - 重写`__getattribute__`时，注意规避死循环，方法内部用object获取属性值
     
       ```python
+      class A:
+        name = "jack"
+      
+        def __init__(self):
+          self.age = 18
+      
+          def __getattribute__(self, item):
+            print("实例调用属性啦")
+            """
+                  这里可以放一些处理逻辑
+                  """
+            return object.__getattribute__(self, item)
+      
+          def say_hello(self):
+            print(f"hello {self.name}")
+      
+            print(A.name)  # jack  - 通过类名调用累属性，不调用__getattribute__。因为方法本身也是一个实例方法
+      
+            a = A()
+      
+            print(a.name, a.age, a.say_hello())
+      
+            # 实例调用属性啦  - 实例调用name
+            # 实例调用属性啦  - 实例调用age
+            # 实例调用属性啦  - 实例调用say_hello
+            # 实例调用属性啦  - say_hello 内部再次通过实例调用name
+            # hello jack   - say_hello 内部打印
+            # jack 18 None
       ```
     
       
