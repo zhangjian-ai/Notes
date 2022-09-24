@@ -879,6 +879,8 @@ docker rm $(docker stop $(docker ps -a -q))                    #停止并删除�
 docker start $(docker ps -a -q)                                #启动所有容器
 docker rmi $(docker images -a -q)                              #删除所有镜像
 
+docker image prune -f -a																				# 清理镜像
+
 docker top ${CONTAINER NAME/ID}                                #显示一个容器的top信息
 
 docker kill -s KILL [container id]														# 杀死一个或多个指定容器进程

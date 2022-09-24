@@ -2318,5 +2318,6 @@ pip3 wheel --wheel-dir packges -r requirements.txt
 # 3. 到客户现场时，执行离线安装即可
 #    --no-index 配合 --find-links 使用，--find-links 赋值 .whl 文件所在的文件夹路径
 pip3 install --no-index --find-links=packages -r requirements.txt
+
 ```
 

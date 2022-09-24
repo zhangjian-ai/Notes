@@ -164,7 +164,7 @@
    >
    > project_name
    >
-   > ｜-- project_name
+   > ｜-- blue_print
    >
    > ​	｜-- user	# 一个 user 的蓝图文件夹。其他 蓝图继续同级创建即可
    >

@@ -23,6 +23,7 @@ if __name__ == '__main__':
 
     m = Manager()
     data = m.dict({'count': 0})
+    lines = m.list([])
 
     for i in range(50):
         p = Process(target=action, args=(data, lock,))

@@ -843,11 +843,20 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
     如果你是用的vim修改，因为vim实际上是删除本文件，生成了新的同名文件，所以无法进行监控
     ```
 
-17. **sed -i 命令**，替换文本内容
+19. **sed -i 命令**，替换文本内容
 
     ```shell
+    # 字符串替换
     sed -i 's/原字符串/新字符串/' /home/1.txt   # 对文本中每一行首次出现的原字符串进行替换
     sed -i 's/原字符串/新字符串/g' /home/1.txt  # 对文本中所有的原字符串进行替换
+    
+    # 在某一行插入
+    sed -i "行号i 字符串" 文件名
+    sed -i "2i hello Iron Man" demo.txt
+    
+    # 匹配到关键字后，替换当前整个行
+    sed -i "/关键字/c目标字符串" 文件名
+    sed -i "/Iron/cGirl is a god" demo.txt # 把有关键字 Iron 的行替换成 Girl is a god
     ```
 
     sed命令是三剑客之一，功能十分强大。sed详解：https://www.linuxprobe.com/linux-sed-command.html
