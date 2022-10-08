@@ -17,7 +17,7 @@
         - remove(i: int): 移除线性表下标i处的元素并返回
         - indexOf(value): 返回线性表中，首次出现value元素的下标，若不存在返回-1
     成员变量：
-        - eles: 存储元素的列表
+        - ele: 存储元素的列表(仅用列表作为存储元素的容器，实现过程中不能使用列表方法)
         - N: 当前线性表的长度
 """
 
@@ -26,17 +26,17 @@ class SequenceList:
 
     def __init__(self):
         self.N = 0
-        self.eles = []
+        self.ele = []
 
         # 迭代计数器
         self.count = 0
 
     def __str__(self) -> str:
-        return self.eles.__str__()
+        return self.ele.__str__()
 
     def clear(self):
         self.N = 0
-        self.eles = []
+        self.ele = []
 
     @property
     def isEmpty(self):
@@ -50,7 +50,7 @@ class SequenceList:
         if not isinstance(i, int):
             raise TypeError
 
-        return -1 if i >= self.N or i < 0 else self.eles[i]
+        return -1 if i >= self.N or i < 0 else self.ele[i]
 
     def insert(self, i: int, value):
         if not isinstance(i, int):
@@ -59,21 +59,21 @@ class SequenceList:
         if i < 0 or i > self.N:
             raise IndexError
 
-        self.eles += [None]
+        self.ele += [None]
         for j in range(self.N, i, -1):
-            self.eles[j] = self.eles[j - 1]
+            self.ele[j] = self.ele[j - 1]
 
-        self.eles[i] = value
+        self.ele[i] = value
 
         self.N += 1
 
     def add(self, value):
         try:
-            self.eles[self.N]
+            self.ele[self.N]
         except IndexError:
-            self.eles += [None]
+            self.ele += [None]
         finally:
-            self.eles[self.N] = value
+            self.ele[self.N] = value
 
         self.N += 1
 
@@ -83,27 +83,27 @@ class SequenceList:
         if i < 0 or i >= self.N:
             raise IndexError
 
-        value = self.eles[i]
+        value = self.ele[i]
 
         if i == self.N - 1:
             pass
         else:
             for j in range(i, self.N):
-                self.eles[j] = self.eles[j + 1]
+                self.ele[j] = self.ele[j + 1]
 
         self.N -= 1
 
         temp = [None] * self.N
         for i in range(self.N):
-            temp[i] = self.eles[i]
+            temp[i] = self.ele[i]
 
-        self.eles = temp
+        self.ele = temp
 
         return value
 
     def indexOf(self, value):
         for i in range(self.N):
-            if self.eles[i] == value:
+            if self.ele[i] == value:
                 return i
         return -1
 
@@ -114,7 +114,7 @@ class SequenceList:
     def __next__(self):
         self.count += 1
         if self.count <= self.N:
-            return self.eles[self.count - 1]
+            return self.ele[self.count - 1]
         self.count = 0
         raise StopIteration
 

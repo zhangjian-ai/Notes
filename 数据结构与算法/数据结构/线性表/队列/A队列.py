@@ -7,7 +7,7 @@ API设计：
     构造方法：
         - __init__() 创建Queue对象
     成员方法：
-        - is_empty(): 判断栈是否为空，是返回True，否返回False
+        - is_empty(): 判断队列是否为空，是返回True，否返回False
         - size(): 获取队列中的元素个数
         - dequeue(): 取出一个队列中的元素
         - enqueue(item): 向队列中插入一个元素
@@ -18,7 +18,7 @@ API设计：
     成员内部类：
         - Node：
             构造方法：
-                - __init__(self, item, next): 创建一个Node结点对象，初始化数据item， 下一个结点next
+                - __init__(item, next): 创建一个Node结点对象，初始化数据item，下一个结点next
             成员变量：
                 - item: 结点存储的数据
                 - next: 指向下一个结点
