@@ -1114,8 +1114,8 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
    打包且后的文件是`.tar.gz`的文件
 
-   ```
-   tar [选项] 打包后的文件名[.tar.gz/.tar] 打包的内容
+   ```shell
+   tar [选项] 打包后的文件名[.tar.gz/.tar/.tar.xz] 打包的内容
    -c create 产生 .tar 打包文件
    -v 显示详细信息
    -f filename 指定压缩后的文件名
@@ -1132,8 +1132,15 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    例3:
    	tar -zxvf a.tar.gz  将 a.tar.gz 解压到当前目录
    例4:
-   	tar -zxvf myhome.tar.gz -C /home/  将 myhome.tar.gz 解压到 /home/ 目录下。-C 应该是change，改变目录
-   	# 指定解压缩的目标目录一定要事先存在
+   	tar -zxvf myhome.tar.gz -C /home/  将 myhome.tar.gz 解压到 /home/ 目录下。-C 应该是change，改变目录(指定解压缩的目标目录一定要事先存在)
+   	
+   # 压缩/解压 xz 文件时，如果出现 tar (child): xz: Cannot exec: No such file or directory
+   # 是因为linux 没安装xz工具
+   ubuntu:
+   	apt install -y xz-utils
+   	
+   centos:
+   	yum install -y xz
    ```
    
 
