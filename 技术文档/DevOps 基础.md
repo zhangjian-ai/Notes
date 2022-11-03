@@ -239,6 +239,35 @@ c096fbc (HEAD -> master) first time commit   # commit id: c096fbc
 
 
 
+### git cherry-pick
+
+合并某个特定的 commit 到指定的分支上。
+例如：在A分支上提交了一个commit，B分支也同样需要这个commit的代码，为了避免人工复制代码，可以用git的一些操作替代。
+
+
+
+示例：
+
+```shell
+# 查看提交的日志，复制要合并的那个分支的commit id(简略ID-前8位数)
+git log
+
+# 切换到要合并的分支上
+git checkout B
+
+# 提交该commit到当前分支
+git cherry-pick commit_id
+
+# 推送到B分支远程仓库
+git push origin B的远程分支名
+```
+
+
+
+
+
+
+
 ### git push
 
 `git push`命令的作用是将本地仓库的更新推送到远程仓库上。
