@@ -1224,6 +1224,9 @@ kubectl get pod -A
 kubectl get pods -o yaml
 kubectl get pods -o json
 
+# 查看某个具体的POD的配置信息
+kubectl get pod podName -o yaml
+
 # 查看pod的标签信息
 kubectl get pod -A --show-labels 
 # 根据Selector（label query）来查询pod
@@ -1348,4 +1351,475 @@ kubectl scale deploy myapp-deployment --replicas=5
 #动态伸缩【根据资源类型和名称伸缩，其他配置「如：镜像版本不同」不生效】
 kubectl scale --replicas=8 -f myapp-deployment-v2.yaml  
 ```
+
+
+
+## 配置模版
+
+### POD
+
+```yaml
+# yaml格式的pod定义文件完整内容：
+apiVersion: v1       #必选，版本号，例如v1
+kind: Pod       #必选，Pod
+metadata:       #必选，元数据
+  name: string       #必选，Pod名称
+  namespace: string    #必选，Pod所属的命名空间
+  labels:      #自定义标签
+    - name: string     #自定义标签名字
+  annotations:       #自定义注释列表
+    - name: string
+spec:         #必选，Pod中容器的详细定义
+  containers:      #必选，Pod中容器列表
+  - name: string     #必选，容器名称
+    image: string    #必选，容器的镜像名称
+    imagePullPolicy: [Always | Never | IfNotPresent] #获取镜像的策略 Alawys表示下载镜像 IfnotPresent表示优先使用本地镜像，否则下载镜像，Nerver表示仅使用本地镜像
+    command: [string]    #容器的启动命令列表，如不指定，使用打包时使用的启动命令
+    args: [string]     #容器的启动命令参数列表
+    workingDir: string     #容器的工作目录
+    volumeMounts:    #挂载到容器内部的存储卷配置
+    - name: string     #引用pod定义的共享存储卷的名称，需用volumes[]部分定义的的卷名
+      mountPath: string    #存储卷在容器内mount的绝对路径，应少于512字符
+      readOnly: boolean    #是否为只读模式
+    ports:       #需要暴露的端口库号列表
+    - name: string     #端口号名称
+      containerPort: int   #容器需要监听的端口号
+      hostPort: int    #容器所在主机需要监听的端口号，默认与Container相同
+      protocol: string     #端口协议，支持TCP和UDP，默认TCP
+    env:       #容器运行前需设置的环境变量列表
+    - name: string     #环境变量名称
+      value: string    #环境变量的值
+    resources:       #资源限制和请求的设置
+      limits:      #资源限制的设置
+        cpu: string    #Cpu的限制，单位为core数，将用于docker run --cpu-shares参数
+        memory: string     #内存限制，单位可以为Mib/Gib，将用于docker run --memory参数
+      requests:      #资源请求的设置
+        cpu: string    #Cpu请求，容器启动的初始可用数量
+        memory: string     #内存清楚，容器启动的初始可用数量
+    livenessProbe:     #对Pod内个容器健康检查的设置，当探测无响应几次后将自动重启该容器，检查方法有exec、httpGet和tcpSocket，对一个容器只需设置其中一种方法即可
+      exec:      #对Pod容器内检查方式设置为exec方式
+        command: [string]  #exec方式需要制定的命令或脚本
+      httpGet:       #对Pod内个容器健康检查方法设置为HttpGet，需要制定Path、port
+        path: string
+        port: number
+        host: string
+        scheme: string
+        HttpHeaders:
+        - name: string
+          value: string
+      tcpSocket:     #对Pod内个容器健康检查方式设置为tcpSocket方式
+         port: number
+       initialDelaySeconds: 0  #容器启动完成后首次探测的时间，单位为秒
+       timeoutSeconds: 0   #对容器健康检查探测等待响应的超时时间，单位秒，默认1秒
+       periodSeconds: 0    #对容器监控检查的定期探测时间设置，单位秒，默认10秒一次
+       successThreshold: 0
+       failureThreshold: 0
+       securityContext:
+         privileged:false
+    restartPolicy: [Always | Never | OnFailure] #Pod的重启策略，Always表示一旦不管以何种方式终止运行，kubelet都将重启，OnFailure表示只有Pod以非0退出码退出才重启，Nerver表示不再重启该Pod
+    nodeSelector: obeject  #设置NodeSelector表示将该Pod调度到包含这个label的node上，以key：value的格式指定
+    imagePullSecrets:    #Pull镜像时使用的secret名称，以key：secretkey格式指定
+    - name: string
+    hostNetwork:false      #是否使用主机网络模式，默认为false，如果设置为true，表示使用宿主机网络
+    volumes:       #在该pod上定义共享存储卷列表
+    - name: string     #共享存储卷名称 （volumes类型有很多种）
+      emptyDir: {}     #类型为emtyDir的存储卷，与Pod同生命周期的一个临时目录。为空值
+      hostPath: string     #类型为hostPath的存储卷，表示挂载Pod所在宿主机的目录
+        path: string     #Pod所在宿主机的目录，将被用于同期中mount的目录
+      secret:      #类型为secret的存储卷，挂载集群与定义的secre对象到容器内部
+        scretname: string
+        items:
+        - key: string
+          path: string
+      configMap:     #类型为configMap的存储卷，挂载预定义的configMap对象到容器内部
+        name: string
+        items:
+        - key: string
+          path: string
+```
+
+
+
+示例：
+
+```yaml
+apiVersion: v1       #必选，版本号，例如v1
+kind: Pod       #必选，Pod
+metadata:       #必选，元数据
+  name: perfermance-test       #必选，Pod名称
+  namespace: devops-30030186-perf-bot-master-1    #必选，Pod所属的命名空间
+spec:         
+  imagePullSecrets: # 从私有仓库拉取镜像，引用 配置好的 Secret 对象
+  - name: secret-test
+  containers:
+  - name: perf
+    image: registry01.wezhuiyi.com/tester/performance-test:latest
+    imagePullPolicy: Always 
+    command: ["bash", "-c", "while true;do sleep 1;done"] 
+    resources:      
+      limits:     
+        cpu: 4000m    
+        memory: 8192Mi
+      requests: 
+        cpu: 1000m
+        memory: 2048Mi
+```
+
+
+
+
+
+### PVC、PV
+
+#### 介绍
+
+>管理存储是管理计算的一个明显问题。该PersistentVolume子系统为用户和管理员提供了一个API，用于抽象如何根据消费方式提供存储的详细信息。为此，我们引入了两个新的API资源：PersistentVolume和PersistentVolumeClaim
+>PersistentVolume（PV）
+>集群中由管理员配置的一段网络存储。 它是集群中的资源，就像节点是集群资源一样。 PV是容量插件，如Volumes，但其生命周期独立于使用PV的任何单个pod。 此API对象捕获存储实现的详细信息，包括NFS，iSCSI或特定于云提供程序的存储系统。
+
+PersistentVolumeClaim（PVC）
+
+>由用户进行存储的请求。 它类似于pod。 Pod消耗节点资源，PVC消耗PV资源。Pod可以请求特定级别的资源（CPU和内存）。声明可以请求特定的大小和访问模式（例如，可以一次读/写或多次只读）。
+
+>虽然PersistentVolumeClaims允许用户使用抽象存储资源，但是PersistentVolumes对于不同的问题，用户通常需要具有不同属性（例如性能）。群集管理员需要能够提供各种PersistentVolumes不同的方式，而不仅仅是大小和访问模式，而不会让用户了解这些卷的实现方式。对于这些需求，有StorageClass 资源。
+
+StorageClass
+
+>为管理员提供了一种描述他们提供的存储的“类”的方法。 不同的类可能映射到服务质量级别，或备份策略，或者由群集管理员确定的任意策略。 Kubernetes本身对于什么类别代表是不言而喻的。 这个概念有时在其他存储系统中称为“配置文件”。
+
+　　PVC和PV是一一对应的。
+
+#### 生命周期
+
+　　PV是群集中的资源。PVC是对这些资源的请求，并且还充当对资源的检查。PV和PVC之间的相互作用遵循以下生命周期：
+
+`Provisioning ——-> Binding ——–>Using——>Releasing——>Recycling`
+
+ 供应准备Provisioning---通过集群外的存储系统或者云平台来提供存储持久化支持。
+
+>- 静态提供Static：集群管理员创建多个PV。 它们携带可供集群用户使用的真实存储的详细信息。 它们存在于Kubernetes API中，可用于消费
+>- 动态提供Dynamic：当管理员创建的静态PV都不匹配用户的PersistentVolumeClaim时，集群可能会尝试为PVC动态配置卷。 此配置基于StorageClasses：PVC必须请求一个类，并且管理员必须已创建并配置该类才能进行动态配置。 要求该类的声明有效地为自己禁用动态配置。
+>  绑定Binding---用户创建pvc并指定需要的资源和访问模式。在找到可用pv之前，pvc会保持未绑定状态。
+>  使用Using---用户可在pod中像volume一样使用pvc。
+>  释放Releasing---用户删除pvc来回收存储资源，pv将变成“released”状态。由于还保留着之前的数据，这些数据需要根据不同的策略来处理，否则这些存储资源无法被其他pvc使用。
+>  回收Recycling---pv可以设置三种回收策略：保留（Retain），回收（Recycle）和删除（Delete）。
+>- 保留策略：允许人工处理保留的数据。
+>- 删除策略：将删除pv和外部关联的存储资源，需要插件支持。
+>- 回收策略：将执行清除操作，之后可以被新的pvc使用，需要插件支持。
+>  ** 注：目前只有NFS和HostPath类型卷支持回收策略，AWS EBS,GCE PD,Azure Disk和Cinder支持删除(Delete)策略。**
+
+#### PV类型
+
+ GCEPersistentDisk
+ AWSElasticBlockStore
+ AzureFile
+ AzureDisk
+ FC (Fibre Channel)
+ Flexvolume
+ Flocker
+ NFS
+ iSCSI
+ RBD (Ceph Block Device)
+ CephFS
+ Cinder (OpenStack block storage)
+ Glusterfs
+ VsphereVolume
+ Quobyte Volumes
+ HostPath (Single node testing only – local storage is not supported in any way and WILL NOT WORK in a multi-node cluster)
+ Portworx Volumes
+ ScaleIO Volumes
+ StorageOS
+##PV卷阶段状态
+
+>- Available – 资源尚未被claim使用
+>- Bound – 卷已经被绑定到claim了
+>- Released – claim被删除，卷处于释放状态，但未被集群回收。
+>- Failed – 卷自动回收失败
+
+
+
+#### 创建PV
+
+nfs服务器部署略
+
+#### 准备nfs服务
+
+在nfs服务器上先建立存储卷对应的目录
+
+```
+cd /data/volumes/
+mkdir v{1,2,3,4,5}
+ls
+index.html  v1  v2  v3  v4  v5
+echo "<h1>NFS stor 01</h1>" > v1/index.html
+echo "<h1>NFS stor 02</h1>" > v2/index.html
+echo "<h1>NFS stor 03</h1>" > v3/index.html
+echo "<h1>NFS stor 04</h1>" > v4/index.html
+echo "<h1>NFS stor 05</h1>" > v5/index.html
+```
+
+#### 修改nfs的配置
+
+vim /etc/exports
+
+```
+/data/volumes/v1        192.168.130.0/24(rw,no_root_squash)
+/data/volumes/v2        192.168.130.0/24(rw,no_root_squash)
+/data/volumes/v3        192.168.130.0/24(rw,no_root_squash)
+/data/volumes/v4        192.168.130.0/24(rw,no_root_squash)
+/data/volumes/v5        192.168.130.0/24(rw,no_root_squash)
+```
+
+#### 查看nfs的配置
+
+exportfs -arv
+
+```
+exporting 192.168.130.0/24:/data/volumes/v5
+exporting 192.168.130.0/24:/data/volumes/v4
+exporting 192.168.130.0/24:/data/volumes/v3
+exporting 192.168.130.0/24:/data/volumes/v2
+exporting 192.168.130.0/24:/data/volumes/v1
+```
+
+#### 配置生效
+
+showmount -e
+
+```
+Export list for nfs:
+/data/volumes/v5 192.168.130.0/24
+/data/volumes/v4 192.168.130.0/24
+/data/volumes/v3 192.168.130.0/24
+/data/volumes/v2 192.168.130.0/24
+/data/volumes/v1 192.168.130.0/24
+```
+
+#### 在master上创建PV
+
+编写yaml文件，并创建pv
+
+创建5个pv，存储大小各不相同，是否可读也不相同
+vim pv-damo.yaml
+
+```
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv001
+  labels:
+    name: pv001
+spec:
+  nfs:
+    path: /data/volumes/v1
+    server: nfs
+  accessModes: ["ReadWriteMany","ReadWriteOnce"]
+  capacity:
+    storage: 2Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv002
+  labels:
+    name: pv002
+spec:
+  nfs:
+    path: /data/volumes/v2
+    server: nfs
+  accessModes: ["ReadWriteOnce"]
+  capacity:
+    storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv003
+  labels:
+    name: pv003
+spec:
+  nfs:
+    path: /data/volumes/v3
+    server: nfs
+  accessModes: ["ReadWriteMany","ReadWriteOnce"]
+  capacity:
+    storage: 20Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv004
+  labels:
+    name: pv004
+spec:
+  nfs:
+    path: /data/volumes/v4
+    server: nfs
+  accessModes: ["ReadWriteMany","ReadWriteOnce"]
+  capacity:
+    storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv005
+  labels:
+    name: pv005
+spec:
+  nfs:
+    path: /data/volumes/v5
+    server: nfs
+  accessModes: ["ReadWriteMany","ReadWriteOnce"]
+  capacity:
+    storage: 15Gi
+```
+
+kubectl apply -f pv-damo.yaml
+
+```
+persistentvolume/pv001 created
+persistentvolume/pv002 created
+persistentvolume/pv003 created
+persistentvolume/pv004 created
+persistentvolume/pv005 created
+```
+
+#### 查询验证
+
+kubectl get pv
+
+```
+NAME      CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM     STORAGECLASS   REASON    AGE
+pv001     5Gi        RWO,RWX        Retain           Available                                      9s
+pv002     5Gi        RWO            Retain           Available                                      9s
+pv003     5Gi        RWO,RWX        Retain           Available                                      9s
+```
+
+#### 创建PVC，绑定PV
+
+编写yaml文件，并创建pvc
+
+创建一个pvc，需要6G存储；所以不会匹配pv001、pv002、pv003
+vim vol-pvc-demo.yaml
+
+```
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mypvc
+  namespace: default
+spec:
+  accessModes: ["ReadWriteMany"]
+  resources:
+    requests:
+      storage: 6Gi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: vol-pvc
+  namespace: default
+spec:
+  volumes:
+  - name: html
+    persistentVolumeClaim:
+      claimName: mypvc
+  containers:
+  - name: myapp
+    image: ikubernetes/myapp:v1
+    volumeMounts:
+    - name: html
+      mountPath: /usr/share/nginx/html/
+```
+
+kubectl apply -f vol-pvc-demo.yaml
+
+```
+persistentvolumeclaim/mypvc created
+pod/vol-pvc created
+```
+
+#### 查询验证
+
+ pvc已经绑定到pv004上
+
+
+
+kubectl get pvc
+
+```
+NAME      STATUS    VOLUME    CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+mypvc     Bound     pv004     10Gi       RWO,RWX                       24s
+```
+
+kubectl get pv
+
+```
+NAME      CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM           STORAGECLASS   REASON    AGE
+pv001     5Gi        RWO,RWX        Retain           Available                                            1m
+pv002     5Gi        RWO            Retain           Available                                            1m
+pv003     5Gi        RWO,RWX        Retain           Available                                            1m
+pv004     10Gi       RWO,RWX        Retain           Bound       default/mypvc                            1m
+pv005     15Gi       RWO,RWX        Retain           Available                                            1m
+```
+
+#### 查询业务验证
+
+kubectl get pods -o wide
+
+```
+NAME      READY     STATUS    RESTARTS   AGE       IP             NODE
+vol-pvc   1/1       Running   0          59s       10.244.2.117   node2
+```
+
+curl 10.244.2.117
+
+```
+<h1>NFS stor 04</h1>
+```
+
+```yaml
+apiVersion: v1
+kind: apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mypvc  # 应用名称 
+  namespace: pvc-test # 名称空间
+spec:
+  resources:
+    requests:
+      storage: 200Gi  # 存储大小
+  storageClassName: default 
+  volumeMode: Filesystem # pv 的模式
+  volumeName: mypvc-test  # pv 名字
+  accessModes:
+    - ReadWriteMany
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mypvc-test  #pv 名字
+spec:
+  capacity:
+    storage: 200Gi  # 存储大小，需要和pvc 一致
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  claimRef:
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    name: mypvc   # pvc 的名字
+    namespace: pvc-test #名称空间
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: slow
+  mountOptions:
+    - hard
+    - nfsvers=4.1
+  nfs:
+    path: /tmp  # nfs 服务器 showmount -e 地址
+    server: 172.17.0.2 #nfs
+```
+
+
 
