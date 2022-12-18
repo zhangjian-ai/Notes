@@ -2313,7 +2313,7 @@ pip3 freeze > requirements.txt
 
 # 2. 构建由 .whl 文件，放到一个文件夹
 #    --wheel-dir 表示文件输出的目录（不存在时自动创建）， -r 指明依赖文档路径。
-pip3 wheel --wheel-dir packges -r requirements.txt
+pip3 wheel --wheel-dir packges  -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt 
 
 # 3. 到客户现场时，执行离线安装即可
 #    --no-index 配合 --find-links 使用，--find-links 赋值 .whl 文件所在的文件夹路径

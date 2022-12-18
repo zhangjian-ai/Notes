@@ -2668,8 +2668,6 @@ Java HotSpot(TM) 64-Bit Server VM 18.9 (build 11.0.2+9-LTS, mixed mode)
 
 
 
-
-
 ## 17.6、位置参数变量
 
 ### 17.6.1、介绍
@@ -2941,12 +2939,13 @@ ubuntu@VM-16-9-ubuntu:~/learning$ ./positionParams.sh 10 20 30 xiaozhang wuji
 
 注： == 和 != 两端要有空格 ，`(())` 不能用于字符测试
 
-| 常用字符串测试操作符   | 说明                           |
-| ---------------------- | ------------------------------ |
-| -n                     | 若字符串长度不为0，则为真      |
-| -z                     | 若字符串长度为0，则为真        |
-| “字符串1” == “字符串2” | 若字符串1等于字符串2，则为真   |
-| “字符串1” != “字符串2” | 若字符串1不等于字符串2，则为真 |
+| 常用字符串测试操作符    | 说明                           |
+| ----------------------- | ------------------------------ |
+| -n                      | 若字符串长度不为0，则为真      |
+| -z                      | 若字符串长度为0，则为真        |
+| “字符串1” == “字符串2”  | 若字符串1等于字符串2，则为真   |
+| “字符串1” != “字符串2”  | 若字符串1不等于字符串2，则为真 |
+| “字符串1” =~  “字符串2” | 若字符串1包含字符串2，则为真   |
 
 
 
@@ -3012,6 +3011,14 @@ fi
 # 语法一：then 换行
 if [ 条件测试语句 ]
 then
+	程序
+fi
+
+# 语法二：if else
+if [ 条件测试语句 ]
+then
+	程序
+else
 	程序
 fi
 
@@ -3499,4 +3506,120 @@ ubuntu@VM-16-9-ubuntu:~$ LOCATION4=$({ cd learning/;pwd;}) # $() 获取执行结
 ubuntu@VM-16-9-ubuntu:~$ echo ${LOCATION4}
 /home/ubuntu/learning
 ```
+
+
+
+## 17.14、实用脚本
+
+### 离线安装依赖包
+
+1. 下载deb脚本
+
+   ```shell
+   #!/bin/bash
+   
+   # 先更新一下安装工具
+   echo -e "\n\n更新安装工具\n"
+   apt-get update
+   
+   function getNotExistDepends() {
+     ret=""
+     # use tr to del < >
+     all=$(apt-cache depends "$1" | grep Depends | awk -F ": " '{print $2}' | tr -d "<>")
+   
+     for d in $all
+     do
+       has=$(apt list --installed 2>/dev/null | grep "$d")
+       if [ -z "$has" ];then
+         ret="$ret $d"
+       fi
+     done
+   
+     echo "$ret"
+   }
+   
+   for i in "$@"
+   do
+     mkdir "$i"
+     cd "$i" || exist
+     echo -e "\n\n下载模块及其依赖: $i \n"
+   
+     # download libs depend. deep in 4
+     libs=$i
+     count=0
+   
+     while true; do
+   
+       # shellcheck disable=SC2219
+       let count++
+       echo "当前层级: $count"
+   
+       sub=""
+       for j in $libs; do
+         apt-get download "$j"
+         added="$(getNotExistDepends "$j")"
+         if [ -n "$added" ];then
+           sub="$sub $added"
+         fi
+       done
+       echo -e "\n>> dependencies: $sub\n"
+   
+       if [ -z "$sub" ];then
+         break
+       fi
+   
+       libs=$sub
+   
+     done
+   
+     cd ..
+   done
+   ```
+
+   
+
+2. 安装deb
+
+   ```shell
+   #!/bin/bash
+   
+   echo -e "\n\n开始执行安装程序\n"
+   
+   function getFiles() {
+     ret=""
+     # use tr to del < >
+     all=$(ls "$1" | grep .deb | awk '{print $1}')
+   
+     for d in $all; do
+       ret+="$d "
+     done
+   
+     ret=${ret% }
+     echo "$ret"
+   }
+   
+   for t in "$@"; do
+     if [ ! -d "$t" ]; then
+       echo -e "\n目标模块不存在: $t \n"
+       exit 1
+     fi
+   
+     modules="$(getFiles "$t")"
+   
+     if [ -z "$modules" ]; then
+       echo -e "\n目标模块存在，但没有可安装文件: $t \n"
+       exit 1
+     fi
+   
+     echo -e "\n>> 安装模块及其依赖: $t \n"
+   
+     # shellcheck disable=SC2006
+     cd "$t" && dpkg -i $modules && cd ..
+   
+   done
+   ```
+
+   
+
+
 

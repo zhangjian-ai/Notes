@@ -756,9 +756,20 @@ index 1f7dba6..84a4dc9 100644
 
 git rm 命令用于删除文件。
 
-1. 将文件从暂存区和工作区中删除：`git rm <file>`
+1. 将文件从暂存区中删除：`git rm <file>`
+
 2. 如果删除之前修改过并且已经放到暂存区域的话，则必须要用强制删除选项 **-f**：`git rm -f <file> `
+
 3. 如果想把文件从暂存区域移除，但仍然希望保留在当前工作目录中，换句话说，仅是从跟踪清单中删除，使用 **--cached** 选项即可：`git rm --cached <file>`
+
+4. 删除暂存区所有的文件：
+
+   ```shell
+   # -r 递归删除
+   git rm -r --cached .
+   ```
+
+   
 
 
 
@@ -1234,6 +1245,7 @@ kubectl get pod -A --selector="k8s-app=kube-dns"
 
 # 查看运行pod的环境变量
 kubectl exec podName env
+
 # 查看指定pod的日志
 kubectl logs -f --tail 500 -n <namespaces> <podname>
  
@@ -1262,10 +1274,15 @@ kubectl get jobs -A
 kubectl get ing -A
 # 查看有哪些名称空间
 kubectl get ns
+# 查看集群资源配置
+kubectl get quota
 
 # 查看pod的描述信息
 kubectl describe pod <podName>
 kubectl describe pod -n <namespaces> <podname>
+
+# 查看 ingress 信息
+kubectl describe ingressroute
 
 # 查看node或pod的资源使用情况
 # 需要heapster 或metrics-server支持
@@ -1329,8 +1346,10 @@ kubectl edit pod podName -n <namespaces>
 
 ```shell
 # kubectl exec：进入pod启动的容器
-kubectl exec -it podName -n <namespaces> /bin/sh    #进入容器
-kubectl exec -it podName -n <namespaces> /bin/bash  #进入容器
+kubectl exec -it podName -n <namespaces> /bin/sh
+
+# pod中多个容器时，进入指定容器
+kubectl exec -it podName -n <namespaces> --container 容器名 /bin/bash 
 
 # kubectl label：添加label值
 kubectl label nodes k8s-node01 zone=north  #为指定节点添加标签 
@@ -1446,20 +1465,20 @@ spec:         #必选，Pod中容器的详细定义
 apiVersion: v1       #必选，版本号，例如v1
 kind: Pod       #必选，Pod
 metadata:       #必选，元数据
-  name: perfermance-test       #必选，Pod名称
-  namespace: devops-30030186-perf-bot-master-1    #必选，Pod所属的命名空间
+  name: verify       #必选，Pod名称
+  namespace: devops-30032681-sit-alchemy-17    #必选，Pod所属的命名空间
 spec:         
   imagePullSecrets: # 从私有仓库拉取镜像，引用 配置好的 Secret 对象
-  - name: secret-test
+  - name: registry-secrets
   containers:
-  - name: perf
-    image: registry01.wezhuiyi.com/tester/performance-test:latest
+  - name: verify
+    image: registry01.wezhuiyi.com/alpine-runtime_amd64_v2.0.0/tester/alchemy-env-verify:586410c
     imagePullPolicy: Always 
     command: ["bash", "-c", "while true;do sleep 1;done"] 
     resources:      
       limits:     
-        cpu: 4000m    
-        memory: 8192Mi
+        cpu: 2000m    
+        memory: 4096Mi
       requests: 
         cpu: 1000m
         memory: 2048Mi
@@ -1500,9 +1519,9 @@ StorageClass
 >- 静态提供Static：集群管理员创建多个PV。 它们携带可供集群用户使用的真实存储的详细信息。 它们存在于Kubernetes API中，可用于消费
 >- 动态提供Dynamic：当管理员创建的静态PV都不匹配用户的PersistentVolumeClaim时，集群可能会尝试为PVC动态配置卷。 此配置基于StorageClasses：PVC必须请求一个类，并且管理员必须已创建并配置该类才能进行动态配置。 要求该类的声明有效地为自己禁用动态配置。
 >  绑定Binding---用户创建pvc并指定需要的资源和访问模式。在找到可用pv之前，pvc会保持未绑定状态。
->  使用Using---用户可在pod中像volume一样使用pvc。
->  释放Releasing---用户删除pvc来回收存储资源，pv将变成“released”状态。由于还保留着之前的数据，这些数据需要根据不同的策略来处理，否则这些存储资源无法被其他pvc使用。
->  回收Recycling---pv可以设置三种回收策略：保留（Retain），回收（Recycle）和删除（Delete）。
+>   使用Using---用户可在pod中像volume一样使用pvc。
+>   释放Releasing---用户删除pvc来回收存储资源，pv将变成“released”状态。由于还保留着之前的数据，这些数据需要根据不同的策略来处理，否则这些存储资源无法被其他pvc使用。
+>   回收Recycling---pv可以设置三种回收策略：保留（Retain），回收（Recycle）和删除（Delete）。
 >- 保留策略：允许人工处理保留的数据。
 >- 删除策略：将删除pv和外部关联的存储资源，需要插件支持。
 >- 回收策略：将执行清除操作，之后可以被新的pvc使用，需要插件支持。
