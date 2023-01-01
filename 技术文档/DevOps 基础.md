@@ -1466,22 +1466,22 @@ apiVersion: v1       #必选，版本号，例如v1
 kind: Pod       #必选，Pod
 metadata:       #必选，元数据
   name: verify       #必选，Pod名称
-  namespace: devops-30032681-sit-alchemy-17    #必选，Pod所属的命名空间
+  namespace: devops-30008834-sit-bot-master   #必选，Pod所属的命名空间
 spec:         
   imagePullSecrets: # 从私有仓库拉取镜像，引用 配置好的 Secret 对象
   - name: registry-secrets
   containers:
   - name: verify
-    image: registry01.wezhuiyi.com/alpine-runtime_amd64_v2.0.0/tester/alchemy-env-verify:586410c
+    image: registry01.wezhuiyi.com/tester/bot3-env-verify:bcf49c1
     imagePullPolicy: Always 
     command: ["bash", "-c", "while true;do sleep 1;done"] 
     resources:      
       limits:     
-        cpu: 2000m    
-        memory: 4096Mi
+        cpu: 500m    
+        memory: 1024Mi
       requests: 
-        cpu: 1000m
-        memory: 2048Mi
+        cpu: 500m    
+        memory: 1024Mi
 ```
 
 

@@ -234,7 +234,7 @@ Ubuntu采用自行加强的内核，默认不能直接root登陆，必须从第�
 
 
 
-# 3、SSH 和 SCP
+# 3、远程连接和文件传输
 
 ## 3.1、SSH服务
 
@@ -245,15 +245,21 @@ Ubuntu采用自行加强的内核，默认不能直接root登陆，必须从第�
 
 
 
-## 3.2、远程登录
+## 3.2、SSH远程登录
 
 1. 命令行连接语法：
 
    ```shell
-   ssh 用户名@服务器IP
+   ssh 用户名@服务器IP [-p port] [cmd]
    
    # 示例。如果没有配置rsa公钥到服务器上，还需要手动输入登录密码
    ssh root@121.4.47.229
+   
+   # 连接指定端口，不指定时默认时22端口
+   ssh root@121.4.47.229 -p 12200
+   
+   # 在远端执行新建 .ssh 文件夹，并把本地的 ~/.ssh/id_rsa.pub （也就是公钥）追加到远端的 .ssh/authorized_keys 中
+   ssh root@121.4.47.229 -p 12200 'mkdir -p .ssh && cat >> .ssh/authorized_keys' < ~/.ssh/id_rsa.pub
    ```
 
    
@@ -278,7 +284,7 @@ Ubuntu采用自行加强的内核，默认不能直接root登陆，必须从第�
    
    
 
-## 3.3、远程传输
+## 3.3、SCP远程传输
 
 **windows**
 
@@ -290,11 +296,16 @@ Ubuntu采用自行加强的内核，默认不能直接root登陆，必须从第�
 
 
 
-**Mac**
+**Linux&Mac(Unix)**
 
 mac 电脑上直接在命令行传输文件即可，语法如下：
 
 ```shell
+# scp [options] SRC DEST
+# options:
+#		-P 指定传输端口，默认22
+# 	-r 传输目录及其内部的所有文件
+
 # =============上传===============
 scp 本机文件 用户名@服务器IP:存放文件的服务器目录
 scp /var/local/111.html root@121.4.47.229:/var/local/111.html
@@ -302,6 +313,7 @@ scp /var/local/111.html root@121.4.47.229:/var/local/111.html
 # =============下载===============
 scp 用户名@服务器IP:服务器文件路径 存放文件的本机目录
 scp root@121.4.47.229:/var/local/111.html /var/local/
+
 ```
 
 
@@ -331,7 +343,108 @@ scp root@121.4.47.229:/var/local/111.html /var/local/
 
 
 
-## 3.5、下载互联网资源
+## 3.5、rsync 归档传输
+
+rsync 可以理解为 remote sync（远程同步），但它不仅可以远程同步数据（类似于 scp 命令），还可以本地同步数据（类似于 cp 命令）。不同于 cp 或 scp 的一点是，使用 rsync 命令备份数据时，不会直接覆盖以前的数据（如果数据已经存在），而是先判断已经存在的数据和新数据的差异，只有数据不同时才会把不相同的部分覆盖。
+
+```
+1）本地使用：
+rsync [OPTION...] SRC... [DEST]
+
+2）通过远程 Shell 使用：
+拉: rsync [OPTION...] [USER@]HOST:SRC... [DEST]
+推: rsync [OPTION...] SRC... [USER@]HOST:DEST
+
+3）访问 rsync 服务器:
+拉: rsync [OPTION...] [USER@]HOST::SRC... [DEST]
+推: rsync [OPTION...] SRC... [USER@]HOST::DEST
+拉: rsync [OPTION...] rsync://[USER@]HOST[:PORT]/SRC... [DEST]
+推: rsync [OPTION...] SRC... rsync://[USER@]HOST[:PORT]/DEST
+
+其中：
+  - SRC: 是要复制的源位置
+  - DEST: 是复制目标位置
+  - 若本地登录用户与远程主机上的用户一致，可以省略 USER@
+  - 使用远程 shell 同步时，主机名与资源之间使用单个冒号“:”作为分隔符
+  - 使用 rsync 服务器同步时，主机名与资源之间使用两个冒号“::”作为分隔符
+  - 当访问 rsync 服务器时也可以使用 rsync:// URL
+  - “拉”复制是指从远程主机复制文件到本地主机
+  - “推”复制是指从本地主机复制文件到远程主机
+  - 当进行“拉”复制时，若指定一个 SRC 且省略 DEST，则只列出资源而不进行复制
+
+文件归属：
+  - 若使用普通用户身份运行 rsync 命令，同步后的文件的属主将改变为这个普通用户身份。
+  - 若使用超级用户身份运行 rsync 命令，同步后的文件的属主将保持原来的用户身份。
+```
+
+
+
+下面列出常用选项：
+
+| 选项                 | 说明                                                         |
+| -------------------- | ------------------------------------------------------------ |
+| -a, ––archive        | 归档模式，表示以递归方式传输文件，并保持所有文件属性，等价于 -rlptgoD (注意不包括 -H) |
+| -r, ––recursive      | 对子目录以递归模式处理                                       |
+| -l, ––links          | 保持符号链接文件                                             |
+| -H, ––hard-links     | 保持硬链接文件                                               |
+| -p, ––perms          | 保持文件权限                                                 |
+| -t, ––times          | 保持文件时间信息                                             |
+| -g, ––group          | 保持文件属组信息                                             |
+| -o, ––owner          | 保持文件属主信息 (super-user only)                           |
+| -D                   | 保持设备文件和特殊文件 (super-user only)                     |
+| -z, ––compress       | 在传输文件时进行压缩处理                                     |
+| ––exclude=PATTERN    | 指定排除一个不需要传输的文件匹配模式                         |
+| ––exclude-from=FILE  | 从 FILE 中读取排除规则                                       |
+| ––include=PATTERN    | 指定需要传输的文件匹配模式                                   |
+| ––include-from=FILE  | 从 FILE 中读取包含规则                                       |
+| ––copy-unsafe-links  | 拷贝指向SRC路径目录树以外的链接文件                          |
+| ––safe-links         | 忽略指向SRC路径目录树以外的链接文件（默认）                  |
+| ––existing           | 仅仅更新那些已经存在于接收端的文件，而不备份那些新创建的文件 |
+| ––ignore-existing    | 忽略那些已经存在于接收端的文件，仅备份那些新创建的文件       |
+| -b, ––backup         | 当有变化时，对目标目录中的旧版文件进行备份                   |
+| ––backup-dir=DIR     | 与 -b 结合使用，将备份的文件存到 DIR 目录中                  |
+| ––link-dest=DIR      | 当文件未改变时基于 DIR 创建硬链接文件                        |
+| ––delete             | 删除那些接收端还有而发送端已经不存在的文件                   |
+| ––delete-before      | 接收者在传输之前进行删除操作 (默认)                          |
+| ––delete-during      | 接收者在传输过程中进行删除操作                               |
+| ––delete-after       | 接收者在传输之后进行删除操作                                 |
+| ––delete-excluded    | 在接收方同时删除被排除的文件                                 |
+| -e, ––rsh=COMMAND    | 指定替代 rsh 的 shell 程序                                   |
+| ––ignore-errors      | 即使出现 I/O 错误也进行删除                                  |
+| ––partial            | 保留那些因故没有完全传输的文件，以是加快随后的再次传输       |
+| ––progress           | 在传输时显示传输过程                                         |
+| -P                   | 等价于 ––partial ––progress                                  |
+| ––delay-updates      | 将正在更新的文件先保存到一个临时目录（默认为 “.~tmp~”），待传输完毕再更新目标文件 |
+| -v, ––verbose        | 详细输出模式                                                 |
+| -q, ––quiet          | 精简输出模式                                                 |
+| -h, ––human-readable | 输出文件大小使用易读的单位（如，K，M等）                     |
+| -n, ––dry-run        | 显示哪些文件将被传输                                         |
+| ––list-only          | 仅仅列出文件而不进行复制                                     |
+| ––rsyncpath=PROGRAM  | 指定远程服务器上的 rsync 命令所在路径                        |
+| ––password-file=FILE | 从 FILE 中读取口令，以避免在终端上输入口令，通常在 cron 中连接 rsync 服务器时使用 |
+| -4, ––ipv4           | 使用 IPv4                                                    |
+| -6, ––ipv6           | 使用 IPv6                                                    |
+| ––version            | 打印版本信息                                                 |
+| ––help               | 显示帮助信息                                                 |
+| -u                   | 表示把 DEST 中比 SRC 还新的文件排除掉，不会覆盖              |
+
+
+
+示例：
+
+```shell
+# 推送文件到目标服务器，下面的命令通过 -e 修改默认连接端口
+rsync -avuP -e "ssh -p 11220" /data/code develop@10.4.1.58:/data/customize 
+
+# 拉去无夫妻数据到本地
+rsync -avuP -e "ssh -p 11220" develop@10.4.1.58:/data/customize/code .
+```
+
+
+
+
+
+## 3.6、wget 获取在线资源
 
 `wget` 资源链接。即可将互联网资源下载到Linux。
 
@@ -553,10 +666,11 @@ userdel -r xiaoming    删除用户 xiaoming 以及用户主目录
 - 在操作 Linux 中，如果当前用户的权限不够，可以通过 su - 指令，切换到高权限用户，比如 root
 - 使用命令：`切换：su - username 返回原来的用户：exit`
 - **高权限用户切换到低权限用户时不需要输入密码，反之需要**
+- su - 切换用户会退到根目录，su 直接切换，则切换用户后仍处在当前目录
 
 
 
-## 6.7、用户组
+## 6.7、修改用户
 
 - 用户组：类似于角色，系统可以对有共性的多个用户进行统一的管理
 - 增加组： `groupadd groupname`
@@ -568,6 +682,9 @@ usermod -d 目录名 用户名         	# 改变该用户登录的初始目录
 
 usermod -G groupname username		# 修改用户到工作组，一个用户可以添加到多个工作组
 usermod -G 24,27 zhangjian			# 修改的时候也可以写组ID，多个用逗号隔开。注意：修改用户组、工作组会离开原来的组
+
+usermod -u1000 username 				# 修改用户的 UID 为1000
+groupmod -g1000 groupname 				# 修改对应组的ID为1000
 
 # 如果是想追加，要使用 选项参数：-a
 root@VM-16-9-ubuntu:~# usermod -a -G 4 zhangjian
@@ -696,6 +813,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    ```
    cp [选项] 要拷贝的文件 要粘贴的目录
    -r  递归复制整个文件夹
+   -f  覆盖已经存在的目标文件而不给出提示
    例1：cp a.txt /home/b/ 将a.txt文件拷贝到/home/b目录下
    例2：cp -r /home/a/ /home/b/ 将/home/a/目录下的所有文件递归拷贝到/home/b/下，当有重复文件的时候会提示是否覆盖
    例3：cp -rf /home/a/ /home/b/ 这样就能强制覆盖系统不会提示，这样就不用一个一个文件的操作
@@ -723,6 +841,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
     ```
     cat [选项] 要查看的文件
     -n ：显示行号
+    
     例1：cat -n /etc/profile 这样直接打开文件会一下走到最后一行然后退出到命令行
     	因此一般会加上 | more 来分页显示
     cat 只能浏览文件，而不能修改文件，为了浏览方便，一般会带上 管道命令 | more
@@ -736,17 +855,17 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
     more 指令中内置了若干快捷键，详见操作文档
 
-    ```
+    ```shell
     more 要查看的文件
     
-    常用快捷键：
-    一行一行的看就按 Enter 键
-    一页一页的看就按 空格 键
-    Ctrl+B 回到上一页
-    Ctrl+F 下一页
-    q 立即离开more，不再显示文本内容
-    = 输出当前行的行号
-    :f 输出文件名和当前行的行号
+    # 常用快捷键
+    # Enter键 一行一行的看就按 
+    # 空格键 一页一页的看就按 
+    # Ctrl+B 回到上一页
+    # Ctrl+F 下一页
+    # q 立即离开more，不再显示文本内容
+    # = 输出当前行的行号
+    # :f 输出文件名和当前行的行号
     ```
 
 12. **less 命令**
@@ -759,12 +878,12 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
     less 要查看的文件
     
     # 常用快捷键
-    空格键    向下翻一页
-    pagedown  向下翻一页
-    pageup    向上翻一页
-    /字符串   向下搜索字符串，n：向下查找 N：向上查找
-    ?字符串   向上搜索字符串，n：向上查找 N：向下查找
-    q  离开less这个程序
+    # 空格键    向下翻一页
+    # pagedown  向下翻一页
+    # pageup    向上翻一页
+    # /字符串   向下搜索字符串，n：向下查找 N：向上查找
+    # ?字符串   向上搜索字符串，n：向上查找 N：向下查找
+    # q  离开less这个程序
     ```
 
 12. **tee 命令**
@@ -827,11 +946,12 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
     例2  使用 echo 指令输出"hello world" ==> echo "hello world"
     ```
 
-15. **head 命令**，用于显示文件的开头部分内容，默认情况下 head 指令显示文件的前 10 行内容
+17. **head 命令**，用于显示文件的开头部分内容，默认情况下 head 指令显示文件的前 10 行内容
 
     ```
     head 文件 
     head -n 5 文件    查看文件头 5 行内容，5 可以是任意行数
+    head -c 5 文件    查看文件头 5 个byte的内容
     ```
 
 16. **tail 命令**，用于输出文件中尾部的内容，默认情况下 tail 指令显示文件的后 10 行内容

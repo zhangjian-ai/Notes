@@ -10,7 +10,7 @@
 
 **典型的RPC模型：**
 
-<img src="./images/RPC.png" style='width: 60%; float: left'>
+<img src="../技术文档/images/RPC.png" style='width: 60%; float: left'>
 
 **为什么需要RPC？**
 
