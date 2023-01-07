@@ -868,8 +868,13 @@ docker ps                                        #查看所有正在运行的容
 docker ps -a                                     #查看所有容器，加-q则只返回id
 docker rmi ${IMAGE NAME/ID}                      #删除镜像
 docker rm ${CONTAINER NAME/ID}                   #删除容器
+
 docker save ${IMAGE NAME} > ${FILE NAME}.tar     #将镜像保存成文件
+docker save -o ${FILE NAME}.tar ${IMAGE NAME}
+
 docker load < ${FILE NAME}.tar                   #从文件加载镜像
+docker load -i ${FILE NAME}.tar  
+
 docker start/restart ${CONTAINER NAME/ID}        #启动/重启一个以前运行过的容器
 docker stop ${CONTAINER NAME/ID}                 #停止一个正在运行的容器
 
@@ -1002,6 +1007,15 @@ docker network
 		
 		# 删除所有没有使用的网络
 		docker network prune
+		
+dokcer inspect
+		# 获取容器/镜像的元数据
+		docker inspect [OPTIONS] NAME|ID [NAME|ID...]
+		
+		# options
+			-f :指定返回值的模板文件。
+			-s :显示总的文件大小。
+			--type :为指定类型返回JSON。
 ```
 
 

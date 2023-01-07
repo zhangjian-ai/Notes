@@ -284,21 +284,13 @@ Ubuntu采用自行加强的内核，默认不能直接root登陆，必须从第�
    
    
 
-## 3.3、SCP远程传输
+## 3.3、SCP安全传输
 
-**windows**
+scp 是 secure copy 的缩写, scp 是 linux 系统下基于 ssh 登陆进行安全的远程文件拷贝命令。
 
-可以使用Xftp软件进行文件的传输，直接安装即可，然后输入Linux主机的IP地址，选择SFTP协议（22号端口），再输入账号密码即可
-
-如果出现中文乱码问题，可以在主机的属性中的选项中选择使用**UTF-8编码**即可
-
-直接拖拉文件即可
+scp 是加密的，[rcp](https://www.runoob.com/linux/linux-comm-rcp.html) 是不加密的，scp 是 rcp 的加强版。
 
 
-
-**Linux&Mac(Unix)**
-
-mac 电脑上直接在命令行传输文件即可，语法如下：
 
 ```shell
 # scp [options] SRC DEST
@@ -983,7 +975,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
     其他两剑客分别是：awk 、grep
 
-18. **ln 命令**，给原文件创建一个链接
+20. **ln 命令**，给原文件创建一个链接
 
     软链接也叫符号链接，类似于 windows 里的快捷方式。本质上是创建了一个 Link 类型的目录项，里面存放了目标文件的路径。
 
@@ -1004,16 +996,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
     当 cd linkToRoot 时，就会跳转到root目录，但是用pwd查看路径时，还是会显示原来目录的linkToRoot的路径
     ```
 
-19. **history 命令**，查看已经执行过历史命令,也可以执行历史指令
-
-    ```
-    history [数字]
-    不加数字则显示所有的历史命令
-    加数字则显示最近使用的n条命令
-    !10  执行历史编号为10的命令
-    history -c 清除历史记录
-    ```
-
+    
 
 
 ## 7.4、时间日期类指令
@@ -1047,12 +1030,27 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
 1. **find 命令**，将从指定目录向下递归地遍历其各个子目录，将满足条件的文件或者目录显示在终端
 
-   ```
-   find [搜索范围] [选项]
-   -name<查询方式> 按照指定的文件名查找模式查找文件  例：find /home -name hello.txt 
-   -user<用户名>  查找属于指定用户名所有文件  例： find /root -user root
-   -size<文件大小>  按照指定的文件大小查找文件 [+n大于 -n小于 n等于]  例：find /root -size +20M
-   使用文件名查找时可以使用通配符，例：find /home -name *.txt
+   ```shell
+   语法：
+   find   path   -option   [   -print ]   [ -exec   -ok   command ]   {} \;
+   
+   # find 根据下列规则判断 path 和 expression，在命令列上第一个 - ( ) , ! 之前的部份为 path，之后的是 expression。如果 path 是空字串则使用目前路径，如果 expression 是空字串则使用 -print 为预设 expression。
+   
+   常用选项：
+   	-name 文件名(可以用通配符) :按照指定的文件名查找模式查找文件 例：find /home -name *.txt
+   	-user 用户名 :查找属于指定用户名所有文件
+   	-size 文件大小 :按照指定的文件大小查找文件 [+n大于 -n小于 n等于]  例：find /root -size +20M
+   	-type 类型 :查找指定类型的文件
+   		d: 目录
+   		c: 字型装置文件
+   		b: 区块装置文件
+   		p: 具名贮列
+   		f: 普通文件
+   		l: 符号连结
+   		s: socket
+   		
+   示例：
+   find / -type f -size 0 -exec ls -l {} \;
    ```
 
 2. **locate 命令**，快速定位文件路径
@@ -1099,9 +1097,20 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
      $ grep -E 'pattern1|pattern2' file
      ```
 
-     
+4. **history 命令** 查看已经执行过历史命令,也可以执行历史指令
 
-4. **sort**  指令
+   ```shell
+   history [数字]
+   
+   # 不加数字则显示所有的历史命令
+   # 加数字则显示最近使用的n条命令
+   # !10  执行历史编号为10的命令
+   
+   # 清除历史记录
+   history -c
+   ```
+
+5. **sort**  指令
 
    > **参数说明**：
    >
@@ -1142,7 +1151,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    this is a test 
    ```
 
-5. **uniq** 去重指令
+6. **uniq** 去重指令
 
    > - -c或--count 在每列旁边显示该行重复出现的次数。
    > - -d或--repeated 仅显示重复出现的行列。
@@ -1181,7 +1190,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    Linux 85  
    ```
 
-6. **wc** 统计指令
+7. **wc** 统计指令
 
    > - -c或--bytes或--chars 只显示Bytes数。
    > - -l或--lines 显示行数。
@@ -1199,9 +1208,80 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    9 test.txt
    ```
 
+8. **xargs** 指令
+
+   xargs（eXtended ARGuments）是给命令传递参数的一个过滤器，也是组合多个命令的一个工具。
+
+   xargs 可以将管道或标准输入（stdin）数据转换成命令行参数，也能够从文件的输出中读取数据。
+
+   xargs 也可以将单行或多行文本输入转换为其他格式，例如多行变单行，单行变多行。
+
+   xargs 默认的命令是 echo，这意味着通过管道传递给 xargs 的输入将会包含换行和空白，不过通过 xargs 的处理，换行和空白将被空格取代。
+
+   xargs 是一个强有力的命令，它能够捕获一个命令的输出，然后传递给另外一个命令。
+
+   **之所以能用到这个命令，关键是由于很多命令不支持|管道来传递参数，而日常工作中有有这个必要，所以就有了 xargs 命令，xargs 一般是和管道一起使用。**
+
+   >**命令格式：**
+   >
+   >somecommand |xargs -item  command
+   >
+   >**参数：**
+   >
+   >- -a file 从文件中读入作为 stdin
+   >- -e flag ，注意有的时候可能会是-E，flag必须是一个以空格分隔的标志，当xargs分析到含有flag这个标志的时候就停止。
+   >- -p 当每次执行一个argument的时候询问一次用户。
+   >- -n num 后面加次数，表示命令在执行的时候一次用的argument的个数，默认是用所有的。
+   >- -t 表示先打印命令，然后再执行。
+   >- -i 或者是-I，这得看linux支持了，将xargs的每项名称，一般是一行一行赋值给 {}，可以用 {} 代替。
+   >- -r no-run-if-empty 当xargs的输入为空的时候则停止xargs，不用再去执行了。
+   >- -s num 命令行的最大字符数，指的是 xargs 后面那个命令的最大命令行字符数。
+   >- -L num 从标准输入一次读取 num 行送给 command 命令。
+   >- -l 同 -L。
+   >- -d delim 分隔符，默认的xargs分隔符是回车，argument的分隔符是空格，这里修改的是xargs的分隔符。
+   >- -x exit的意思，主要是配合-s使用。。
+   >- -P 修改最大的进程数，默认是1
+
+   示例：
+
+   ```shell
+   # -d 选项可以自定义一个定界符
+   [root@public-vm-arm seeker]# echo "nameXnameXnameXname" | xargs -dX
+   name name name name
    
+   # -n 选项多行输出
+   [root@public-vm-arm seeker]# echo "nameXnameXnameXname" | xargs -dX -n2
+   name name
+   name name
+   
+   # args.txt 内容如下
+   # aaa
+   # bbb
+   # ccc
+   
+   # sk.sh 内容如下
+   # echo $*
+   
+   [root@public-vm-arm seeker]# cat args.txt
+   aaa
+   bbb
+   ccc
+   
+   # xargs 的一个选项 -I，使用 -I 指定一个替换字符串 {}，这个字符串在 xargs 扩展时会被替换掉，当 -I 与 xargs 结合使用，每一个参数命令都会被执行一次
+   [root@public-vm-arm seeker]# cat args.txt | xargs -I {} bash sk.sh -p {} -l
+   -p aaa -l
+   -p bbb -l
+   -p ccc -l
+   
+   # 复制所有图片文件到 /data/images 目录下
+   [root@public-vm-arm seeker]# ls *.jpg | xargs -n1 -I {} cp {} /data/images
+   
+   # 查找所有的 jpg 文件，并且压缩它们
+   [root@public-vm-arm seeker]# find . -type f -name "*.jpg" -print | xargs tar -czvf images.tar.gz
+   
+   ```
 
-
+   
 
 ## 7.6、压缩和解压缩类指令
 
@@ -2226,9 +2306,11 @@ KiB Swap:        0 total,        0 free,        0 used.  1987224 avail Mem
 
 
 
-# 14、RPM
+# 15、软件管理
 
-## 14.1、基本介绍
+## RPM
+
+**基本介绍**
 
 RPM是一种用于互联网下载包的打包及安装工具，它包含在某些 Linux 分发版中，生成具有`.RPM `扩展名的文件。
 
@@ -2238,7 +2320,7 @@ Linux 的分发版本都有采用（suse、redhat、centos 等等），可以算
 
 
 
-## 14.2、查询RPM包
+**查询RPM包**
 
 ```shell
 # 查询所安装的所有rpm 软件包
@@ -2265,7 +2347,7 @@ rpm -qf 文件全路径名
 
 
 
-## 14.3、安装RPM包
+**安装RPM包**
 
 ```shell
 # 下载rpm安装包
@@ -2281,7 +2363,7 @@ rpm -ivh RPM包的全路径名称
 
 
 
-## 14.4、卸载RPM包
+**卸载RPM包**
 
 ```shell
 rpm -e RPM包名
@@ -2297,20 +2379,214 @@ rpm -e RPM包名
 
 
 
-# 15、YUM
+## yum
 
-- Yum 是一个 **Shell 前端软件包管理器**
-- Yum 基于 RPM 包管理，**能够从指定的服务器自动下载 RPM 包并且安装**，可以自动处理依赖性关系，并且一次安装所有依赖的软件包。**使用 yum 的前提是已经联网**
+yum（ Yellow dog Updater, Modified）是一个在 Fedora 和 RedHat、CentOS 以及 SUSE 中的 Shell 前端软件包管理器。
+
+基于 RPM 包管理，能够从指定的服务器自动下载 RPM 包并且安装，可以自动处理依赖性关系，并且一次安装所有依赖的软件包，无须繁琐地一次次下载、安装。
+
+yum 提供了查找、安装、删除某一个、一组甚至全部软件包的命令，而且命令简洁而又好记。
+
+> 语法：
+>
+> ```shell
+> yum [options] [command] [package ...]
+> 
+> # options：可选，选项包括-h（帮助），-y（当安装过程提示选择全部为 "yes"），-q（不显示安装的过程）等等。
+> # command：要进行的操作。
+> # package：安装的包名。
+> ```
+>
+> 
+>
+> 常用命令：
+>
+> -  列出所有可更新的软件清单命令：**yum check-update**
+> - 更新所有软件命令：**yum update**
+> - 仅 安装/卸载 指定的软件命令：**yum install/uninstall <package_name>**
+> - 仅更新指定的软件命令：**yum update <package_name>**
+> - 列出所有可安裝的软件清单命令：**yum list**
+> - 删除软件包命令：**yum remove <package_name>**
+> - 查找软件包命令：**yum search <keyword>**
+> - 清除缓存命令:
+>   - **yum clean packages**: 清除缓存目录下的软件包
+>   - **yum clean headers**: 清除缓存目录下的 headers
+>   - **yum clean oldheaders**: 清除缓存目录下旧的 headers
+>   - **yum clean, yum clean all (= yum clean packages; yum clean oldheaders)** :清除缓存目录下的软件包及旧的 headers
+
+
+
+## apt
+
+apt（Advanced Packaging Tool）是一个在 Debian 和 Ubuntu 中的 Shell 前端软件包管理器。
+
+apt 命令提供了查找、安装、升级、删除某一个、一组甚至全部软件包的命令，而且命令简洁而又好记。
+
+apt 命令执行需要超级管理员权限(root)。
+
+> 语法：
+>
+> ```shell
+> apt [options] [command] [package ...]
+> 
+> # options：可选，选项包括 -h（帮助），-y（当安装过程提示选择全部为"yes"），-q（不显示安装的过程）等等。
+> # command：要进行的操作。
+> # package：安装的包名。
+> ```
+>
+>  
+>
+> 常用命令：
+>
+> - 列出所有可更新的软件清单命令：**sudo apt update**
+>
+> - 升级软件包：**sudo apt upgrade**
+>
+>   列出可更新的软件包及版本信息：**apt list --upgradeable**
+>
+>   升级软件包，升级前先删除需要更新软件包：**sudo apt full-upgrade**
+>
+> - 安装指定的软件命令：**sudo apt install <package_name>**
+>
+>   安装多个软件包：**sudo apt install <package_1> <package_2> <package_3>**
+>
+> - 更新指定的软件命令：**sudo apt update <package_name>**
+>
+> - 显示软件包具体信息,例如：版本号，安装大小，依赖关系等等：**sudo apt show <package_name>**
+>
+> - 删除软件包命令：**sudo apt remove <package_name>**
+>
+> - 清理不再使用的依赖和库文件: **sudo apt autoremove**
+>
+> - 移除软件包及配置文件: **sudo apt purge <package_name>**
+>
+> - 查找软件包命令： **sudo apt search <keyword>**
+>
+> - 列出所有已安装的包：**apt list --installed**
+>
+> - 列出所有已安装的包的版本信息：**apt list --all-versions**
+
+
+
+**apt 和 apt-get 的区别：**
+
+> apt 和 apt-get 的差异可以总结为一句话：**apt 新 apt-get 旧，apt 的功能由 apt-get 和 apt-cache 凑。**
+
+- apt 是用来管理 linux 系统软件包的工具，比如软件的安装、卸载、升级、删除。apt 是一个比较新的工具集，第一个版本是在2014年发布的，后来经过两年的实践才逐渐为人们所知。
+
+- apt-get 也是用来管理 linux 系统软件包的工具，基本上可以实现 apt 工具集的功能。只是 apt-get 是一个比较老的工具集，第一个版本是在1998年发布的，由于 apt-get 可以非常容易的解决软件之间的依赖关系，在 linux 系统中被广泛使用。
+
+- 命令对比
+
+  - 可互换的命令
+
+    <table>
+      <tr><th style="width:240px;">命令的功能</th><th style="width:229px;">apt 命令</th><th>取代的命令</th></tr>
+      <tr><td style="width:240px;">安装软件包</td><td style="width:229px;">apt install</td><td>apt-get install</td></tr>
+      <tr><td style="width:240px;">删除软件包</td><td style="width:229px;">apt remove</td><td>apt-get remove</td></tr>
+      <tr><td style="width:240px;">移除软件包及配置文件</td><td style="width:229px;">apt purge</td><td>apt-get purge</td></tr>
+      <tr><td style="width:240px;">刷新存储库索引</td><td style="width:229px;">apt update</td><td>apt-get update</td></tr>
+      <tr><td style="width:240px;">升级所有可升级的软件包</td><td style="width:229px;">apt upgrade</td><td>apt-get upgrade</td></tr>
+      <tr><td style="width:240px;">自动删除不需要的包</td><td style="width:229px;">apt autoremove</td><td>apt-get autoremove</td></tr>
+      <tr><td style="width:240px;">在升级软件包时自动处理依赖关系</td><td style="width:229px;">apt full-upgrade</td><td>apt-get dist-upgrade</td></tr>
+      <tr><td style="width:240px;">搜索应用程序</td><td style="width:229px;">apt search</td><td>apt-cache search</td></tr>
+      <tr><td style="width:240px;">显示包信息</td><td style="width:229px;">apt show</td><td>apt-cache show</td></tr>
+    </table>
+
+  - apt 新引入的命令
+
+    <table><tr><td>apt list</td><td>列出包含条件的包（已安装，可升级等）</td></tr><tr><td>apt edit-sources</td><td>编辑源列表</td></tr></table>
+
+    1. apt list    当 apt list 命令与–installed或–upgradeable一起使用时，它将列出已安装，可安装或需要升级的软件包。
+    2. apt edit-sources    使用此命令时，它将在编辑器中打开sources.list文件进行编辑。apt-get 仍然不能完全被 apt 取代，而且我认为它永远不会被完全终止。你可能正在考虑应该选择什么：apt 或 apt-get。在我看来，选择apt 是值得的，因为它提供了软件包管理的所有必需功能，并且更快，更友好且易于使用。
+
+
+
+## apk
+
+`Alpine Linux` 是基于 musl libc 和 busybox 的面向安全的轻量级 Linux 发行版。Alpine 的体积非常小，Alpine 的 Docker 镜像大小仅 5 MB 左右。Alpine 功能比 buysbox 完善，还提供了软件包管理工具 `apk` (Alpine Package Keeper)。
+
+> 语法：
+>
+> ```shell
+> apk [<OPTIONS>...] COMMAND [<ARGUMENTS>...]
+> ```
+>
+> 常用命令：
+>
+> ```shell
+> # 安装软件包（并自动安装依赖项）
+> apk add 包名
+> 
+> # 安装软件包, 不使用缓存
+> apk —no-cache add 包名
+> 
+> # 在不修改 WORLD 的情况下修复, 重新安装或升级软件包
+> apk fix 包名
+> 
+> # 根据远程镜像源更新本地仓库中的所有软件包索引（通常在更新/安装软件包前先更新索引）
+> apk update
+> 
+> # 为仓库中安装的软件包升级，不接包名时为所有软件包升级
+> apk upgrade [包名]
+> 
+> # 删除软件包, 如果其依赖项不再本需要, 则将其一起卸载
+> apk del 包名
+> 
+> # 列出给定模式的软件包
+> apk list [options] [包名]
+> 	-I, —installed 只显示已安装的软件包
+> 	-O, —orphaned 只显示孤立的软件包
+> 	-a, —available 只显示可用的软件包
+> 	-u, —upgradable 只显示可升级的软件包
+> 	-o, —origin 按来源列出软件包
+> 	-d, —depends 按依赖关系列出软件包
+> 	-P, —providers 按提供者列出软件包
+> 	
+> # 列出给定软件包或仓库的详细信息
+> apk info [-R] 包名
+> 	-R 列出给定软件包依赖项
+> 	
+> # 搜索软件包
+> apk search 关键字
+> 
+> # 删除旧软件包并下载缺少的程序包
+> apk cache sync
+> 
+> # 下载软件包到本地
+> apk fetch [options] 包名
+> 	-L, --link 如果可能的话, 创建硬链接
+> 	-o, --output DIR 下载到指定文件夹（默认为当前文件夹）
+> 	-R, --recursive 下载软件包及其依赖项
+> 	-s, --stdout 将 .apk 文件转储到标准输出 
+> 	--simulate 模拟请求的操作，不做任何更改
+> ```
+
+
+
+## 源码安装
+
+一般情况都要经过解压、配置（configure）、编译（make）、安装（make install）
+
+下面以我之前的安装openlava为例子
 
 ```shell
-# 查询 yum 服务器是否有需要安装的软件
-yum list | grep xx   # xx可以只是安装包的部分关键字
+# 解压到当前文件夹，会生成个同名openlava文件夹
+tar -zxvf openlava-4.0.tar.gz
 
-# 下载安装指定的 yum 包
-yum install xxx 
+# 进入源码文件夹中
+cd openlava-4.0
 
-# 卸载指定 yum 包
-yum uninstall xxx
+# 配置configgure，加上prefix参数，配置安装路径，方便以后维护
+. /configure --prefix=/data/openlava
+
+# 编译make，这里的-j参数定义了使用线程数，这里是2线程
+# 可以用下面的命令查看线程数
+# grep 'processor' /proc/cpuinfo | sort -u | wc -l
+make -j 2
+
+# 安装
+make install
 ```
 
 
