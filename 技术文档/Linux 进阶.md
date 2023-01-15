@@ -806,6 +806,9 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    cp [选项] 要拷贝的文件 要粘贴的目录
    -r  递归复制整个文件夹
    -f  覆盖已经存在的目标文件而不给出提示
+   -a 	复制文件时，同时保留文件链接
+   -p  除复制文件的内容外，还把修改时间和访问权限也复制到新文件中
+   
    例1：cp a.txt /home/b/ 将a.txt文件拷贝到/home/b目录下
    例2：cp -r /home/a/ /home/b/ 将/home/a/目录下的所有文件递归拷贝到/home/b/下，当有重复文件的时候会提示是否覆盖
    例3：cp -rf /home/a/ /home/b/ 这样就能强制覆盖系统不会提示，这样就不用一个一个文件的操作
@@ -2578,6 +2581,7 @@ tar -zxvf openlava-4.0.tar.gz
 cd openlava-4.0
 
 # 配置configgure，加上prefix参数，配置安装路径，方便以后维护
+# 这一步会生成一个 Makefile 文件
 . /configure --prefix=/data/openlava
 
 # 编译make，这里的-j参数定义了使用线程数，这里是2线程
@@ -2588,6 +2592,28 @@ make -j 2
 # 安装
 make install
 ```
+
+
+
+上面的安装过程就是常规的编译安装，但有时候，我们的安装包里面没有带configure文件，而是已经自带了Makefile文件，此时，就不需要执行 configure 这一步，但通常需要配置编译。
+
+```shell
+# net-tools 修改BASEDIR。修改后工具则安装到指定的目录，不同的文件需要根据文件内容具体修改
+BASEDIR ?= $(DESTDIR) => BASEDIR = /usr/net-tools
+
+# net-tools 模块配置编译
+make config
+
+# 编译
+make
+
+# 编译安装到指定目录
+make install
+```
+
+
+
+
 
 
 
