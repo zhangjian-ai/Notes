@@ -5,8 +5,9 @@
 """
 
 a = [6, 4, 2, 1, 7, 5, 11, 22, 17, 23, 14, 3, 9]
+num = len(a)
 
-for i in range(1, len(a)):
+for i in range(1, num):
     for k in range(i, 0, -1):
         if a[k] >= a[k - 1]:
             break
