@@ -1,4 +1,6 @@
-### 1、Python对象创建过程
+## 知识点
+
+### 1、对象创建过程
 
 `__new__`： 对象的创建，是一个类方法，第一个参数是cls，返回一个实例对象，此时该对象还不具有实例属性。
 `__init__`： 对象的初始化， 是一个实例方法，第一个参数是self（也就是`__new__`方法返回的实例对象），为其初始化实例属性。
@@ -29,7 +31,7 @@ type中`__call__`函数的实现逻辑：
 
 
 
-### 2、Python生成器send方法
+### 2、生成器通信
 
 ``` python
 # 生成器是一种使用普通函数语法定义(包含yield关键字即可)的迭代器。
@@ -93,7 +95,7 @@ if __name__ == '__main__':
 
 
 
-### 3、Python动态创建类
+### 3、动态创建类
 
 ``` python
 # -------------动态导入模块中的类------------
@@ -115,10 +117,10 @@ if __name__ == '__main__':
 # 第二种语法格式用来创建类:
 #   - name 表示类的名称，必传字段；
 #   - bases 表示一个元组，其中存储的是该类的父类，可以是一个空元组，表示创建一个无继承的类；
-#   - dict 表示一个字典，用于表示类内定义的属性或者方法，可以是一个空字典，表示创建一个无属性(方法)的类；
+#   - dict 表示一个字典，用于表示类中的属性或者方法，可以是一个空字典，表示创建一个无属性(方法)的类；需要注意的是，这里dict中的键值都是类属性，如果是历史属性，应该写到__init__初始化方法中。
 # python中类创建的本质：
 #   - 我们使用class关键字创建类，当你使用class关键字时，Python解释器自动创建这个对象。
-#   - 而底层其实使用的是type函数(type函数也可以查看实例所属类型)来创建类的。所以我们可以直接使用type()函数来手动实现动态创建类。
+#   - 而底层其实使用的是type函数来创建类的。所以我们可以直接使用type()函数来手动实现动态创建类。
 type(obj) 
 type(name, bases, dict)
 
@@ -189,25 +191,7 @@ type(name, bases, dict)
 
 
 
-### 4、Python类属性和实例属性
-
-``` python
-'''
-理解类属性:
-    - 类属性就相当于全局变量，是类和其实例对象共有的属性；而实例属性为实例对象自己私有，通过类是无法直接调用的。
-    - 类属性就是类对象(class)所拥有的属性，它被所有类对象的实例对象(实例方法)所共有，在内存中只存在一个副本，这个和C++中类的静态成员变量有点类似。
-    - 对于公有的类属性，在类外可以通过类对象和实例对象访问。
-    
-调用类属性:
-    - 果需要在类外修改类属性，必须通过类对象去引用然后进行修改。
-    - 如果通过实例对象去引用，会产生一个同名的实例属性，这种方式修改的是实例属性，不会影响到类属性，
-      并且之后如果通过实例对象去引用该名称的属性，同名的实例属性会强制屏蔽掉类属性，即引用的是实例属性，除非删除了该实例属性。
-'''
-```
-
-
-
-### 5、Python动态创建函数
+### 4、动态创建函数
 
 **lambda：创建匿名函数**
 
@@ -225,14 +209,22 @@ type(name, bases, dict)
 
 
 
-**内置函数`compile()` + `types` 模块，动态创建函数**
+**内置函数`compile()` + `types.FunctionType` 模块，动态创建函数**
 
 ```python
 """
-compile(source, filename, mode, flags=0, dont_inherit=False, optimize=- 1)
-source 可以是常规的字符串、字节字符串，或者 AST 对象。
-filename 实参需要是代码读取的文件名；如果代码不需要从文件中读取，可以传入一些可辨识的值（经常会使用 '<string>'）。
-mode 实参指定了编译代码必须用的模式。如果 source 是语句序列，可以是 'exec'；如果是单一表达式，可以是 'eval'；如果是单个交互式语句，可以是 'single'。（在最后一种情况下，如果表达式执行结果不是 None 将会被打印出来。）
+compile 函数：
+	compile(source, filename, mode, flags=0, dont_inherit=False, optimize=- 1)
+	
+常用参数：
+	- source 可以是常规的字符串、字节字符串，或者 AST 对象。
+	- filename 实参需要是代码读取的文件名；如果代码不需要从文件中读取，可以传入一些可辨识的值（经常会使用 '<string>'）。
+	- mode 实参指定了编译代码必须用的模式。如果 source 是语句序列，可以是 'exec'；如果是单一表达式，可以是 'eval'；如果是单个交互式语句，可以是 'single'。（在最后一种情况下，如果表达式执行结果不是 None 将会被打印出来。）
+	
+返回值：
+	Compile source into a code object that can be executed by exec() or eval()
+	编译返回的code对象是模块级别的code对象（这个对象中可能包含了多个函数级别的code对象），不能直接用于实例化函数，要从code对象 co_consts 属性（一个元组）中获取函数的 code对象。
+	
 """
 
 import types
@@ -243,8 +235,28 @@ def sum(a, b):
 
 
 # 将 str 编译成代码
+module_code = compile(source='def foobar(a, b): return sum(a, b)', filename='<string>', mode='exec')
+func_code = module_code.co_consts[0]
 
-module_code = compile(source='def foobar(a, b): return sum(a, b)', filename='<string>', mode='exec').co_consts[0]
+"""
+types 模块，定义了不能作为内置对象直接访问的内置类型的名称。从动态创建类的知识来理解，def 关键字定义的函数也应该是函数元类型的一个示例，那么types模块中就定一个这样的一个类 FunctionType，那么它的实例化结果就是一个函数。
+
+FunctionType 类：
+	 def __init__(
+        self,
+        code: CodeType,
+        globals: Dict[str, Any],
+        name: Optional[str] = ...,
+        argdefs: Optional[Tuple[object, ...]] = ...,
+        closure: Optional[Tuple[_Cell, ...]] = ...,
+    ) -> None: ..
+
+常用参数：
+	- code code 对象，和compile函数返回值一样，都是 CodeType 类型
+	- globals 全局变量，函数内部一些引用变量的值
+	- name 函数名
+
+"""
 
 # globals 入参提供一个作用域字典，为函数提供可能用到的属性。这里foobar函数里面调用了sum函数
 foobar = types.FunctionType(code=module_code, globals={"sum": sum}, name="foobar")
@@ -255,11 +267,30 @@ if __name__ == '__main__':
 
 
 
-### 6、socket如何解决粘包问题
+### 5、类属性和实例属性
+
+``` python
+'''
+理解类属性:
+    - 类属性就相当于全局变量，是类和其实例对象共有的属性；而实例属性为实例对象自己私有，通过类是无法直接调用的。
+    - 类属性就是类对象(class)所拥有的属性，它被所有类对象的实例对象(实例方法)所共有，在内存中只存在一个副本，这个和C++中类的静态成员变量有点类似。
+    - 对于公有的类属性，在类外可以通过类对象和实例对象访问。
+    
+调用类属性:
+    - 如果需要在类外修改类属性，必须通过类对象去引用然后进行修改；
+    - 如果通过实例调用该属性时，每次调用都到其所属的类中获取该属性，再多次获取的过程中，如果该属性值被修改，那么实例获取到的值也随之变化；
+    - 如果通过实例设置类属性的值，那么实例中会产生一个同名的实例属性，这种方式修改的是实例属性，不会影响到类属性，
+      并且之后如果通过实例对象去引用该名称的属性，同名的实例属性会强制屏蔽掉类属性，即引用的是实例属性，除非删除了该实例属性。
+'''
+```
+
+
+
+### 6、socket粘包问题
 
 **准备知识：**
 
-> ​		任何应用程序发送和接收数据，都是基于操作系统中转，应用有发送和接收数据时，直接对接操作系统，由操作系统来完成真正发送和接收的数据。在这个过程中，操作系统在拿到数据后，并不会立即将数据发送到互联网或者应用程序，而是存在一个缓冲区，将多次收到的数据一次发送出去，但这个缓冲时间是很短的，人为很难感知。同时，缓冲区也是有大小的，当缓冲区数据满了就直接发，不在继续缓冲。
+> ​		任何应用程序发送和接收数据，都是基于操作系统中转，应用有发送和接收数据时，直接对接操作系统，由操作系统来完成真正发送和接收的数据。在这个过程中，操作系统在拿到数据后，并不会立即将数据发送到互联网或者应用程序，而是存在一个缓冲区，将多次收到的数据一次发送出去，但这个缓冲时间是很短的，人为很难感知。同时，缓冲区也是有大小的，当缓冲区数据满了就直接发，不再继续缓冲。
 
 **A、为什么会发生TCP粘包、拆包**
 
@@ -281,7 +312,7 @@ if __name__ == '__main__':
 
 
 
-### 7、socket断点续传如何实现
+### 7、socket断点续传
 
 > 文件断点续传，是指文件在传输过程中因为某些原因程序停止运行文件终止传输，下一次重新传输文件的时候还能从上一次断开的位置开始传输，而不需要重新从头开始。
 
@@ -295,12 +326,12 @@ if __name__ == '__main__':
 
 
 
-### 8、导包方式总结及.pyc文件介绍
+### 8、导包方式 和 pyc文件
 
 ```
 sys.path 系统导包路径列表说明：
-	- import/from 模块名  中的模块必须是在sys.path列表中的路径下才可以被导入。
-	- sys.path 列表中的第一个路径，总是当前执行文件的父级路径。所以我们执行文件时，总是可以基于当前路径导入同级模块或同级以下的模块。
+	- import/from 模块名  中的模块必须是在sys.path列表中的路径下才可以被导入，就是说系统到这些路径下寻找目标模块，不会找子模块。
+	- sys.path 列表中的第一个路径，总是当前执行文件所在的目录路径。所以我们执行文件时，总是可以基于当前路径导入同级模块或同级以下的模块。
 ```
 
 　　**方式一：from 包名  import  模块名**
@@ -331,13 +362,33 @@ sys.path 系统导包路径列表说明：
 
 　　        使用时：模块名.函数名()
 
-**.pyc文件的介绍：**
-
-> ​		py文件导入时会产生一个.pyc的字节码文件，此文件是当第一次导入时python解释器会将被导入的模块预解释成字节码的文件，下次再导入时python解释器则不会做预解释而是直接拿.pyc文件使用，这样就不会每次导入时做解释的操作，节省时间。直接使用.pyc文件之前，会检查原py文件是否被修改，python解释器会根据.pyc文件和模块的修改时间判断有没有对模块做修改，如果模块的修改时间比.pyc文件的晚，说明模块已经被修改，python解释器 会将模块重新解释成.pyc文件。
 
 
+**pyc文件**
 
-### 9、python中的富比较方法
+- 什么是pyc文件
+
+  > 注释：
+  >
+  > ​	1、c 是compiled 「编译过」的意思
+  >
+  > ​	2、python在解释源程序时是分成两个步骤，先是将源码编译成字节码，再对字节码进行处理生成CPU能识别的机器码
+
+  py文件在被当作模块首次/更新后导入是，Python解释器会生成pyc文件。
+
+- pyc文件的作用
+
+  1. 提高运行效率
+
+     > 有了模块的字节码文件之后，下一次运行程序时，如果在上次保存字节码之后没有修改过源代码，Python将会加载 .pyc 文件并跳过编译这个步骤，节约程序启动时间；当Python 重编译时，它会自动检查源文件和字节码文件的时间戳，如果修改了源代码，下次程序运行时，字节码将自动重新创建；
+
+  2. 不想让源码泄露
+
+     > 因为py文件是可以直接看到源码的，对于一般的商业公司来说，这有点不妙，因为pyc文件可以独立于py文件，删除py文件也不会出错。这就是太好了，只需要编译成pyc文件再发布出去就好了。
+
+
+
+### 9、富比较方法
 
 **运算符号与比较方法的映射关系：**
 
@@ -393,19 +444,194 @@ execute __ge__
 
 
 
-### 10、Python GC机制和GIL锁
+### 10、GC机制和GIL锁
 
-- **Python GC(Garbage Collection):**主要使用引用计数（reference counting）来跟踪和自动回收垃圾。在引用计数的基础上，通过“标记-清除”（mark and sweep）解决容器对象可能产生的循环引用问题，通过“分代回收”（generation collection）以空间换时间的方法提高垃圾回收效率。
+- **Python GC(Garbage Collection):**
 
-  > 注：数值类型、字符串类型、元组类型的对象在Python中是不可变的，这意味着无法修改这个对象的值，每次对引用变量的修改，实际上都是新创建了一个对象重新赋值。
+  垃圾回收机制（简称GC）是python解释器自带的一种机制，专门用来回收没有绑定任何引用（直接引用和间接引用）的变量值所在的内存空间。
 
-  - **引用计数：**PyObject是每个对象必有的内容，其中ob_refcnt就是做为引用计数。当一个对象有新的引用时，它的ob_refcnt就会增加，当引用它的对象被删除，它的ob_refcnt就会减少。当引用计数为0时，该对象生命就结束了，就会被GC回收。
-  - **标记-清除机制：** 标记-清除 机制主要是为了解决多个对象相互引用，但又没有被外部其他对象引用的场景，因为此时引用计数不为0，所以通过引用计数的方式是没办法回收此类对象的。标记-清除 的机制主要是，当没有空闲内存的时候，从寄存器和程序栈上的引用出发，遍历以对象为节点、以引用为边构成的有向图，把所有能够访问到的对象打上标记，然后再清扫一遍内存空间，把所有没标记（没标记，说明从寄存器或程序栈出发，是访问不到这些对象的）的对象释放。
-    - 标记清除算法也有明显的缺点：清除非活动的对象前它必须顺序扫描整个堆内存，哪怕只剩下小部分活动对象也要扫描所有对象。
-  - **分代回收：** 分代回收是一种以空间换时间的操作方式，Python将内存根据对象的存活时间划分为不同的集合，每个集合称为一个代，Python将内存分为了3“代”，分别为年轻代（第0代）、中年代（第1代）、老年代（第2代），他们对应的是3个链表，它们的垃圾收集频率与对象的存活时间的增大而减小。新创建的对象都会分配在年轻代，年轻代链表的总数达到上限时，Python垃圾收集机制就会被触发，把那些可以被回收的对象回收掉，而那些不会回收的对象就会被移到中年代去，依此类推，老年代中的对象是存活时间最久的对象，甚至是存活于整个系统的生命周期内。**同时，分代回收是建立在标记清除技术基础之上**。分代回收同样作为Python的辅助垃圾收集技术，以处理那些容器对象。
+  CPython主要使用引用计数（reference counting）来跟踪和自动回收垃圾。在引用计数的基础上，通过“标记-清除”（mark and sweep）对象可能产生的循环引用问题，通过“分代回收”（generation collection）以空间换时间的方法提高垃圾回收效率。
 
-- **GIL  Global Interpreter Lock(全局解释器锁):**由于线程之间数据是共享的，也就意味着如果多个线程同时操作某一内存中的数据，就会有严重的数据安全问题。为了解决这个问题就有了GIL，本质上就是一个全局线程互斥锁。
+  > 准备知识：
+  >
+  > 1. 数值类型、字符串类型、元组类型的对象在Python中是不可变的，这意味着无法修改这个对象的值，每次对引用变量的修改，实际上都是新创建了一个对象重新赋值。
+  > 2. 定义变量时，变量名与变量值都是需要存储的，分别对应内存中的两块区域：堆区与栈区
 
+  1. **引用计数**
+
+     PyObject是每个对象必有的内容，其中ob_refcnt就是做为引用计数。当一个对象有新的引用时，它的ob_refcnt就会增加，当对象的引用被删除时，它的ob_refcnt就会减少。当引用计数为0时，该对象生命就结束了，就会被GC回收。
+
+     简而言之就是如果没有**变量**引用某一**对象**，那么该对象将会被回收。Python 中的每个变量都是对对象的**引用**，而不是对象本身。例如，赋值语句只是给右侧对象或右侧变量所对应的对象建立一个引用；一个对象都可以有许多引用。
+
+     > 核心概念：变量是指向一个对象的指针；有n个变量指向某一个对象，那该对象的引用计数则为n，又称该对象有n个引用
+     >
+     > ```python
+     > import sys
+     > 
+     > a = [1, 2, 3]
+     > b = a  # 赋值操作本身不会对数据进行复制，仅仅是建立引用关系
+     > 
+     > print(id(a), id(b))  # 4483101696 4483101696，变量a b的id相同，说明a b指向同一对象
+     > print(sys.getrefcount(a))  # 3, 其中调用getrefcount函数会使引用+1
+     > ```
+
+     为了跟踪每个对象的引用次数，每个对象都有一个名为**引用计数(ob_refcnt)**的额外属性，当创建或删除指向对象的指针时，该属性的值会相应的增加或减少。以下三种情况会使对象的引用次数增加：
+
+     - 赋值运算
+     - 参数传递
+     - 将对象附加到容器对象中
+
+     如果某对象引用计数属性的值为零，CPython 会自动调用该对象特定的内存释放函数。如果该对象还包含对其他对象的引用，那么所包含的其他对象的引用计数也会自动减少。因此，可以依次释放其他对象。
+
+     值得注意的是，在函数、类和代码块(如if-else代码块)之外声明的变量称为全局变量（global variables）。通常，这些变量会一直存在直到 Python 进程结束。因此，全局变量引用的对象的引用计数永远不会下降到零。在python进程中，所有全局变量都存储在一个字典中，可以通过调用globals()函数来获取全局变量。那反过来呢？在代码块内（例如，在函数或类中）定义的变量则具有一个局部作用域，可以通过调用locals()函数来获取局部变量。当 Python 解释器执行完一个代码块时，它会破坏在块内创建的局部变量及其引用。
+
+     示例：
+
+     ```python
+     import sys
+     
+     foo = []
+     print(sys.getrefcount(foo)) # 2 references, 1 from the foo var and 1 from getrefcount
+     
+     
+     def bar(a):
+         print(sys.getrefcount(a))
+     
+     
+     bar(foo) # 4 references, from the foo var, function argument, getrefcount and Python's function stack
+     print(sys.getrefcount(foo)) # 2 references, the function scope is destroyed
+     ```
+
+     当你想删除全局或局部变量时，可以使用删除变量及其引用（而不是对象本身）的 del语句。这在 jupyter notebook中工作时通常很有用，因为在jupyter notebook中所有单元格变量都是全局变量。CPython 使用引用计数的主要原因是历史原因，现在有很多关于这种技术的弱点的争论。比如，有人认为现代的垃圾回收算法可以更高效，无需使用引用计数。引用计数算法存在很多问题，例如循环引用、线程锁定以及额外内存和性能开销。**必须指出的是，引用计数是 Python 无法摆脱全局解释锁 (GIL) 的原因之一。**
+
+  2. **标记-清除**
+
+     上面提到了 引用计数 的缺点，无法释放 **循环引用** 的对象。看下面的代码理解下循环引用。
+
+     ```python
+     # 对象自己引用自己
+     lst = []
+     lst.append(lst)
+     
+     # 对象间相互引用
+     object_1, object_2 = {}, {}
+     
+     object_1['obj2'] = object_2
+     object_2['obj1'] = object_1
+     ```
+
+     标记-清除原理：当应用程序可用的内存空间被耗尽时，就会停止整个程序，然后进行两项工作，标记和清除
+
+     1. 标记：当没有空闲内存的时候，从寄存器和程序栈区上的引用出发，遍历以对象为节点、以引用为边构成的有向图，把所有能够访问到的对象打上标记；具体的讲，标记的过程其实就是遍历所有的GC Roots对象（栈区中的所有内容或者线程都可以称之为GC Roots对象），然后将其中可以直接或者间接访问到的对象都标记为可以存活的对象，其余的为非存活对象，应该清除掉
+     2. 清除：清扫一遍内存空间，把所有没标记（没标记，说明从寄存器或程序栈出发，是访问不到这些对象的）的对象释放
+
+     **缺点：**标记-清除需要遍历堆区中所有的对象，每次回收内存，都要遍历一遍，这个工作量是非常庞大的，因此极为耗时，于是引入了 **分代回收** 算法，分代回收采用了以空间换时间的策略
+
+  3. **分代回收**
+
+     > **分代回收是建立在标记清除技术基础之上的**
+     >
+     > 引用计数算法非常有效和直接，但它无法检测循环引用，所以python在引用计数的基础上，还需要分代回收。引用计数是 Python必需的功能，不能禁用；而分代回收是可选的，可以手动设置。
+
+     **原理：**
+
+     分代指的是根据容器对象的存活时间来划分出的不同等级。垃圾回收器将container对象分成三代(0, 1, 2)，每个新对象都从第一代开始。如果一个对象在一个垃圾回收轮次中幸存下来，它将移至较旧（更高）的一代。较低代的回收频率高于较高代，因为大多数新对象往往会被先销毁。这样分代回收的策略能提高性能并减少垃圾回收带来的暂停时间。
+
+     
+
+     **示例：**
+
+     ```python
+     import gc
+     import sys
+     import ctypes
+     
+     # 通过内存地址去访问没有引用的对象（unreachable objects）
+     class PyObject(ctypes.Structure):
+         _fields_ = [("refcnt", ctypes.c_long)]
+     
+     # 禁用分代回收算法
+     gc.disable()
+     
+     lst = []
+     lst.append(lst)
+     lst_address = id(lst)
+     
+     print(sys.getrefcount(lst))  # 3
+     
+     # 删除lst引用，但对象内部自己引用自己，所以refcount仍然是1
+     # 此时代码将无法直接访问对象
+     del lst
+     
+     print(PyObject.from_address(lst_address).refcnt)  # 1
+     
+     object_1, object_2 = {}, {}
+     
+     object_1['obj2'] = object_2
+     object_2['obj1'] = object_1
+     obj_address = id(object_1)
+     
+     print(sys.getrefcount(object_1))  # 3
+     print(sys.getrefcount(object_2))  # 3
+     
+     # refcount数量也是1
+     del object_1, object_2
+     
+     print(PyObject.from_address(obj_address).refcnt)  # 1
+     
+     # 手动对象回收，手动执行回收后，上面删除引用的容器对象将被回收。
+     gc.collect()
+     
+     # 获取对象引用数量
+     print(PyObject.from_address(obj_address).refcnt)  # 0
+     print(PyObject.from_address(lst_address).refcnt)  # 0
+     
+     # 或者通过以下方式获取引用数量
+     # tmp = PyObject.from_address(obj_address)
+     # print(sys.getrefcount(tmp))
+     ```
+
+     
+
+     **分析：**
+
+     ​		在上面的示例中，del语句删除了对我们对象的引用（引用计数减 1）。 Python 执行 del语句后，我们的对象不再可以从 Python 代码访问。但是，这些对象仍然存在于内存中。发生这种情况是因为它们仍在相互引用，并且每个对象的引用计数为 1。因为我们前面通过gc.disable()禁用了分代回收，因此循环引用对象无法释放；这时，我们可以通过调用`gc.collect()`手动触发对象回收。
+
+     ​		在python中对象分为可变对象和不可变对象。不可变对象包括`int`, `float`, `complex`, `strings`, `bytes`, `tuple`, `range` 和 `frozenset`；可变对象包括`list`, `dict`, `bytearray`和 `set`。循环引用仅存在于container对象（比如，`list`, `dict`, `classes`, `tuple`），python垃圾回收算法主要追踪可变对象及不可变对象`tuple`。如果`tuple`包含的元素都是不可变对象，那么回收算法可以不对该对象进行追踪。
+     
+
+     **扩展：**
+
+     ​		为了决定何时进行一轮垃圾回收，每一代都有一个单独的计数器和阈值。计数器存储自上次收集以来的对象分配数减去释放数的差值。每次分配新的容器对象时，CPython 都会检查第0代的计数器是否超过阈值（通过`gc.get_count()`获得三代对象计数器存储的数值）。如果超过阈值，Python 将触发垃圾回收。我们可以通过`gc.get_threshold()`和`gc.set_threshold()`查看、设置阈值：
+     ```python
+     import gc
+     gc.get_threshold()  # (700, 10, 10) 分别对应三代计数器的阈值
+     gc.set_threshold(threshold0=800, threshold0=10, threshold0=10)  # 当threshold0设置为0时，禁用循环GC
+     ```
+
+     ​		在写程序时，可以通过将调试标志设置为`gc.DEBUG_SAVEALL`，从而将所有unreachable对象添加到`gc.garbage` 中，帮助提升程序质量:
+
+     ```python
+     import gc
+     
+     gc.set_debug(gc.DEBUG_SAVEALL)
+     
+     print(gc.get_count())
+     lst = []
+     lst.append(lst)
+     list_id = id(lst)
+     del lst
+     gc.collect()
+     for item in gc.garbage:
+         print(item)
+     ```
+
+     
+
+- **GIL  Global Interpreter Lock(全局解释器锁)**
+
+  由于线程之间数据是共享的，也就意味着如果多个线程同时操作某一内存中的数据，就会有严重的数据安全问题。为了解决这个问题就有了GIL，本质上就是一个全局线程互斥锁。
+  
   - 在GIL的作用下，单进程下CPU同一时间只能执行一个线程。
   - 多线程下，每个线程的执行方式：
     - 获取GIL。
@@ -420,10 +646,11 @@ execute __ge__
 
 
 
-### 11、Python 字节码分析
+### 11、字节码分析
 
-> Python 代码是先被编译为字节码后，再由Python虚拟机来执行字节码， Python的字节码是一种类似汇编指令的中间语言，一个Python 语句会对应若干字节码指令，虚拟机一条一条执行字节码指令，从而完成程序执行。
-> Python dis 模块支持对Python代码进行反汇编，生成字节码指令。
+> 1. Python 代码是先被编译为字节码后，再由Python虚拟机来执行字节码， Python的字节码是一种类似汇编指令的中间语言，一个Python 语句会对应若干字节码指令，虚拟机一条一条执行字节码指令，从而完成程序执行。
+> 2. Python dis 模块支持对Python代码进行反汇编，生成字节码指令。
+> 3. 所有的字节码指令是解释器规定好的一组解释器能识别的编码指令，内置模块 dis 中，opname 属性的值是一个列表，其中就保存了当前所有的字节码指令，共 256 个。 
 
 ``` python
 import dis
@@ -446,11 +673,11 @@ if __name__ == '__main__':
 '''
 说明：
 	Python代码在编译过程中会生成CodeObject, CodeObject是在虚拟机中的抽象表示，在Python C源码中表示为PyCodeObject，而生成的.pyc文件则是字节码在磁盘中的表现形式。
-	第一列的数字（5）表示对应源代码的行数。
-	第二列的数字是字节码列表的索引，对象被编译会生成一个由字节码组成的列表(按执行顺序)。
-	第三列是指令本身对应的人类可读的名字，字节码对应的opname。
-	第四列表示指令的参数。
-	第五列则是计算后的实际参数。
+	第一列的数字（5）表示对应源代码的行数；
+	第二列的数字是 对象.__code__.co_code 可迭代对象（保存了字节码在dis.opname中的索引）的索引，通过该索引获取到字节码在dis.opname中的索引(按执行顺序)，这样就能获取到具体的字节码指令；
+	第三列是指令本身，通过字节码索引，在字节码列表(dis.opname)中取到的具体的字节码指令；
+	第四列表示指令的参数；
+	第五列则是计算后的实际参数；
 	其中的“>>" 表示跳转的目标。
 
 
@@ -519,7 +746,132 @@ def func():
 
 
 
-### 12、yield 和 yield from 用法
+### 12、迭代器和生成器
+
+迭代是Python中常用且非常强大的一个功能，它可以用于访问集合、列表、字符串、字典等数据结构的元素。
+
+- **可迭代对象**
+
+  Python中的可迭代对象主要有三类：
+
+  - 迭代器
+  - 序列
+  - 字典
+
+  **迭代器是可迭代对象的一个子集，而生成器又是迭代器的一个子集，是一种特殊的迭代器。**
+
+  - **可迭代对象需要实现__iter__方法**
+  - **迭代器不仅要实现__iter__方法，还需要实现__next__方法**
+
+- **迭代器**
+
+  迭代器是可迭代对象的一个子集，它是一个可以记住遍历的位置的对象，它与列表、元组、集合、字符串这些可迭代对象的区别就在于next方法的实现，其他列表、元组、集合、字符串这些可迭代对象可以很简单的转化成迭代器，通过Python内置的**iter**函数能够轻松把可迭代对象转化为迭代器。
+
+  ```python
+  X = [1,2,3,4,5]
+  print(type(X))
+  Y = iter(X)
+  print(type(Y))
+  print(next(Y))
+  print(next(Y))
+  print(next(Y))
+  
+  # 输出
+  <class 'list'>
+  <class 'list_iterator'>
+  1
+  2
+  3
+  ```
+
+  通过实现**`__iter__`**和**`__next__`**方法来定义迭代器：
+
+  ```python
+  class Iterator(object):
+    def __init__(self, array: list):
+      self.arr = array
+      self.cnt = len(array)
+      self.idx = 0
+  
+      def __iter__(self):
+        return self
+  
+      def __next__(self):
+        if self.idx < self.cnt:
+          self.idx += 1
+          return self.arr[self.idx - 1]
+  
+        # 重置索引，结束当前迭代后可在此进入迭代
+        self.idx = 0
+        raise StopIteration
+  
+  it = Iterator([1, 2, 3, 4, 5])
+  
+  for i in it:
+      print(i)
+      
+  # 又冲头开始迭代
+  # 下面两个next方法是等价的，只是第一个是系统内置的
+  print(next(it))
+  print(it.__next__())
+  
+  # output
+  1
+  2
+  3
+  4
+  5
+  1
+  2
+  ```
+
+- **生成器**
+
+  生成器是迭代器的子集，换句话说，生成器一定是迭代器，但是迭代器不全是生成器对象。
+
+  提及生成器就不得不提及一个Python中的关键字**yiled**，在Python中一个函数可以用yiled替代return返回值，这样的话调用这个函数就不是直接获得函数的返回值，而是一个生成器对象。
+
+  return返回值的普通函数：
+
+  ```python
+  def generator(array):
+      for i in array:
+          return i
+  
+  # 调用函数，在遇到return时，函数执行完毕返回数字1
+  gen = generator([1,2,3,4,5])
+  
+  print(gen)
+  print(type(gen))
+  
+  # 输出
+  1
+  <class 'int'>
+  ```
+
+  yield返回值的生成器函数：
+
+  ```python
+  def generator(array):
+    for i in array:
+      yield (i)
+  
+  gen = generator([1, 2, 3, 4, 5])
+  print(type(gen))
+  
+  # 迭代生成器
+  print(next(gen))
+  print(next(gen))
+  
+  # 输出
+  <class 'generator'>
+  1
+  2
+  ```
+
+  
+
+### 12、yield、 yield from
 
 > `yield from` 是在Python3.3才出现的语法。所以这个特性在Python2中是没有的。
 >
@@ -574,7 +926,7 @@ if __name__ == '__main__':
 >
 > `委托生成器`：包含yield from表达式的生成器函数
 >
-> `子生成器`：yield from后面加的生成器函数
+> `子生成器`：yield from后面加的生成器对象（包含yeild关键字的函数实例）
 
 ``` python
 # 一个求平均数的例子
@@ -621,7 +973,7 @@ if __name__ == '__main__':
     # next(a)  # 激活协程
     # print(a.send(10))
     # print(a.send(20))
-    # print(a.send(None))  # 关闭协程，生成器跑出结束迭代异常，结束迭代。如果使用for循环，for循环会自动处理该异常。
+    # print(a.send(None))  # 关闭协程，生成器抛出结束迭代异常，结束迭代。如果使用for循环，for循环会自动处理该异常。
     #
     # '''
     # 输出结果：
@@ -657,220 +1009,7 @@ if __name__ == '__main__':
 
 
 
-### 13、Python 实现函数重载
-
-> 函数重载：
->
-> - 在java中， 定义几个名字相同的函数，但是他们的参数类型或者数量不同，从而实现不同的代码逻辑。
->
-> - 在python中，如果定义相同的函数名，那么最后定义的将覆盖前面所有的同名函数。函数名只能是唯一的。
->
-> python中实现重载的两种方式：
->
-> - 使用默认值参数，在函数内部判断参数类型和有效参数的数量，来实现不同的逻辑。
-> - 使用`functools`模块里面的`singledispatch`装饰器实现函数重载。
-> - 使用 第三方装饰器 实现不同参数个数、不同参数类型的函数重载。
-
-**使用默认值参数：**
-
-``` python
-def demo(name, age=None, address=None):
-    if age:
-        print("%s : %s" % (name, age))
-    elif address:
-        if isinstance(address, str):
-            ip, port = address.split(":")
-        elif isinstance(address, tuple):
-            ip, port = address
-        else:
-            print("参数类型错误！")
-            return
-
-        print("%s: 网络地址信息 %s ： %s" % (name, ip, port))
-    else:
-        print("孤苦伶仃的名字：%s" % name)
-
-
-if __name__ == '__main__':
-    demo("zhangjian")
-    demo("zhangjian", 18)
-    demo("zhangjian", address="121.4.4.33:8808")
-    demo("zhangjian", address=('121.4.4.33', 8808))
-    demo("zhangjian", address=121)
-    
-    '''
-    总结：
-    	- 该方式可以为不同参数个数、参数类型的入参实现不同的逻辑，但是参数一旦比较多，函数内部就会有很多if-elif-else这样的语句
-    	- 这样既不符合python优雅的编程风格，更不利于后期维护代码逻辑
-    '''
-```
-
-**使用`singledispatch`装饰器：**
-
-> - 使用singledispatch装饰一个函数，那么这个函数就是我们将会调用的函数。
->
-> - 这个函数在传入参数不同时的具体实现，通过下面注册的函数来实现。注册的时候使用@我们定义的函数名.register来注册。被注册的函数名叫什么无关紧要，所以这里我都直接使用下划线代替。
->
-> - 被注册的函数的第一个参数，通过类型标注来确定它应该使用什么类型。当我们调用我们定义的函数时，如果参数类型符合某个被注册的函数，那么就会执行这个被注册的函数。如果参数类型不满足任何一个被注册的函数，那么就会执行我们的原函数。
->
-> - 使用类型标注来指定参数类型是从 Python 3.7才引入的新特性。在 Python 3.6或之前的版本，我们需要通过@我们定义的函数名.register(类型)来指定类型。
-
-``` python
-from functools import singledispatch
-
-
-@singledispatch
-def connect(address, name):
-    print("参数类型错误，请检查")
-
-
-@connect.register
-def _(address: str, name: str):
-    print("第一个函数被调用")
-    ip, port = address.split(":")
-    print(name, ip, port)
-
-
-@connect.register
-def _(address: tuple, name: str):
-    print("第二个函数被调用")
-    ip, port = address
-    print(name, ip, port)
-
-
-@connect.register
-def _(address: str, name: int):
-    print("第三个函数被调用")
-    ip, port = address.split(":")
-    print(name, ip, port)
-
-
-if __name__ == '__main__':
-    connect("123.4.4.55:8808", "zhangjian")
-    connect(("123.4.4.55", 8808), "zhangjian")
-    connect("123.4.4.55:8808", 123)
-    connect(123, "zhangjian")
-
-    
-    '''
-    第三个函数被调用
-    zhangjian 123.4.4.55 8808
-    第二个函数被调用
-    zhangjian 123.4.4.55 8808
-    第三个函数被调用
-    123 123.4.4.55 8808
-    参数类型错误，请检查
-    '''
-		'''
-		结论：
-			- 只有第一个参数的不同类型会被重载。后面的参数的类型变化会被自动忽略。所以这里第三次注册函数把第一个注册的函数覆盖了。
-			- 根据第一个参数类型的不同，确实调用了不同参数类型逻辑。但只能判断第一个参数的类型在一些复杂场景可能就有局限性了。
-		'''
-```
-
-**使用装饰器：**
-
-``` python
-import math
-from functools import wraps
-from inspect import getfullargspec
-
-
-class Function:
-    _func_dict = None
-
-    def __init__(self, fn):
-        if not Function._func_dict:
-            Function._func_dict = {}
-            
-        self.fn = fn
-        Function._func_dict[self.key()] = fn
-
-    def __call__(self, *args, **kwargs):
-        # 获取入参的类型
-        args_type = list()
-        for param in args:
-            args_type.append(param.__class__)
-            
-        # 获取参数个数
-        args_count = len(args)
-
-        try:
-            fn = Function._func_dict[self.key(args_count, args_type)]
-        except KeyError:
-            raise KeyError("参数数量或类型错误")
-
-        return fn(*args, **kwargs)
-
-    def key(self, args_count=None, args_type=None):
-        # getfullargspec() 获取函数参数的名称和默认值，返回一个命名的元组
-        # FullArgSpec(args=['l', 'w'], varargs=None, varkw=None, defaults=None, kwonlyargs=[], kwonlydefaults=None, annotations={})
-        if args_count is None:
-            args_count = len(list(getfullargspec(self.fn).args))
-        if args_type is None:
-            args_type = list(getfullargspec(self.fn).annotations.values())
-
-        return str([self.fn.__module__, self.fn.__class__, self.fn.__name__, args_count, args_type])
-
-
-def override(fn):
-    @wraps(fn)  # 该装饰器是为了让被装饰之后的函数还具有装饰之前的部分属性，如__name__,__doc__等
-    def wrapper():
-        return Function(fn)
-    return wrapper()
-
-
-@override
-def area(l: int, w: int):
-    """计算长方形面积"""
-    return l * w
-
-
-@override
-def area(r: int):
-    """计算圆面积"""
-    return math.pi * r * 2
-
-
-@override
-def area():
-    """计算圆面积"""
-    return 36
-
-
-if __name__ == '__main__':
-    # 根据不同的参数个数，执行不同的函数
-    print(area(3, 4))
-    print(area(5))
-    print(area())
-    print(area(5, "aa"))
-
-    '''
-    打印结果说明：
-        装饰器执行  # 装饰器调用(@override)，在模块加载时就已经执行了装饰器内部的代码，此时的area函数，就是一个Function实例对象
-        装饰器执行  # 这里的装饰器和平时的装饰器稍有不同：通常装饰器函数返回内部函数本身，这里返回的是内部函数的实例对象
-        12        # 调用area，就是调用Function实例对象，此时 area(3, 4) 等价于 Function(3, 4)  等价于  Function().__call__(3, 4)
-        31.41592653589793   # 同上
-        36                  # 调用无参重载函数
-        Traceback (most recent call last):  # 第四个打印，参数类型错误抛出异常
-          File "/Users/zhangjian/PycharmProjects/Practice/demo.py", line 26, in __call__
-            fn = Function._func_dict[self.key(args_count, args_type)]
-        KeyError: "['__main__', <class 'function'>, 'area', 2, [<class 'int'>, <class 'str'>]]"
-        
-        During handling of the above exception, another exception occurred:
-        
-        Traceback (most recent call last):
-          File "/Users/zhangjian/PycharmProjects/Practice/demo.py", line 69, in <module>
-            print(area(5, "aa"))
-          File "/Users/zhangjian/PycharmProjects/Practice/demo.py", line 28, in __call__
-            raise KeyError("参数数量或类型错误")
-        KeyError: '参数数量或类型错误'
-    '''
-```
-
-
-
-### 14、Python 高效使用字典
+### 13、高效使用字典
 
 - **用 in 关键字检查 key 是否存在**
 
@@ -957,6 +1096,14 @@ keys = 'aeiou'
 value = 'value'
 d = dict.fromkeys(keys, value)
 print(d)  # {'u': 'value', 'e': 'value', 'i': 'value', 'a': 'value', 'o': 'value'}
+
+# fromkeys 方法只会迭代生成key，value 则直接赋值
+keys = ['name', 'age', 'weight']
+vals = [1, 2, 3]
+
+d = dict.fromkeys(keys, vals)
+
+print(d)  # {'name': [1, 2, 3], 'age': [1, 2, 3], 'weight': [1, 2, 3]}
 ```
 
 - **用字典实现 switch … case 语句**
@@ -983,9 +1130,9 @@ data = {
 data.get(arg, "nothing")
 ```
 
-- **使用 iteritems 迭代字典中的元素**
+- **使用 items 迭代字典中的元素**
 
-> items 方法返回的时（key ,value）组成的列表对象，这种方式的弊端是迭代超大字典的时候，内存瞬间会扩大两倍，因为列表对象会一次性把所有元素加载到内存，更好的方式是使用 iteritems。
+> Python2中，items 方法返回的是（key ,value）二元元组 组成的列表对象，这种方式的弊端是迭代超大字典的时候，内存瞬间会扩大两倍，因为列表对象会一次性把所有元素加载到内存，更好的方式是使用 iteritems。
 >
 > iteritems 返回的是迭代器对象，迭代器对象具有惰性加载的特性，只有真正需要的时候才生成值，这种方式在迭代过程中不需要额外的内存来装载这些数据。**注意 Python3 中，只有 items 方法了，它等价于 Python2 中的 iteritems，而 iteritems 这个方法名被移除了。**
 
@@ -1015,10 +1162,10 @@ print(d)  # {'a': 1, 'b': 2, 'c': 3}
 
 
 
-### 15、super 类 详解
+### 14、继承和super关键字
 
-> super 是一个继承自 object 的类，调用 super() 函数其实就是 super 类的实例化。
-> 根据官方文档的解释 super() 函数返回的对象 —— super object，就是一个代理对象。
+> super 是一个继承自 object 的类，调用super函数（super()）即可获得 super类的实例。
+> 根据官方文档的解释 super() 函数返回的对象` super object`是一个代理对象。
 > super() 有四种参数的组合形式。
 > super() 适用于类的静态方法。
 
@@ -1029,18 +1176,18 @@ print(d)  # {'a': 1, 'b': 2, 'c': 3}
 
 **函数描述：**
 
-- 返回一个代理对象，它会将方法调用委托给 type 的父类或兄弟类。
+- 返回一个代理对象，它会将 方法调用 委托给 type 的父类或兄弟类。
 
 **参数说明：**
 
-- **type：**类，可选参数，默认值是当前类。调用方法时，从当前类的MRO中找到传入的 type， 再从type后面的类中依次查找调用的方法。
+- **type：**类，可选参数，默认值是**当前类**。调用方法时，从当前类的MRO中找到传入的 type， 再从type后面的类中依次查找调用的方法（ super 调用的方法，一定是type父类或兄弟类的方法）。
   - Method Resolution Order（方法解析顺序），即在调用方法时，会对当前类以及所有的基类进行一个搜索，以确定该方法之所在，而这个搜索的顺序就是MRO。只要搜索到调用的方法，便不在继续向后搜索。
   - 一个类的 MRO 列表就是合并所有父类的 MRO 列表，并遵循以下三条原则：
     - 子类永远在父类前面
     - 如果有多个父类，会根据它们在列表中的顺序被检查
     - 如果对下一个类存在两个合法的选择，选择第一个父类
 
-- **object-or-type：**被代理的对象或类，一般是 self，可选参数。super()返回值是一个代理对象，就是说 super().func() 调用函数时，其实是以 *<u>被代理的对象或类</u>*  的身份来调用 func 函数。func 函数体 是MRO中解析到对应类中的函数体。
+- **object-or-type：**被代理的对象或类，默认是 self实例自身，可选参数。super()返回值是一个代理对象，就是说 super().func() 调用函数时，其实是以 *<u>被代理的对象或类</u>*  的身份来调用 func 函数。func 函数体 是MRO中解析到对应类中的函数体，因此，我们通过super调用父类方法时，方法内部的 `self/cls` 对象其实就是当前类/当前类实例，使用到的属性也都是当前类的属性。
 
 **返回值：**
 
@@ -1048,7 +1195,7 @@ print(d)  # {'a': 1, 'b': 2, 'c': 3}
 
 
 
-**<font size=5>示例一：单继承</font>**
+**<font size=4>示例一：单继承</font>**
 
 ``` python
 class A:
@@ -1086,7 +1233,7 @@ b.func()
 '''
 ```
 
-**<font size=5>示例二：多继承</font>**
+**<font size=4>示例二：多继承</font>**
 
 ``` python
 class A:
@@ -1184,9 +1331,9 @@ print(d.n)
 
 
 
-### 16、Python中的get、set方法
+### 15、Py的Get和Set方法
 
-> 相关方法：property、setter、getter、deleter 、`__getattr__`、`__setattr__`、`__getattribute__`
+> 相关方法：property、`__getattr__`、`__setattr__`、`__getattribute__`、`setattr`、`getattr`
 
 - **property 作为方法使用**
 
@@ -1270,9 +1417,10 @@ print(d.n)
 
   
 
-- `__getattr__`、`__setattr__`方法
+- **`__getattr__`、`__setattr__`方法**
 
-  - `__getattr__`、`__setattr__`方法基类已经默认实现，在开发中可根据需要修改。
+  > 1. `__getattr__`、`__setattr__` 方法object基类已经默认实现，在开发中可根据需要修改；
+  > 2. 这两个方法都是实例方法，只有实例通过点号运算符调用属性时，才会调用这两个方法
 
   - `__getattr__`
 
@@ -1331,53 +1479,110 @@ print(d.n)
       '''
       ```
       
-    
-  - `__getattribute__`
-  
-    - `_getattribute__`是属性访问拦截器（拦截点号运算），当属性被实例访问时（不管有没有这样的属性），会自动调用
-  
-    - 使用类名调用类属性时，不会经过`__getattribute__`方法，只有实例对象对属性的调用（包括调用类属性）时触发
-    
-    - `__getattribute__`方法优先级比`__getattr__`高，只有在`__getattribute__`方法中找不到对应的属性时，才会调用`__getattr__`
-    
-    - 重写`__getattribute__`时，注意规避死循环，方法内部用object获取属性值
-    
-      ```python
-      class A:
-        name = "jack"
-      
-        def __init__(self):
-          self.age = 18
-      
-          def __getattribute__(self, item):
-            print("实例调用属性啦")
-            """
-                  这里可以放一些处理逻辑
-                  """
-            return object.__getattribute__(self, item)
-      
-          def say_hello(self):
-            print(f"hello {self.name}")
-      
-            print(A.name)  # jack  - 通过类名调用累属性，不调用__getattribute__。因为方法本身也是一个实例方法
-      
-            a = A()
-      
-            print(a.name, a.age, a.say_hello())
-      
-            # 实例调用属性啦  - 实例调用name
-            # 实例调用属性啦  - 实例调用age
-            # 实例调用属性啦  - 实例调用say_hello
-            # 实例调用属性啦  - say_hello 内部再次通过实例调用name
-            # hello jack   - say_hello 内部打印
-            # jack 18 None
-      ```
-    
-      
-    
-      
 
-### 17、强引用、弱应用 及 weakref 模块
+- **`__getattribute__`**
+
+  - `_getattribute__`是属性访问拦截器（拦截点号运算），当属性被实例访问时（不管有没有这样的属性），会自动调用
+
+  - 使用类名调用类属性时，不会经过`__getattribute__`方法，只有实例对象对属性的调用（包括调用类属性）时触发
+
+  - `__getattribute__`方法优先级比`__getattr__`高，只有在`__getattribute__`方法中找不到对应的属性时，才会调用`__getattr__`
+
+  - 重写`__getattribute__`时，注意规避死循环，方法内部用object获取属性值
+
+    ```python
+        class A:
+            name = "jack"
+    
+            def __init__(self):
+                self.age = 18
+    
+            def __getattribute__(self, item):
+                print(f"实例调用属性啦 - {item}")
+                """这里可以放一些处理逻辑"""
+    
+                return object.__getattribute__(self, item)
+    
+            def say_hello(self):
+                print(A.name)  # jack  - 通过类名调用累属性，不调用__getattribute__。因为方法本身也是一个实例方法
+    
+                print(self.name, self.age)
+    
+    
+        a = A()
+        a.say_hello()
+    
+    
+    # output
+    实例调用属性啦 - say_hello
+    jack
+    实例调用属性啦 - name
+    实例调用属性啦 - age
+    jack 18
+    ==============
+    实例调用属性啦 - source
+    __getattribute__ 没获取到属性，到这里来继续查找：source
+    ding~
+    Traceback (most recent call last):
+      File "/Users/zhangjian1138/PycharmProjects/Notes/demo.py", line 95, in <module>
+        print(A.source)
+    AttributeError: type object 'A' has no attribute 'source'
+    ```
+    
+
+- **`getattr`和`setattr`**
+
+  >1. 这两个方法适用于实例对象或者类，不局限于实例对象；
+  >2. `getattr` 可给定一个默认值，当对象中没有该属性时，返回默认值
+
+  ```python
+      class A:
+          name = "jack"
+  
+          def __init__(self):
+              self.age = 18
+  
+          def __getattribute__(self, item):
+              print(f"实例获取属性: {item}")
+  
+              return object.__getattribute__(self, item)
+  
+          def __getattr__(self, item):
+              print(f"实例获取没有的属性: {item}")
+  
+              return "_default_"
+  
+  
+      a = A()
+  
+      print(getattr(a, 'name'))
+      print(getattr(A, 'name'))
+  
+      print(getattr(a, 'source'))
+      print(getattr(A, 'source', "类默认值"))
+  
+      setattr(A, 'source', "美国")
+      setattr(a, 'source', "中国")
+  
+      print(getattr(A, 'source'))
+      print(getattr(a, 'source'))
+  
+  # output
+  实例获取属性: name
+  jack
+  jack
+  实例获取属性: source
+  实例获取没有的属性: source
+  _default_
+  类默认值
+  美国
+  实例获取属性: source
+  中国
+  ```
+
+  
+
+### 16、弱引用
 
 - **强引用**
   - 普通变量名和对象的关联是强引用的关系，会增加对象的引用计数，进而影响目标对象的生命周期。
@@ -1495,7 +1700,7 @@ print(sys.getrefcount(id(a)))  # 1 弱引用不增加引用计数，所以该对
 > print(weak_dict.get(key, "default"))  # default
 > ```
 
-### 18、数据库连接池(开箱即用)
+### 17、数据库连接池
 
 ``` python
 import pymysql
@@ -1641,6 +1846,106 @@ class DBPool:
 
 
 
+### 18、装饰器
+
+> - **装饰器(Decorator)的定义：**
+>
+>   装饰器本质上就是一个python函数，它可以让其它函数在不需要做任何代码改动的前提下增加额外的功能，装饰器的返回值也是一个函数。
+>
+> - **装饰器的作用：**
+>
+>   就是为已经存在的函数或者对象添加额外的功能。经常用于有切面需求的场景中，比如：插入日志、性能测试、事务处理、缓存、权限校验等场景。
+>
+>   装饰器是解决这类问题的绝佳设计，有了装饰器，我们就可以抽离出大量与函数功能本身无关的雷同的代码并且可以重复使用。
+>
+>   **如果函数是类中的方法，则使用基于类实现的装饰器，这样可以方便传递self参数。**
+
+1. 基于函数实现装饰器
+
+   - 无参装饰器
+
+     ```python
+     def wrapper(func):
+         def inner(*args, **kwargs):
+             print('in inner function')
+             res = func(*args, **kwargs)
+             return res
+         return inner
+     
+     @wrapper
+     def index(name):
+         print('my name is %s' % name)
+     
+     index('william')
+     ```
+
+   - 带参装饰器
+
+     当带参数的装饰器被打在某个函数上时，比如@outter('critical')，它其实就是一个函数且被调用了，会被马上执行，只要这个函数返回的结果是一个装饰器，就没有问题。直白一点，就是在装饰器外再套一层函数用来传递参数。
+
+     ```python
+     def outter(level):
+         def wrapper(func):
+             def inner(*args, **kwargs):
+                 if level == 'info':
+                     print('in inner function')
+                     res = func(*args, **kwargs)
+                     return res
+                 else:
+                     print('level not enough')
+             return inner
+         return wrapper
+     
+     @outter('critical')
+     def index(name):
+         print('my name is %s' % name)
+     
+     index('william')
+     ```
+
+2. 基于类实现装饰器
+
+   装饰器函数有一个接口约束，它必须接受一个`__call__`对象作为参数，然后返回一个callable对象，在python中一般callable对象都是函数，但是也有例外的，只要某个对象重新加载了`__call__()`方法，那么这个对象就是callable的。
+
+   ```python
+   class Wrapper:
+   
+       def __init__(self):
+           self.current_name = []
+   
+       def __call__(self, func):
+   
+           def inner(*args, **kwargs):
+               flag = True
+               if self.current_name:
+                   print('当前用户已经登陆了')
+                   res = func(*args, **kwargs)
+                   return res
+               else:
+                   while flag:
+                       user_name = input('user_name:').strip()
+                       password = input('password:').strip()
+                       if user_name == 'william' and password == '123':
+                           print('登陆成功...')
+                           res = func(*args, **kwargs)
+                           self.current_name.append(user_name)
+                           return res
+                       else:
+                           print('user_name or password error')
+           return inner
+   
+   class Test:
+     	# 实例化Wrapper，会调用自己的__call__方法（从前面对象创建过程可以得到，如果类自身没有重写__call__，那么就会调用元类的__call__方法，通常返回的是一个经过__new__创建实例、__init__初始化后的实例对象，类装饰器则返回的是一个函数）
+       @Wrapper()
+       def index(self, name):
+           print('my name is %s' % name)
+   
+   t = Test()
+   t.index('william')  # 这里的 index 实则就是 inner 函数
+   ```
+
+
+
 ### 19、上下文
 
 基于类实现：**在一个类里，实现了`__enter__`和`__exit__`的方法，这个类的实例就是一个上下文管理器。**
@@ -1656,8 +1961,8 @@ class Context:
     def __exit__(self, exc_type, exc_val, exc_tb):
         print("close context")
 
-# with 后面一定是一个对象， as 后面的值就是__enter__函数的返回值，通常返回self。其实就是把示例对象本身返回回去，以便调用示例方法
-# 当 with 语句块中的代码执行完之后，将自动执行 __exit__ 中的代码，以完成一些后置的处理工作
+# with 关键字，后面接实例对象，进入代码块时自动调用__enter__魔法方法，并将其返回值通过 as 传递提出来，__enter__通常返回实例自身（self）
+# 当 with 语句块中的代码块执行完时，将自动执行 __exit__魔法方法，以完成一些后置的处理工作
 with Context() as context:
     context.operate()
 
@@ -1668,7 +1973,7 @@ with Context() as context:
 '''
 ```
 
-基于装饰器：**在一个函数里面使用关键子yield，结合装饰器@contextlib.contextmanager，也可以创建一个上下文管理器。**
+基于装饰器：**在一个函数里面使用关键字yield，结合装饰器@contextlib.contextmanager，也可以创建一个上下文管理器。**
 
 ``` python
 from contextlib import contextmanager
@@ -1734,7 +2039,7 @@ print(type(get_sum_by_b))  # <class 'functools.partial'>  partial 返回值是�
 
 
 
-### 21、threading.local 实现原理
+### 21、threading.local
 
 > threading.local()这个方法的特点用来保存一个全局变量，但是这个全局变量只有在当前线程才能访问，如果你在开发多线程应用的时候 需要每个线程保存一个单独的数据供当前线程操作，可以考虑使用这个方法，简单有效。
 
@@ -1807,7 +2112,7 @@ print(type(get_sum_by_b))  # <class 'functools.partial'>  partial 返回值是�
 
 
 
-### 22、`__dict__`、`__slots__`、dir()
+### 22、`__dict__`、`__slots__`
 
 - `__dict__`
 
@@ -1855,9 +2160,9 @@ print(type(get_sum_by_b))  # <class 'functools.partial'>  partial 返回值是�
     - 子类的`__dict__`并不包含其父类的属性。
     - 实例的`__dict__`会继承父类的实例属性，因此子类实例实际上也拥有父类中相同的实例属性。
 
-- dir()
+- dir 方法
 
-  -  dir() 是 Python 提供的一个 API 函数，会自动寻找一个对象的所有属性，返回一个列表。从第一节可知，一个实例对象的`__dict__`里只有实例属性，没有包含其他的有效属性。因此如果想获取一个对象所有有效属性，可以使用dir()。
+  -  dir() 是 Python 提供的一个 API 函数，会自动寻找一个对象的所有属性，返回一个列表。从第一节可知，一个实例对象的`__dict__`里只有实例属性，没有包含其他的有效属性。因此如果想获取一个对象所有有效属性，可以使用dir。
 
     ``` python
     class Apple(object):
@@ -1887,7 +2192,7 @@ print(type(get_sum_by_b))  # <class 'functools.partial'>  partial 返回值是�
     apple = Apple()
     green_apple = GreenApple()
     
-    print(dir(apple))
+    print(dir(apple))  # 实例的dir比所属类的dir多，多出来的就是 只属于实例属性，通过dir可以获取到实例所有可用的属性
     print(dir(Apple))
     print(dir(green_apple))
     print(dir(GreenApple))
@@ -1910,11 +2215,11 @@ print(type(get_sum_by_b))  # <class 'functools.partial'>  partial 返回值是�
 
 - `__slots__`
 
-  - 在一个类中定义了`__slots__`属性，那么这个类的实例将再不能添加实例属性，也不会拥有`__dict__`属性。`__slots__`的作用就是阻止类在实例化时为实例分配`__dict__`属性和 `__weakref__`，从而限制实例属性的添加，因此可以节约内存。
+  - 在一个类中定义了`__slots__`属性，那么这个类的实例将再不能添加 **实例属性**，也不会拥有`__dict__`属性。`__slots__`的作用就是阻止类在实例化时为实例分配`__dict__`属性和 `__weakref__`，从而限制实例属性的添加，因此可以节约内存。
 
   - 一个普通对象使用一个 `__dict__` 来保存它自己的属性，你可以动态地向其中添加或删除属性，但是如果使用 `__slots__ `属性，那么该对象用来保存其自身属性的结构一旦创建则不能再进行任何修改。
 
-  - 在缺少` __weakref__ `变量的情况下，定义了 `__slots__ `的类不支持对其实例的弱引用。如果需要，请将字符串 `__weakref__` 纳入 `__slots__ `声明中。（本条Python 2.3及其以后有效)。
+  - 在缺少` __weakref__ `属性的情况下，定义了 `__slots__ `的类不支持对其实例的弱引用。如果需要，请将字符串 `__weakref__` 纳入 `__slots__ `声明中。（本条Python 2.3及其以后有效)。
 
   - `__slots__`类变量可以是 string，iterable 或者是被实例使用的一连串 string。
 
@@ -1946,13 +2251,15 @@ print(type(get_sum_by_b))  # <class 'functools.partial'>  partial 返回值是�
     apple.color = 'red'
     print(apple.color)  # red
     
-    # 有__slots__ 属性的类，将不能动态添加属性
+    # 有__slots__ 属性的实例，将不能动态添加属性；但是这不影响类属性的创建
+    Apple.origin = 'chongqing'
+    print(apple.origin)  # chongqing  实例没有该属性，到所属类（以及父类/兄弟类）中去找，查找顺序就是继承里面讲的MRO
     apple.origin = 'sichuan'  # AttributeError: 'Apple' object has no attribute 'origin'
     ```
-
+    
     
 
-### 23、Python 元类 和 抽象基类
+### 23、元类 和 抽象基类
 
 > ## 理解元类
 >
@@ -2034,7 +2341,7 @@ print(b.__class__)  # 实例b 由类B 创建，按照上面的逻辑，那么 b 
 
 
 
-### 24、Python 中的 `is` 和 `==`
+### 24、`is` 和 `==`
 
 在Python中一切都是对象。
 
@@ -2066,13 +2373,13 @@ print(a is c)  # True   变量a 和 变量c 都指向内存中同一个列表对
 
 
 
-### 25、Python中的值传递和引用传递
+### 25、值传递和引用传递
 
 > 首先还是应该科普下函数参数传递机制*，*传值和传引用是什么意思？
 >
 > 　　 函数参数传递机制问题在本质上是调用函数（过程）和被调用函数（过程）在调用发生时进行通信的方法问题。基本的参数传递机制有两种：值传递和引用传递。
 >
-> 　　值传递（passl-by-value）过程中，被调函数的形式参数作为被调函数的局部变量处理，即在堆栈中开辟了内存空间以存放由主调函数放进来的实参的值，从而成为了实参的一个副本。值传递的特点是被调函数对形式参数的任何操作都是作为局部变量进行，不会影响主调函数的实参变量的值。
+> 　　值传递（pass-by-value）过程中，被调函数的形式参数作为被调函数的局部变量处理，即在堆栈中开辟了内存空间以存放由主调函数放进来的实参的值，从而成为了实参的一个副本。值传递的特点是被调函数对形式参数的任何操作都是作为局部变量进行，不会影响主调函数的实参变量的值。
 >
 > 　　引用传递(pass-by-reference)过程中，被调函数的形式参数虽然也作为局部变量在堆栈中开辟了内存空间，但是这时存放的是由主调函数放进来的实参变量的地址。被调函数对形参的任何操作都被处理成间接寻址，即通过堆栈中存放的地址访问主调函数中的实参变量。正因为如此，被调函数对形参做的任何操作都影响了主调函数中的实参变量。
 
@@ -2147,7 +2454,7 @@ if __name__ == '__main__':
 
 
 
-### 26、堆和栈的区别
+### 26、栈和堆
 
 **栈内存：**
 
@@ -2163,7 +2470,7 @@ if __name__ == '__main__':
 
 **堆内存：**
 
-堆内存存储的是数组和对象（数组是特殊的对象），凡是new建立的都在堆里，堆中存放都是对象，对象用于封装数据，而且是封装多个属性，如果一个属性消失，这个实体也不会消失，还可以用，所以堆不会随时释放的。虽然对象不会被释放，但是会被当成垃圾，Java有垃圾回收机制不定时的回收。
+堆内存存储的是数组和对象（数组是特殊的对象），凡是new创建的对象都在堆里，堆中存放都是对象，对象用于封装数据，而且是封装多个属性，如果一个属性消失，这个实体也不会消失，还可以用，所以堆不会随时释放的。虽然对象不会被释放，但是会被当成垃圾，Java有垃圾回收机制不定时的回收。
 
 堆其实可以类似看做是管道，或者说是平时去排队买票，特点是：**先进先出，后进后出**
 
@@ -2175,7 +2482,7 @@ if __name__ == '__main__':
 
 **堆和栈的区别：**
 
-1. 栈内存存储的是**局部变量和对象引用**，而堆内存存储的是**实例对象**。
+1. 栈内存 存储的是**局部变量和对象引用**，而堆内存存储的是**实例对象**。
 
 2. 栈的更新速度要快于堆内存，因为局部变量的生命周期很短。
 
@@ -2191,24 +2498,169 @@ if __name__ == '__main__':
 
 
 
-### 27、Python 内存池机制
+### 27、内存池
 
-Python的内存池机制，可以看作一个金字塔，分为5层，越下层能分配回收的内存越大。
+**背景：**
 
-- -1、-2层主要有操作系统进行操作；
-- 第0层是由C中的malloc（内存分配）、free（释放）等函数进行操作；
-- 第1层和第2层是内存池，由Python的接口函数PyMem_Malloc函数实现，当对象小于256K时由该层直接分配内存；
-- 第3层是最上层，也就是我们对Python对象的直接操作；
+当创建大量消耗小内存的对象时，频繁调用new/malloc会导致大量的内存碎片，最终导致系统性能下降。
 
-在 C 中如果频繁的调用 malloc 与 free，是会产生性能问题的。再加上频繁的分配与释放小块的内存会产生内存碎片， Python 在这里主要工作有:
-
-1. 如果请求分配的内存在1~256字节之间就使用自己的内存管理系统，由内存池直接分配。否则传递到下层使用 c 中的 malloc 分配；
-
-   > 如果内存池中内存不足，还是会调用 malloc 分配内存，但每次会分配一块大小为256k的大块内存，并由python内存池登记。经由内存池登记的内存，回收时同样回收到内存池，并不会调用 C 的 free 释放掉，而是保留以便下次再分配。
+> malloc 全称是 memory allocate，内存分配；
+>
+> Python 中的内存管理机制为Pymalloc
 
 
 
+**作用：**
 
+作用就是预先在内存中申请一定数量的，大小相等的内存块留作备用，当有新的内存需求时，就先从内存池中分配内存给这个需求，不够之后再申请新的内存。这样做最显著的优势就是能够减少内存碎片，提升效率。
+
+
+
+**内存池架构**
+
+Python的内存池机制，可以看作一个金字塔，分为6层（-2 ～ 3），越下层能分配回收的内存越大。Pymalloc 主要就作用在1-3层。
+
+- -2 层，物理内存RAM、ROM 以及 swap 交换区；
+
+- -1 层，操作系统虚拟内存管理（基于内存页，标准内存页大小为4 kb / 4096 byte），向上提供 SystemCall；
+
+- 0 层，由C中的malloc（内存分配）、free（释放）等函数进行操作，为Py进程分配内存；
+
+- 1 层，当申请的内存大小大于 256字节 时，由Python原生的内存分配器进行分配，本质上是调用C标准库中的malloc/realloc等函数；
+
+- 2 层，当申请的内存大小小于 256字节 时，内存主要由 Python 对象分配器（Python’s object allocator）直接从内存池分配；
+
+  > 如果内存池中内存不足，还是会调用 malloc 分配内存，但每次会分配一块大小为256k的大块内存，并由python内存池登记。经由内存池登记的内存，回收时同样回收到内存池，并不会调用 C 的 free 释放掉，而是保留以便下次再分配。
+
+- 3 层，对于python内置的对象（比如int、dict等）都有独立的私有内存池，对象之间的内存池不共享，即int释放的内存，不会被分配给float使用。
+
+
+
+从上面内存池架构中，我们可以看到Py在管理内存分成了大内存和小内存，以 256byte 为界限。但其实很多时候，对象的大小就是小于256byte 的，但大量小内存重复的创建回收，也会产生很多内存碎片，因此又诞生了 **整数缓冲池** 和 **字符串驻留**
+
+1. **整数缓冲池**
+
+   int类型数据是不可变对象，这意味着它可以被共享，在python启动之后，就会在内存中申请一片内存，将频繁使用的小整数存储在这里，在整个程序运行期间，这些小整数都一直存在，不会被销毁，对它们的使用，仅仅增加了它们的引用计数而已。
+
+   那么有多少整数被缓存了呢？这个范围其实不大，只有[-5, 257]。当然如果你想扩大这个范围，你可以选择修改python源码来解决。在`python`交互式解释器里来验证：
+
+   ```shell
+   >>> a = 12
+   >>> b = 12
+   >>> id(a)
+   140705565998496
+   >>> id(b)
+   140705565998496
+   
+   # 上面的小整数id一致，使用的是同一个内存中的对象；下面的大整数则不是
+   >>> a = 257
+   >>> b = 257
+   >>> id(a)
+   2389141537712
+   >>> id(b)
+   2389141537904
+   ```
+
+2. **字符串驻留**
+
+   对于字符串同样也是如此。假设有100个变量，都赋值为python，难道真得要在内存当中创建100个对象？为此，python提供了intern机制。简单来说，python内部维护一个字典(interned)，当一个字符串需要驻留时，就去interned中查看这个字符串是否已经存在，如果存在则增加引用计数，不存在的话就增加到字典中。
+
+   > 使用驻留技术，有下面两个好处：
+   >
+   > 1. 节省内存
+   > 2. 字符串比较时，驻留字符串的比较速度远远高于非驻留字符串
+
+   **什么时候发生驻留：**
+
+   > 以下验证都在交互式模式下进行，更为准确。
+   >
+   > 交互式模式下解释器将每一行作为一个代码块；而在脚本中，将整个脚本作为一个代码块。在同一个代码块中，如果创建新的对象，会检查是否已经创建了相同的对象，如果已经创建则直接增加引用计数；
+   >
+   > 代码块作为一个执行单元，一个模块、一个函数体、一个类定义、一个脚本文件，都是一个代码块。
+
+   1. 编译时发生驻留，运行时不驻留
+
+      ```python
+      s1 = 'py' + 'thon'  
+      print(s1 is 'python')
+      
+      a = 'py'
+      b = 'thon'
+      
+      print(a+b is 'python')
+      
+      # 输出结果
+      # True
+      # False
+      # s1值是在编译阶段就计算出来的，因此会驻留，而a+b只有在运行阶段才会计算，因此没有发生驻留
+      ```
+
+   2. 只含大小写字母、数字、下划线时发生驻留
+
+      ```python
+      # 仅有字母发生驻留
+      s1 = 'python'
+      s2 = 'python'
+      print(s1 is s2)
+      
+      # 有空格，不驻留
+      a1 = 'pyth on'
+      b2 = 'pyth on'
+      print(a1 is b2)
+      
+      # 输出结果
+      # True
+      # False
+      ```
+
+   3. 字符串长度为0或1
+
+      空字符串和长度为1的字符串默认都会驻留，`python`认为这样的字符串都是经常被使用的字符串
+
+   4. 被`sys.intern`指定驻留
+
+      ```python
+      from sys import intern
+       
+      s1 = intern('python!')
+      s2 = intern('python!')
+      
+      print(s1 is s2)  # True
+      ```
+
+   5. 用乘法`(*)`得到的字符串
+
+      1. 乘数是1的情况
+
+         1. 字符串只包含下划线，数字，字母，默认驻留
+
+         2. 字符串长度小于等于1，默认驻留
+
+            ```shell
+            >>> s1 = "hello"
+            >>> s2 = s1*1
+            >>> s1 is s2
+            True
+            ```
+
+      2. 乘数大于2
+
+         1. 字符串只包含下划线，数字，字母且长度小于等于20，默认驻留
+
+         2. 含有其它字符时，不论长度是多少，都不驻留
+
+            ```shell
+            >>> s1 = "pythonpythonpython"
+            >>> s2 = "python"*3
+            >>> s1 is s2
+            True
+            >>> s1 = "&&&"
+            >>> s2 = "&" * 3
+            >>> s1 is s2
+            False
+            ```
+
+            
 
 ### 28、Python -m
 
@@ -2222,7 +2674,7 @@ if __name__ == '__main__':
 ```
 
 当文件作为脚本直接运行时，这段代码会产生副作用，输出字符串“模块直接运行”；
- 当文件作为模块被导入时，不会产生副作用，不输出字符串“模块直接运行”；
+当文件作为模块被导入时，不会产生副作用，不输出字符串“模块直接运行”；
 
 回到正题，当我们知道一个模块的名字，但不知道它的路径时，我们可以通过 -m 参数，在 shell 中将该模块当作脚本运行，例如：
 
@@ -2239,9 +2691,7 @@ python /path/to/module.py
 
 
 
-
-
-### 29、向py文件传递参数
+### 29、脚本参数传递
 
 在运行py文件时，尤其是作为一些脚本运行时，需要向py文件内部传递一些参数。
 
@@ -2250,6 +2700,12 @@ python /path/to/module.py
 
 
 **示例一：传递位置参数**
+
+位置参数需要明确的知道每一个位置的参数含义，以便获取。
+
+`sys`系统模块的`argv`属性，是一个列表，其中便记录所有的命令行参数（根据空格拆分出多个命令行参数）；
+
+注意：该列表 索引0 处的值是当前运行脚本的名称（可能包含路径，看执行该脚本时是否有路径），与shell脚本 $0 的作用相同，因此命令行参数是从 索引1 处开始的。
 
 ```python
 # demo.py
@@ -2271,6 +2727,10 @@ if __name__ == '__main__':
 
 **示例二：传递具名参数**
 
+对于脚本来说，是否是具名参数，脚本自身是不关心的，也识别不到。
+
+因此需要脚本内部对参数进行二次解析，这里使用`atgparse`系统模块，先注册参数的键，以此来解析键值。
+
 ```python
 # demo.py
 if __name__ == '__main__':
@@ -2280,7 +2740,8 @@ if __name__ == '__main__':
     parser.add_argument("--name", type=str)
     parser.add_argument("--age", type=int, help="年龄", default=18)
     parser.add_argument("--nums", nargs="+")  # 不指定type默认是str，“+” 表示至少传一个值，否则报错
-
+		
+    # parse_args 函数可以直接传入需要解析的参数列表。如果不传参，或默认使用 sys.argv[1] 
     args = parser.parse_args()
 		
     # 通过 . 号运算符，获取具名参数
@@ -2293,9 +2754,7 @@ if __name__ == '__main__':
 
 
 
-
-
-### 30、离线环境安装环境依赖库
+### 30、离线安装依赖
 
 在实际业务需求中，往往会需要到客户现场部署环境，且没有外网。那么这时候就需要提前把依赖包准备好。
 
@@ -2319,5 +2778,42 @@ pip3 wheel --wheel-dir packges  -i https://pypi.tuna.tsinghua.edu.cn/simple -r r
 #    --no-index 配合 --find-links 使用，--find-links 赋值 .whl 文件所在的文件夹路径
 pip3 install --no-index --find-links=packages -r requirements.txt
 
+```
+
+
+
+### 31、切片
+
+在Python中，**切片**(slice)是对序列型对象(如list、 string、 tuple)的一种高级索引方法。 普通索引只取出序列中 一个下标 对应的元素，而切片取出序列中 一个范围 对应的元素，这里的范围不是狭义上的连续片段。
+
+表达式：
+
+```python
+object[start:end:step]
+
+# start：切片的起始位置（包含），不填值则默认从 索引0 出开始；
+# end：切片的结束位置（不包含），不填值则截取索引start及后面所有的元素；
+# step：步进，默认是1，表示每隔多少个元素取一次值。步进可以为负数，表示反向取值；
+
+# 注意：
+#		1、start < end 时，如果step为负，此时无法反向切片，返回一个空列表；
+# 	2、start > end 时，如果step为正，此时无法正向切片，返回一个空列表；
+#		3、切片操作返回值是一个新的列表对象，原列表不受影响。
+```
+
+示例：
+
+```python
+a = [1, 2, 3, 4, 5, 6, 7]
+
+print(a[:3])  # [1, 2, 3] 从索引0处开始切片
+print(a[2:])  # [3, 4, 5, 6, 7] 截取开始索引及之后的所有元素
+print(a[2:6])  # [3, 4, 5, 6] 切片结束的索引是不包含的
+print(a[2:6:2])  # [3, 5] 从start出开始，每两个元素取一次值
+print(a[2:6:-1])  # [] start < end，但此时 step 为-1，无法反向切片，返回空列表
+print(a[6:1])  # [] start > end 且 此时step为1，所以截取不到元素
+print(a[6:1:-1])  # [7, 6, 5, 4, 3] start > end 且 此时step为-1，则从后向前反向切片，同样不会包含结束索引
+print(a[-2:-5])  # []  start和end也可以取负数。-1 表示最后一个索引；-2 表示倒数第二个索引；以此类推
+print(a[-2:-5:-2])  # [6, 4]
 ```
 
