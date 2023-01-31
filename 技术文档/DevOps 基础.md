@@ -1210,6 +1210,26 @@ Linux 的命名空间机制提供了以下七种不同的命名空间，包括 `
 
 **容器的架构：** 
 
+> LXC为Linux Container的简写。可以提供轻量级的虚拟化，以便隔离进程和资源，而且不需要提供指令解释机制以及全虚拟化的其他复杂性。相当于C++中的NameSpace。容器有效地将由单个操作系统管理的资源划分到孤立的组中，以更好地在孤立的组之间平衡有冲突的资源使用需求。与传统虚拟化技术相比，它的优势在于：
+>
+> （1）与宿主机使用同一个内核，性能损耗小；
+>
+> （2）不需要指令级模拟；
+>
+> （3）不需要即时(Just-in-time)编译；
+>
+> （4）容器可以在CPU核心的本地运行指令，不需要任何专门的解释机制；
+>
+> （5）避免了准虚拟化和系统调用替换中的复杂性；
+>
+> （6）轻量级隔离，在隔离的同时还提供共享机制，以实现容器与宿主机的资源共享。
+>
+> 总结：Linux Container是一种轻量级的虚拟化的手段。
+>
+> Linux Container提供了在单一可控主机节点上支持多个相互隔离的server container同时执行的机制。
+>
+> Linux Container有点像chroot，提供了一个拥有自己进程和网络空间]的虚拟环境，但又有别于虚拟机，因为lxc是一种操作系统层次上的资源的虚拟化。
+
 容器包括应用程序及其所依赖的二进制文件及库文件，但与其他容器共享操作系统内核。它们以独立的用户空间进程形式运行在主机操作系统上。他们也不依赖于任何特定的基础设施，Docker 容器可以运行在任何计算机上，任何基础设施和任何云上。
 
 <img src='./images/docker_002.png' style='width: 45%; float: left'>
@@ -1217,8 +1237,6 @@ Linux 的命名空间机制提供了以下七种不同的命名空间，包括 `
 
 
 Docker 的容器利用了 LXC，管理利用 namespaces 来做权限的控制和隔离，利用 cgroups（control groups） 来进行资源的配置，并且还通过 aufs 来进一步提高文件系统的资源利用率，而这些技术都不是 Docker 独创。
-
-LXC 与虚拟机的不同之处在于，它是一个操作系统级别的虚拟化环境，而不是硬件虚拟化环境。他们都做同样的事情，但 LXC 是操作系统级别的虚拟化环境，虚拟环境有它自己的进程和网络空间，而不是创建一个完整成熟的虚拟机。因此，一个 LXC 虚拟操作系统具有最小的资源需求，并启动只需几秒钟。
 
 
 
@@ -1480,13 +1498,13 @@ apiVersion: v1       #必选，版本号，例如v1
 kind: Pod       #必选，Pod
 metadata:       #必选，元数据
   name: verify       #必选，Pod名称
-  namespace: devops-30033350-dev-bot-300-guochanhua-1   #必选，Pod所属的命名空间
+  namespace: devops-30033520-auto-test-env   #必选，Pod所属的命名空间
 spec:         
   imagePullSecrets: # 从私有仓库拉取镜像，引用 配置好的 Secret 对象
   - name: registry-secrets
   containers:
   - name: verify
-    image: registry01.wezhuiyi.com/alpine-runtime_amd64_v3.16.2/tester/bot3-env-verify:7288508
+    image: 172.16.50.105:58710/tester/bot3-env-verify:v3.0.3-renshoubaoxian-rc1
     imagePullPolicy: Always 
     command: ["bash", "-c", "while true;do sleep 1;done"] 
     resources:      

@@ -535,8 +535,6 @@ DECIMAL 类型用于存储精确的小数。但因为CPU不支持对DECIMAL的�
 
 
 
-
-
 ## MYSQL概念精讲
 
 ### 变量
@@ -781,25 +779,101 @@ Empty set (0.00 sec)
 >
 > commit;
 
-#### 四大特性（ACID）
+#### ACID
 
-- **原子性（Atomicity）**：即事物是执行过程中不可以再分割的一个逻辑单位。
-- **一致性（Consistency）**：数据库总是从一个一致性的状态转换到另一个一致性状态，不能出现部分数据状态改变了部分状态没有改变的情况。例如：从一个账户转账200到另一个账户，那么当前账户扣减，另一个账户增加，不能有当前账户扣了，而目标账户未增加的场景出现。
-- **持久性（Durability）**：持久性就是事物修改数据后，进行持久化保存，不会因为宕机、断电等情况丢失数据。
-- **隔离性（Isolation）**：通常来说，一个事务所做的修改在最终提交之前，对其他事务是不可见的。要实现事物的隔离，就必须要求事物的执行是串行的；但是串行执行事物，与会严重影响数据库性能。所以很多时候，会选择牺牲部分隔离性，来提升数据库性能，也因此会带来以下一些问题。
-  - **丢失更新:** 当两个或多个事物修改同一行数据，先修改的值，会被后面的事物修改的值覆盖。
-  - **脏读：**一个事物读取到了另外一个事物修改但是未提交的数据。
-  - **不可重复读：**当事物内相同的记录被检索两次，且两次得到的结果不一致，比如：同一行中的某列的值前后两次读取到的结果不一样，称之为不可重复读。
-  - **幻读：**当某个事务A在读取某个范围内的记录时，另外一个事务B又在该范围插入新的记录，当事务A再次读取该范围的记录时，会产生幻行。在SQL 92 标准中，幻读是指在同一事物中，两次执行检索到的记录条数不一样（新增/减少）；而在MYSQL的标准中，幻读强调第二次检索时，检索到了第一次检索不存在的记录，而把丢失第一次检索记录归到不可重复读。
+事物是由一组SQL语句组成的逻辑处理单元。具有以下四个属性，简称事物ACID属性
+
+<table border="1">
+  <thead>
+  	<tr>
+    	<th>ACID属性</th>
+      <th>含义</th>
+    </tr>
+  </thead>
+  <tbody>
+  	<tr>
+    	<td>原子性（Atomicity）</td>
+      <td>事物是一个原子操作单元，不可以再进行分割。其对数据的修改，要么全部成功，要么全部不成功。</td>
+    </tr>
+    <tr>
+    	<td>一致性（Consistent）</td>
+      <td>事务从一个状态转移到另一个状态，不会存在某个中间状态。例如转账，转出方-200，那么转入方一定是+200</td>
+    </tr>
+    <tr>
+    	<td>隔离性（Isolation）</td>
+      <td>数据库系统提供一种隔离机制，保证事物在不受外部并发操作影响的“独立”环境下运行。</td>
+    </tr>
+    <tr>
+    	<td>持久性（Durable）</td>
+      <td>事物完成之后，对于数据的修改是永久的。</td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+**并发事务处理带来的问题：**
+
+<table border="1">
+  <thead>
+  	<tr>
+    	<th>问题</th>
+      <th>含义</th>
+    </tr>
+  </thead>
+  <tbody>
+  	<tr>
+    	<td>丢失更新（Lost Update）</td>
+      <td>当两个或多个事物操作同一行数据，最初的事物修改的值，会被后面的事物修改的值覆盖。</td>
+    </tr>
+    <tr>
+    	<td>脏读（Dirty Reads）</td>
+      <td>当一个事物在访问数据，并对数据进行了修改，而这种情况下还没有提交到数据库中。这时，另外一个事物也访问这个数据，然后使用了这个数据。</td>
+    </tr>
+    <tr>
+    	<td>不可重复读（Non-RepeatableReads）</td>
+      <td>在同一事物中，先后两次对相同的数据行进行检索，前后两次检索的结果数据不一致。倾向于第二次检索数据减少了。</td>
+    </tr>
+    <tr>
+    	<td>幻读（Phantom Reads）</td>
+      <td>在同一事物中，先后两次对相同数据进行检索。第二次检索时，发现有其他事物插入了满足当前检索条件的新数据，即二次检索时数据变多了。</td>
+    </tr>
+  </tbody>
+</table>
 
 
 
 #### 隔离级别
 
-- READ UNCOMMITED（未提交读）：事务中的修改，即使没有提交，对其他事务也是可见的。解决丢失更新问题，可能产生 脏读、不可重复读、幻读。
-- READ COMMITED（已提交读）：一个事务开始时，只能**看见**已经提交的事务所做的修改。解决丢失更新、脏读，可能产生 不可重复读、幻读。
-- REPEATABLE READ（可重复读）：同一个事务中，多次读取**相同范围的记录**的结果是一致的。SQL 92 标准中可能产生 幻读；MYSQL 标准中 已基本解决幻读，是mysql默认的事物隔离级别。
-- SERIALIZABLE（可串行化）：最高隔离性级别，读取每一行数据都加上锁，可能导致大量的超时和锁争用问题，同时也不存在数据不安全的问题，但牺牲了数据库性能和并发能力，一般不使用。
+在上面讲到的并发事务处理带来的问题中，更新丢失通常是应该完全避免的。但防止更新丢失，并不能单靠数据库事务控制器来解决，需要应用程序对要更新的数据加必要的锁来解决，因此，防止更新丢失应该是应用的责任。
+
+脏读，不可重复读，和幻读，其实都是数据库读一致性问题（读-写冲突），必须由数据库提供一定的事务隔离机制来解决。数据库实现事务隔离的方式，基本上可以分为以下两种：
+
+- 一种是在读取数据前，对其加锁，阻止其他事务对数据进行修改；
+- 另一种是不用加任何锁，通过一定机制生成一个数据请求时间点的一致性数据快照（snapshot），并用这个快照来提供一定级别（语句级或事务级）的一致性读取。从用户的角度来看，好像是数据库可以提供同一数据的多个版本，因此这种技术叫做 多版本并发控制（multiversion concurrency control，简称 MVCC 或 MCC），也经常称为多版本数据库。
+
+数据库的事务隔离越严格，并发副作用越小，付出的代价就越大，因为事务隔离实质上就是使事务在一定程度上串行化进行，这显然与并发是矛盾的。同时，不同的应用对读一致性和事务隔离程度的要求也是不同的。
+
+为了解决隔离与并发的矛盾，ISO/ANSI SQL92 定义了 4 个事务隔离级别，每个级别的隔离程度不同，允许出现的副作用也不同，应用可以根据自己的业务逻辑要求，通过选择不同的隔离级别来平衡隔离与并发的矛盾。
+
+| 隔离级别                     | 读数据一致性                                                 | 脏读 | 不可重复读 | 幻读 |
+| ---------------------------- | ------------------------------------------------------------ | ---- | ---------- | ---- |
+| 未提交读（read uncommitted） | 最低级别。事务中的修改，即使没有提交，对其他事务也是可见的。只能保证不读取物理上损坏的数据。 | 是   | 是         | 是   |
+| 已提交读（read committed）   | 语句级别。在同一个事物中，查询语句只能**看见**已经提交的事务所做的修改。但是相同的查询语句多次查询结果可能不同，因为语句级别的控制，在执行过程中可能有其他事物提交修改。 | 否   | 是         | 是   |
+| 可重复读（repeatable read）  | 事务级别。同一个事务中，多次读取**相同范围的记录**的结果是一致的。SQL 92 标准中可能产生 幻读；MYSQL 标准中 已基本解决幻读，是mysql默认的事物隔离级别。 | 否   | 否         | 是   |
+| 可串行化（serializable）     | 最高级别，事务级。读取每一行数据都加上锁，可能导致大量的超时和锁争用问题，同时也不存在数据不安全的问题，但牺牲了数据库性能和并发能力，一般不使用。 | 否   | 否         | 否   |
+
+MySQL数据库默认的事物隔离级别为 Repeatable Read，查看方式：
+
+```mysql
+show variables like 'tx_isolation';
+
+mysql> show variables like 'tx_isolation' \G;
+*************************** 1. row ***************************
+Variable_name: tx_isolation
+        Value: REPEATABLE-READ
+1 row in set (0.01 sec)
+```
 
 
 
@@ -1894,6 +1968,38 @@ mysql> select * from city_logs;
 
 
 
+## MYSQL 引擎
+
+### InnoDB
+
+#### 三大特性
+
+InnoDB的三大特性是：自适应Hash索引、BufferPool、双写缓冲区。
+
+- **自适应Hash索引**
+
+  InnoDB存储引擎内部自己去监控索引表，如果监控到某个索引经常用，那么就认为是热数据，然后内部自己创建一个hash索引，称之为自适应哈希索引( Adaptive Hash Index,AHI)，创建以后，如果下次又查询到这个索引，那么直接通过hash算法推导出记录的地址，直接一次就能查到数据。
+
+  InnoDB存储引擎使用的[哈希函数](https://so.csdn.net/so/search?q=哈希函数&spm=1001.2101.3001.7020)采用除法散列方式，其冲突机制采用链表方式。
+
+- **Buffer Pool**
+
+  为了提高访问速度，MySQL预先就分配/准备了许多这样的空间，为的就是与MySQL数据文件中的页做交换，来把数据文件中的页放到事先准备好的内存中。数据的访问是按照页（默认为16KB）的方式从数据文件中读取到 buffer pool中。Buffer Pool按照最少使用算法（LRU），来管理内存中的页。
+
+  Buffer Pool实例允许有多个，每个实例都有一个专门的mutex保护。Buffer Pool中缓存的数据页类型有: 索引页、数据页、undo页、插入缓冲（insert buffer)、自适应哈希索引、InnoDB存储的锁信息、数据字典信息（data dictionary)等等。
+
+- **双写缓冲区**
+
+  是一个位于系统**表空间的存储区域**，在写入时，InnoDB先把从缓冲池中的得到的page写入系统表空间的双写缓冲区。之后，再把page写到.ibd数据文件中相应的位置。如果在page写入数据文件的过程中发生意外崩溃，InnoDB在稍后的恢复过程中在doublewrite buffer中找到完好的page副本用于恢复。
+
+  doublewrite是顺序写，开销比较小。所以在正常的情况下，MySQL写数据page时，会写两遍到磁盘上，第一遍是从 Buffer pool 写到doublewrite buffer，第二遍是从doublewrite buffer写到真正的数据文件中。
+
+  它的主要作用是为了避免 partial page write（`部分页写入`）的问题。因为InnoDB的page size一般是16KB，校验和写入到磁盘是以page为单位进行的。而操作系统写文件是以4KB作为单位的，每写一个page，操作系统需要写4个块，中间发生了系统断电或系统崩溃，只有一部分页面是写入成功的。这时page数据出现不一样的情形，从而形成一个"断裂"的page，使数据产生混乱。
+
+  
+
+
+
 ## SQL 优化的步骤
 
 ### 1. 查看SQL执行统计值
@@ -1948,26 +2054,6 @@ update语句执行逻辑：
 - 客户端修改行的字段信息，保存为新的行；
 - 将新的行插入回内存，替换原来的数据；
 - 记录bin log 、记录 redo log，提交事务后，mysql申请系统调用，将内存中更新的行刷入磁盘；
-
-
-
-redo log、undo log：
-
-> redo log不是二进制日志。虽然二进制日志中也记录了Innodb表的很多操作，**也能实现重做的功能，**但是它们之间有很大区别：
->
-> 1. 二进制日志是在**存储引擎的上层**产生的，不管是什么存储引擎，对数据库进行了修改都会产生二进制日志。而redo log是Innodb层产生的，只记录该存储引擎中表的修改。**并且二进制日志先于redo log被记录**。
-> 2. 二进制日志记录操作的方法是逻辑性的语句。即便它是基于行格式的记录方式，其本质也还是逻辑的SQL设置，如该行记录的每列的值是多少。而redo log是在物理格式上的日志，它记录的是数据库中每个页的修改。
-> 3. 二进制日志只在每次事务提交的时候一次性写入缓存中的日志"文件"(对于非事务表的操作，则是每次执行语句成功后就直接写入)。而redo log在数据准备修改前写入缓存中的redo log中，然后才对缓存中的数据执行修改操作；而且保证在发出事务提交指令时，先向缓存中的redo log写入日志，写入完成后才执行提交动作。
-> 4. 因为二进制日志只在提交的时候一次性写入，所以二进制日志中的记录方式和提交顺序有关，且一次提交对应一次记录。而redo log中是记录的物理页的修改，redo log文件中同一个事务可能多次记录，最后一个提交的事务记录会覆盖所有未提交的事务记录。
-> 5. 事务日志记录的是物理页的情况，它具有幂等性，因此记录日志的方式极其简练。幂等性的意思是多次操作前后状态是一样的，例如新插入一行后又删除该行，前后状态没有变化。而二进制日志记录的是所有影响数据的操作，记录的内容较多。例如插入一行记录一次，删除该行又记录一次。
-
-Innodb事务日志包括redo log和undo log。redo log是重做日志，提供前滚操作；undo log是回滚日志，提供回滚操作。
-
-undo log不是redo log的逆向过程，其实它们都算是用来恢复的日志：
-
-**1. redo log通常是物理日志，记录的是数据页的物理修改，而不是某一行或某几行修改成怎样怎样，它用来恢复提交后的物理数据页(恢复数据页，且只能恢复到最后一次提交的位置)。**
-
-**2. undo log用来回滚行记录到某个版本。undo log一般是逻辑日志，根据每行数据的修改进行记录。**
 
 
 
@@ -4153,107 +4239,6 @@ InnoDB与MyISAM的最大不同的三点：一是支持事物（transaction）；
 
 
 
-#### 背景知识
-
-**事物及其ACID属性**
-
-事物是由一组SQL语句组成的逻辑处理单元。具有以下四个属性，简称事物ACID属性
-
-<table border="1">
-  <thead>
-  	<tr>
-    	<th>ACID属性</th>
-      <th>含义</th>
-    </tr>
-  </thead>
-  <tbody>
-  	<tr>
-    	<td>原子性（Atomicity）</td>
-      <td>事物是一个原子操作单元，不可以再进行分割。其对数据的修改，要么全部成功，要么全部不成功。</td>
-    </tr>
-    <tr>
-    	<td>一致性（Consistent）</td>
-      <td>事务从一个状态转移到另一个状态，不会存在某个中间状态。</td>
-    </tr>
-    <tr>
-    	<td>隔离性（Isolation）</td>
-      <td>数据库系统提供一种隔离机制，保证事物在不受外部并发操作影响的“独立”环境下运行。</td>
-    </tr>
-    <tr>
-    	<td>持久性（Durable）</td>
-      <td>事物完成之后，对于数据的修改是永久的。</td>
-    </tr>
-  </tbody>
-</table>
-
-
-**并发事务处理带来的问题**
-
-<table border="1">
-  <thead>
-  	<tr>
-    	<th>问题</th>
-      <th>含义</th>
-    </tr>
-  </thead>
-  <tbody>
-  	<tr>
-    	<td>丢失更新（Lost Update）</td>
-      <td>当两个或多个事物操作同一行数据，最初的事物修改的值，会被后面的事物修改的值覆盖。</td>
-    </tr>
-    <tr>
-    	<td>脏读（Dirty Reads）</td>
-      <td>当一个事物在访问数据，并对数据进行了修改，而这种情况下还没有提交到数据库中。这时，另外一个事物也访问这个数据，然后使用了这个数据。</td>
-    </tr>
-    <tr>
-    	<td>不可重复读（Non-RepeatableReads）</td>
-      <td>在同一事物中，先后两次对相同的数据行进行检索，前后两次检索的结果数据不一致。倾向于第二次检索数据减少了。</td>
-    </tr>
-    <tr>
-    	<td>幻读（Phantom Reads）</td>
-      <td>在同一事物中，先后两次对相同数据进行检索。第二次检索时，发现有其他事物插入了满足当前检索条件的新数据，即二次检索时数据变多了。</td>
-    </tr>
-  </tbody>
-</table>
-
-
-
-
-
-**事物隔离级别**
-
-在上面讲到的并发事务处理带来的问题中，更新丢失通常是应该完全避免的。但防止更新丢失，并不能单靠数据库事务控制器来解决，需要应用程序对要更新的数据加必要的锁来解决，因此，防止更新丢失应该是应用的责任。
-
-脏读，不可重复读，和幻读，其实都是数据库读一致性问题（读-写冲突），必须由数据库提供一定的事务隔离机制来解决。数据库实现事务隔离的方式，基本上可以分为以下两种：
-
-- 一种是在读取数据前，对其加锁，阻止其他事务对数据进行修改；
-- 另一种是不用加任何锁，通过一定机制生成一个数据请求时间点的一致性数据快照（snapshot），并用这个快照来提供一定级别（语句级或事务级）的一致性读取。从用户的角度来看，好像是数据库可以提供同一数据的多个版本，因此这种技术叫做 多版本并发控制（multiversion concurrency control，简称 MVCC 或 MCC），也经常称为多版本数据库。
-
-数据库的事务隔离越严格，并发副作用越小，付出的代价就越大，因为事务隔离实质上就是使事务在一定程度上串行化进行，这显然与并发是矛盾的。同时，不同的应用对读一致性和事务隔离程度的要求也是不同的。
-
-为了解决隔离与并发的矛盾，ISO/ANSI SQL92 定义了 4 个事务隔离级别，每个级别的隔离程度不同，允许出现的副作用也不同，应用可以根据自己的业务逻辑要求，通过选择不同的隔离级别来平衡隔离与并发的矛盾。
-
-| 隔离级别                     | 读数据一致性                             | 脏读 | 不可重复读 | 幻读 |
-| ---------------------------- | ---------------------------------------- | ---- | ---------- | ---- |
-| 未提交读（read uncommitted） | 最低级别，只能保证不读取物理上损坏的数据 | 是   | 是         | 是   |
-| 已提交读（read committed）   | 语句级                                   | 否   | 是         | 是   |
-| 可重复读（repeatable read）  | 事务级                                   | 否   | 否         | 是   |
-| 可序列化（serializable）     | 最高级别，事务级                         | 否   | 否         | 否   |
-
-MySQL数据库默认的事物隔离级别为 Repeatable Read，查看方式：
-
-```mysql
-show variables like 'tx_isolation';
-
-mysql> show variables like 'tx_isolation' \G;
-*************************** 1. row ***************************
-Variable_name: tx_isolation
-        Value: REPEATABLE-READ
-1 row in set (0.01 sec)
-```
-
-
-
 #### InnoDB 行锁模式
 
 InnoDB实现了以下两种类型的行锁。
@@ -5401,6 +5386,147 @@ long_query_time=2
   ```
 
   
+
+### InnoDB 事物日志
+
+InnoDB的事务日志主要分为redo log(重做日志，提供前滚操作)和undo log(回滚日志，提供回滚操作和快照读)。
+
+#### redo log
+
+- **redo log 和 二进制日志（bin log） 的区别**
+
+  1. binlog日志是在Server层产生的，适用所有存储引擎。所有对数据库变更的写入到binlog日志。redo log是由InnoDB存储引擎产生的，只记录该存储引擎对象的数据变更页。**并且二进制日志先于redo log被记录**；
+  2. 日志格式不同，binlog是一种基于行格式的记录的逻辑日志（DML语句），而redo log是物理格式日志，记录innodb引擎数据页的修改；
+  3. 刷盘时间点不同，binlog只在事务提交完成后一次写入（对于非事务表的操作，则是每次执行语句成功后就直接写入），而redo log是在事务执行过程不断写入；
+  4. 因为二进制日志只在提交的时候一次性写入，所以二进制日志中的记录方式和提交顺序有关，且一次提交对应一次记录。而redo log中是记录的物理页的修改，redo log文件中同一个事务可能多次记录，最后一个提交的事务记录会覆盖所有未提交的事务记录。
+
+- **redo log**
+
+  它包含两部分内容（日志缓存[redo log_buffer]和redo log file[datadir/ib_logfileN]），InnoDB通过force log at commit机制实现事务的持久性。
+
+  <img src='./images/mysql_005.png' style='width: 80%; float: left'>
+
+  - log buffer刷日志文件配置参数
+
+    MySQL通过控制innodb_flush_log_at_trx_commit参数值方式自定义刷盘方式，从log buffer中的日志刷log file中。这个变量只是控制commit动作是否刷新log buffer到磁盘（图往上看）。
+
+    ```shell
+    innodb_flush_log_at_trx_commit=1
+    # 事务每次提交都会将log buffer中的日志写入os buffer并调用fsync()刷到log file on disk中。这种方式即使系统崩溃也不会丢失任何数据，但是因为每次提交都写入磁盘，IO的性能较差。
+    
+    innodb_flush_log_at_trx_commit=0
+    # 事务提交时不会将log buffer中日志写入到os buffer，而是每秒写入os buffer并调用fsync()写入到log file on disk中。也就是说设置为0时是(大约)每秒刷新写入到磁盘中的，当系统崩溃，会丢失1秒钟的数据。
+    
+    innodb_flush_log_at_trx_commit=2
+    # 每次提交都仅写入到os buffer，然后是每秒调用fsync()将os buffer中的日志写入到log file on disk。
+    ```
+
+  - redo log block(日志块)
+
+    Innodb存储引擎中，redo log以块为单位进行存储的，每个块占512字节，这称为redo log block。所以不管是log buffer中还是os buffer中以及redo log file on disk中，都是这样以512字节的块存储的。
+
+  - rodo log参数
+
+    ```shell
+    > show global variables like 'innodb_log%';
+    +-----------------------------+----------+
+    | Variable_name               | Value    |
+    +-----------------------------+----------+
+    | innodb_log_buffer_size      | 16777216 |  # 重做日志缓冲区大小，默认16M
+    | innodb_log_checksums        | ON       |  # 校验
+    | innodb_log_compressed_pages | ON       |  # 是否启用压缩
+    | innodb_log_file_size        | 50331648 |  # 日志文件大小
+    | innodb_log_files_in_group   | 2        |  # 日志文件数量，默认2个日志文件
+    | innodb_log_group_home_dir   | ./       |  # 日志文件目录，默认datadir
+    | innodb_log_write_ahead_size | 8192     |  # 表示redo log写前的块大小(MySQL 5.7.4)
+    +-----------------------------+----------+
+    
+    # innodb_log_write_ahead_size：
+    # 	为了处理redo log block得大小和OS block间操作数据块大小协调一致得问题。
+    #		在InnoDB中以512字节一个block的方式对齐写入redo file(ib_logfileN)文件，而操作系统一般以4096字节为一个block单位(OS block)读写。如果即将写入的日志块不在OS buffer Cache时，就需要将对应的4096字节的block读入内存，修改其中的512字节，然后再把该block写回磁盘。
+    #		引入write-ahead是将当前写入redo文件的偏移量整除innodb_log_write_ahead_size参数值，不能整除时则补0补全，使得需要写入的内容刚好是block的倍数，那么就直接覆盖写入即可。不再需要read-modify-write得过程。提升效率。
+    ```
+
+  - 日志页刷盘规则
+
+    log buffer中未刷到磁盘的日志称为脏日志(dirty log)。
+
+    刷日志到磁盘规则：
+
+    - 发出commit动作时，是否刷日志由变量 innodb_flush_log_at_trx_commit 控制。
+    - 每秒刷一次。刷日志的频率由变量 innodb_flush_log_at_timeout 值决定，默认是1秒。这个刷日志频率和commit动作无关。
+    - 当log buffer中已经使用的内存超过一半时。
+    - 当有checkpoint时，checkpoint在一定程度上代表了刷到磁盘时日志所处的LSN位置。
+
+  - 数据页刷盘规则
+
+    内存中(buffer pool)未刷到磁盘的数据称为脏数据(dirty data)。由于数据和日志都以页的形式存在，所以脏页表示脏数据和脏日志。在InnoDB中触发checkpoint动作将buffer中的脏数据页和脏日志页都刷到磁盘中。
+
+    触发checkpoint的情形：
+
+    - sharp checkpoint：在切换日志文件的时候，将所有已记录到redo log 文件中对应的脏数据刷到磁盘。
+    - fuzzy checkpoint：一次只刷一小部分的日志到磁盘，而非将所有脏日志刷盘。有以下几种情况会触发该检查点：
+      - master thread checkpoint：由master线程控制，每秒或每10秒刷入一定比例的脏页到磁盘。
+      - flush_lru_list checkpoint：从MySQL5.6开始可通过 innodb_page_cleaners 变量指定专门负责脏页刷盘的page cleaner线程的个数，该线程的目的是为了保证lru列表有可用的空闲页。
+      - async/sync flush checkpoint：同步刷盘还是异步刷盘。例如还有非常多的脏页没刷到磁盘(非常多是多少，有比例控制)，这时候会选择同步刷到磁盘，但这很少出现；如果脏页不是很多，可以选择异步刷到磁盘，如果脏页很少，可以暂时不刷脏页到磁盘
+      - dirty page too much checkpoint：脏页太多时强制触发检查点，目的是为了保证缓存有足够的空闲空间。too much的比例由变量 innodb_max_dirty_pages_pct 控制，MySQL 5.6默认的值为75，即当脏页占缓冲池的百分之75后，就强制刷一部分脏页到磁盘。
+
+    由于刷脏页需要一定的时间来完成，所以记录检查点的位置是在每次刷盘结束之后才在redo log中标记的。
+
+    MySQL服务停止时是否将脏数据和脏日志刷入磁盘，由变量innodb_fast_shutdown={ 0|1|2 }控制，默认值为1，即停止时只做一部分purge，忽略大多数flush操作(但至少会刷日志)，在下次启动的时候再flush剩余的内容，实现fast shutdown。
+
+#### undo log
+
+undo log的作用是提供事务的回滚和多个行版本控制（MVCC-非锁定读）。undo log是逻辑日志，如执行一条delete操作时，undo log将它的反向操作记录下来，undo log也会产生redo日志。当事务失败需要回滚时，就可以从undo log中的逻辑记录进行回滚到修改前的样子。
+
+- undo log存储方式
+
+  undo存放在数据库内一个称为回滚段(rollback segment)的特殊段中。默认情况，undo segment在共享表空间（ibdata1)内，如果开启innodb_file_per_table ，将放在每个表的.ibd文件中。可以通过py_innodb_page_info.py工具查看当前表空间中undo的数量。
+
+  每个回滚段有1024个undo log segment，在使用时向每个undo log segment中申请undo 页。在旧版本只有一个回滚段。mysql5.5开始支持128个回滚段。每个事务占用一个undo log segment，因此，可以支持最多128*1024个并发事务运行。
+
+  <img src='./images/mysql_006.png'>
+
+- 相关参数和状态
+
+  ```shell
+  +--------------------------+------------+
+  | Variable_name            | Value      |
+  +--------------------------+------------+
+  | innodb_max_undo_log_size | 1073741824 |    # undo log的最大容量限制，默认1G
+  | innodb_undo_directory    | ./         |    # 设置回滚段文件路径，可以设置独立表空间（MySQL5.6）
+  | innodb_undo_log_truncate | OFF        |    # 是否开启自动清理undo log的功能，MySQL5.7.5
+  | innodb_undo_logs         | 128        |    # 设置undo log segment的数量，默认128
+  | innodb_undo_tablespaces  | 0          |    # 设置undo 表空间的数量，至少2个。在初始化配置，以后不能修改
+  +--------------------------+------------+
+  
+  
+  show engine innodb status\G;
+  ...
+  ------------
+  TRANSACTIONS
+  ------------
+  Trx id counter 2819
+  Purge done for trx's n:o < 0 undo n:o < 0 state: running but idle
+  History list length 12
+  LIST OF TRANSACTIONS FOR EACH SESSION:
+  ---TRANSACTION 421561295218512
+  ...
+  
+  
+  # 视图查看
+  select * from information_schema.innodb_trx_rollback_segment\G;
+  
+  select * from information_schema.innodb_trx_undo\G;
+  ```
+
+
+
+#### redo、undo 日志工作流程
+
+> **LSN**: 一个一直在递增的日志序列号，在InnoDB中代表了从实例安装到当前已经产生的日志总量。可以通过LSN计算出其在日志文件中的位置。每个block在写盘时，其最近一次修改的LSN也会记入其中，这样在崩溃恢复时，无需Apply该LSN之前的日志。
+
+<img src='./images/mysql_007.png'>
 
 
 
