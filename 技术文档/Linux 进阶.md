@@ -428,7 +428,7 @@ rsync [OPTION...] SRC... [DEST]
 # 推送文件到目标服务器，下面的命令通过 -e 修改默认连接端口
 rsync -avuP -e "ssh -p 11220" /data/code develop@10.4.1.58:/data/customize 
 
-# 拉去无夫妻数据到本地
+# 拉取服务器数据到本地
 rsync -avuP -e "ssh -p 11220" develop@10.4.1.58:/data/customize/code .
 ```
 

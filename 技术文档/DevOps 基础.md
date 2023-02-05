@@ -1308,12 +1308,14 @@ kubectl get ing -A
 kubectl get ns
 # 查看集群资源配置
 kubectl get quota
+# 查看集群事件信息，比如pod创建信息等
+kubectl get events
 
 # 查看pod的描述信息
 kubectl describe pod <podName>
 kubectl describe pod -n <namespaces> <podname>
 
-# 查看 ingress 信息
+# 查看 ingress 路由信息
 kubectl describe ingressroute
 
 # 查看node或pod的资源使用情况
@@ -1514,6 +1516,31 @@ spec:
       requests: 
         cpu: 500m    
         memory: 1024Mi
+```
+
+
+
+### SVC
+
+Nodeport 暴露服务：
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-master
+  namespace: devops-30033564-sit-bot-300-guochanhua
+  labels:
+    app: mysql-master
+    app.kubernetes.io/name: mysql-master
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: middleware-mysql-primary-0
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+  type: NodePort
 ```
 
 
