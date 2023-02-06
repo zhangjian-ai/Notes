@@ -234,7 +234,7 @@ Ubuntu采用自行加强的内核，默认不能直接root登陆，必须从第�
 
 
 
-# 3、远程连接和文件传输
+# 3、远程传输
 
 ## 3.1、SSH服务
 
@@ -438,27 +438,6 @@ rsync -avuP -e "ssh -p 11220" develop@10.4.1.58:/data/customize/code .
 
 ## 3.6、wget 获取在线资源
 
-`wget` 资源链接。即可将互联网资源下载到Linux。
-
-```shell
-# 下载一张图片
-ubuntu@VM-16-9-ubuntu:~/learning$ wget https://scpic.chinaz.net/files/pic/pic9/202111/apic36746.jpg
---2021-11-28 21:23:42--  https://scpic.chinaz.net/files/pic/pic9/202111/apic36746.jpg
-Resolving scpic.chinaz.net (scpic.chinaz.net)... 150.138.105.234
-Connecting to scpic.chinaz.net (scpic.chinaz.net)|150.138.105.234|:443... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 166592 (163K) [image/jpeg]
-Saving to: ‘apic36746.jpg’
-
-apic36746.jpg                           100%[==============================================================================>] 162.69K  --.-KB/s    in 0.06s
-
-2021-11-28 21:23:43 (2.78 MB/s) - ‘apic36746.jpg’ saved [166592/166592]
-
-ubuntu@VM-16-9-ubuntu:~/learning$ ls -lh
-total 164K
--rw-rw-r-- 1 ubuntu ubuntu 163K Nov 22 15:24 apic36746.jpg
-```
-
 
 
 
@@ -524,7 +503,7 @@ public class Hello{
 
 
 
-## 4.4、快捷键使用案例
+## 4.4、常用快捷键
 
 > 要先进入正常模式才可以使用快捷键
 
@@ -737,17 +716,353 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
 
 
-## 7.2、帮助指令
+## 7.2、网络管理类命令
 
-当我们对某个指令不熟悉的时候，我们可以使用Linux提供的帮助指令来了解这个指令的使用方法
+1. **wget 指令**
 
-1. 通过man指令获得帮助信息：`man [命令或配置文件]`
-2. 通过help指令获得 shell 内置命令的帮助信息：`help [命令]`
-3. 当然，更推荐直接百度
+   `wget` 资源链接。即可将互联网资源下载到Linux。
 
-> 按J或K滚动翻看
+   ```shell
+   # 语法格式
+   wget [options] [url]
+   
+   # options:
+   	-O 选项以其他名称保存下载的文件
+   	-P 选项将文件下载到指定目录
+   	-c 选项断点续传
+   	-b 选项在后台下载
+   	-i 选项下载多个文件。-i 后面应该接一个写入了多个url的文本文件
+   	--limit-rate 选项限制下载速度。如：wget --limit-rate=1m xxxx
+   	--tries 选项增加重试次数
+   ```
 
+   ```shell
+   # 下载一张图片
+   ubuntu@VM-16-9-ubuntu:~/learning$ wget https://scpic.chinaz.net/files/pic/pic9/202111/apic36746.jpg
+   
+   apic36746.jpg                           100%[==============================================================================>] 162.69K  --.-KB/s    in 0.06s
+   
+   2021-11-28 21:23:43 (2.78 MB/s) - ‘apic36746.jpg’ saved [166592/166592]
+   
+   ubuntu@VM-16-9-ubuntu:~/learning$ ls -lh
+   total 164K
+   -rw-rw-r-- 1 ubuntu ubuntu 163K Nov 22 15:24 apic36746.jpg
+   ```
 
+2. **ping 指令**
+
+   ping 指令会使用 ICMP 传输协议，发出要求回应的信息，若远端主机的网络功能没有问题，就会回应该信息，因而得知该主机运作正常。
+
+   ```shell
+   # 语法
+   ping [-dfnqrRv][-c<完成次数>][-i<间隔秒数>][-I<网络界面>][-l<前置载入>][-p<范本样式>][-s<数据包大小>][-t<存活数值>][主机名称或IP地址]
+   
+   # 参数
+     -d 使用Socket的SO_DEBUG功能。
+     -c <完成次数> 设置完成要求回应的次数。
+     -f 极限检测。
+     -i<间隔秒数> 指定收发信息的间隔时间。
+     -I<网络界面> 使用指定的网络接口送出数据包。
+     -l<前置载入> 设置在送出要求信息之前，先行发出的数据包。
+     -n 只输出数值。
+     -p<范本样式> 设置填满数据包的范本样式。
+     -q 不显示指令执行过程，开头和结尾的相关信息除外。
+     -r 忽略普通的Routing Table，直接将数据包送到远端主机上。
+     -R 记录路由过程。
+     -s<数据包大小> 设置数据包的大小。
+     -t<存活数值> 设置存活数值TTL的大小。
+     -v 详细显示指令的执行过程。
+     -w <deadline> 在 deadline 秒后退出。
+     -W <timeout> 在等待 timeout 秒后开始执行。
+   ```
+
+3. **telnet 命令**
+
+   telnet命令用于登录远程主机，是基于Telnet协议的远程登录程序，对远程主机进行管理。telnet因为采用明文传送报文，安全性不好，很多Linux服务器都不开放telnet服务，而改用更安全的ssh方式了。但仍然有很多别的系统可能采用了telnet方式来提供远程登录，因此弄清楚telnet客户端的使用方式仍是很有必要的。
+
+   **telnet命令还可做别的用途，比如确定远程服务器的某个端口是否能访问。** 现在通常做这个用。
+
+   ```shell
+   # 检测目标主机 22 端口是否可用
+   $ telnet 10.234.178.144 22
+   
+   Connected to 10.234.178.144.
+   Escape character is '^]'.
+   ```
+
+4. **curl 指令**
+
+   > 1. curl 是常用的命令行工具，用来请求 Web 服务器。它的名字就是客户端（client）的 URL 工具的意思。
+   > 2. curl 命令用作网络数据包收发，常应用于非交互式环境中。
+   >    - 交互式模式：在终端上执行命令，shell解释器等待你的输入，并且立即执行你提交的命令（shell与用户进行交互）。这种模式也是大多数用户非常熟悉的：登录、执行一些命令、退出。当你退出后，shell也终止了。
+   >    - 非交互式模式：非交互式模式，以shell script(非交互)方式执行。在这种模式下，shell不与你进行交互，而是读取存放在文件中的命令，并且执行它们。当它读到文件的结尾EOF，shell也就终止了。
+   > 3. curl是一个命令行访问URL的工具，作用是发出网络请求，然后得到和提取数据，显示在"标准输出"（stdout）上面。可以用它构造http request报文，且可以解析服务器返回的http response，额外还支持cookie特性，可以用curl完成web浏览器的基本功能，curl还支持HTTPS/FTP/FTPS/TELNET/LDAP等协议。
+
+   常见用法（结合参数）:
+
+   1. -A：`-A`参数指定客户端的用户代理标头，即`User-Agent`。curl 的默认用户代理字符串是`curl/[version]`。
+
+      例1：将`User-Agent`改成 Chrome 浏览器。
+
+      ```
+      curl -A 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36' https://google.com
+      ```
+
+      例2：移除`User-Agent`标头。
+
+      ```
+      curl -A '' https://google.com
+      ```
+
+      例3：通过`-H`参数直接指定标头，更改`User-Agent`
+
+      ```
+      curl -H 'User-Agent: php/1.0' https://google.com
+      ```
+
+   2. -b：`-b`参数用来向服务器发送 Cookie。
+
+      例1：生成一个标头`Cookie: foo=bar`，向服务器发送一个名为`foo`、值为`bar`的 Cookie。
+
+      ```
+      curl -b 'foo1=bar' https://google.com
+      ```
+
+      例2：发送两个 Cookie。
+
+      ```
+      curl -b 'foo1=bar;foo2=bar2' https://google.com
+      ```
+
+      例3：读取本地文件`cookies.txt`，里面是服务器设置的 Cookie（参见`-c`参数），将其发送到服务器。
+
+      ```
+      curl -b cookies.txt https://www.google.com
+      ```
+
+   3. -c：`-c`参数将服务器设置的 Cookie 写入一个文件。
+
+      例1：将服务器的 HTTP 回应所设置 Cookie 写入文本文件`cookies.txt`。
+
+      ```
+      curl -c cookies.txt https://www.google.com
+      ```
+
+   4. -d：`-d`参数用于发送 POST 请求的数据体
+
+      例1：使用`-d`参数以后，HTTP 请求会自动加上标头`Content-Type : application/x-www-form-urlencoded`。并且会自动将请求转为 POST 方法，因此可以省略`-X POST`。
+
+      ```
+      curl -d'login=emma＆password=123'-X POST https://google.com/login
+      # 或者
+      curl -d 'login=emma' -d 'password=123' -X POST  https://google.com/login
+      ```
+
+      例2：`-d`参数可以读取本地文本文件的数据，向服务器发送。（取`data.txt`文件的内容，作为数据体向服务器发送。）
+
+      ```
+      curl -d '@data.txt' https://google.com/login
+      ```
+
+   5. --data-urlencode：`--data-urlencode`参数等同于`-d`，发送 POST 请求的数据体，区别在于会自动将发送的数据进行 URL 编码。
+
+      例1：发送的数据`hello world`之间有一个空格，需要进行 URL 编码。
+
+      ```
+      curl --data-urlencode 'comment=hello world' https://google.com/login
+      ```
+
+   6. -e：`-e`参数用来设置 HTTP 的标头`Referer`，表示请求的来源。
+
+      例1：将`Referer`标头设为`https://google.com?q=example`。
+
+      ```
+      curl -e 'https://google.com?q=example' https://www.example.com
+      ```
+
+      例2：`-H`参数可以通过直接添加标头`Referer`，达到同样效果
+
+      ```
+      curl -H 'Referer: https://google.com?q=example' https://www.example.com
+      ```
+
+   7. -X：`-X`参数指定 HTTP 请求的方法。
+
+      例1：下面命令对`https://www.example.com`发出 POST 请求。
+
+      ```
+      curl -X POST https://www.example.com
+      ```
+
+   8. -F：`-F`参数用来向服务器上传二进制文件。
+
+      例1：给 HTTP 请求加上标头`Content-Type: multipart/form-data`，然后将文件`photo.png`作为`file`字段上传。
+
+      ```
+      curl -F 'file=@photo.png' https://google.com/profile
+      ```
+
+      例2：`-F`参数可以指定 MIME 类型。（指定 MIME 类型为`image/png`，否则 curl 会把 MIME 类型设为`application/octet-stream`。）
+
+      ```
+      curl -F 'file=@photo.png;type=image/png' https://google.com/profile
+      ```
+
+      例3：`-F`参数也可以指定文件名。（原始文件名为`photo.png`，但是服务器接收到的文件名为`me.png`。）
+
+      ```
+      curl -F 'file=@photo.png;filename=me.png' https://google.com/profile
+      ```
+
+   9. -G：`-G`参数用来构造 URL 的查询字符串。
+
+      例1：发出一个 GET 请求，实际请求的 URL 为`https://google.com/search?q=kitties&count=20`。如果省略`-G`，会发出一个 POST 请求。
+
+      ```
+      curl -G -d 'q=kitties' -d 'count=20' https://google.com/search
+      ```
+
+      例2：如果数据需要 URL 编码，可以结合`--data--urlencode`参数。
+
+      ```
+      curl -G --data-urlencode 'comment=hello world' https://www.example.com
+      ```
+
+   10. -H：`-H`参数添加 HTTP 请求的标头。
+
+       例1：添加 HTTP 标头`Accept-Language: en-US`。
+
+       ```
+       curl -H 'Accept-Language: en-US' https://google.com
+       ```
+
+       例2：添加两个 HTTP 标头。
+
+       ```
+       curl -H 'Accept-Language: en-US' -H 'Secret-Message: xyzzy' https://google.com
+       ```
+
+       例3：添加 HTTP 请求的标头`Content-Type: application/json`，然后用`-d`参数发送 JSON 数据。
+
+       ```
+       curl -d '{"login": "emma", "pass": "123"}' -H 'Content-Type: application/json' https://google.com/login
+       ```
+
+   11. -i：`-i`参数打印出服务器回应的 HTTP 标头。
+
+       例1：收到服务器回应后，先输出服务器回应的标头，然后空一行，再输出网页的源码。
+
+       ```
+       curl -i https://www.example.com
+       ```
+
+   12. -I：`-I`参数向服务器发出 HEAD 请求，然会将服务器返回的 HTTP 标头打印出来。
+
+       例1：输出服务器对 HEAD 请求的回应。
+
+       ```
+       curl -I https://www.example.com
+       ```
+
+       例2：`--head`参数等同于`-I`。
+
+       ```
+       curl --head https://www.example.com
+       ```
+
+   13. -k：`-k`参数指定跳过 SSL 检测。
+
+       例1：不会检查服务器的 SSL 证书是否正确。
+
+       ```
+       curl -k https://www.example.com
+       ```
+
+   14. -L：`-L`参数会让 HTTP 请求跟随服务器的重定向。curl 默认不跟随重定向。
+
+       例1：
+
+       ```
+       curl -L -d 'tweet=hi' https://api.twitter.com/tweet
+       ```
+
+   15. --limit-rate：`--limit-rate`用来限制 HTTP 请求和回应的带宽，模拟慢网速的环境。
+
+       例1：将带宽限制在每秒 200K 字节。
+
+       ```
+       curl --limit-rate 200k https://google.com
+       ```
+
+   16. -o：`-o`参数将服务器的回应保存成文件，等同于`wget`命令
+
+       例1：将`www.example.com的响应内容`保存成`example.html`。
+
+       ```
+       curl -o example.html https://www.example.com
+       ```
+
+   17. -O：`-O`参数将服务器回应保存成文件，并将 URL 的最后部分当作文件名。
+
+       例1：将服务器回应保存成文件，文件名为`bar.html`
+
+       ```
+       curl -O https://www.example.com/foo/bar.html
+       ```
+
+   18. -s：`-s`参数将不输出错误和进度信息
+
+       例1：一旦发生错误，不会显示错误信息。不发生错误的话，会正常显示运行结果。
+
+       ```
+       curl -s https://www.example.com
+       ```
+
+       例2： curl 不产生任何输出
+
+       ```
+       curl -s -o /dev/null https://google.com
+       ```
+
+   19. -S：`-S`参数指定只输出错误信息，通常与`-o`一起使用。
+
+       例1：没有任何输出，除非发生错误。
+
+       ```
+       curl -s -o /dev/null https://google.com
+       ```
+
+   20. -u：`-u`参数用来设置服务器认证的用户名和密码
+
+       例1：设置用户名为`bob`，密码为`12345`，然后将其转为 HTTP 标头`Authorization: Basic Ym9iOjEyMzQ1`。
+
+       ```
+       curl -u 'bob:12345' https://google.com/login
+       ```
+
+   21. -v：`-v`参数输出通信的整个过程，用于调试
+
+       例1：
+
+       ```
+       curl -v https://www.example.com
+       ```
+
+   22. -x：`-x`参数指定 HTTP 请求的代理
+
+       例1：指定 HTTP 请求通过`myproxy.com:8080`的 socks5 代理发出。
+
+       ```
+       curl -x socks5://james:cats@myproxy.com:8080 https://www.example.com
+       ```
+
+       例2：如果没有指定代理协议，默认为 HTTP。（下面命令中，请求的代理使用 HTTP 协议）
+
+       ```
+       curl -x james:cats@myproxy.com:8080 https://www.example.com
+       ```
+
+       
 
 ## 7.3、文件目录类指令
 
@@ -780,9 +1095,18 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
 4. **mkdir 命令**（make directory），用于创建目录
 
-   ```
-   mkdir [选项] 要创建的目录
+   ```shell
+   mkdir [选项] dir
+   -v 创建目录时，如果目录存在就不创建
    -p 创建多级目录，多级目录即创建一个目录后然后在这个目录下再创建一个目录，相当于创建两个目录
+   
+   # 一次性创建多个目录
+   [root@cvm-172_16_20_64:~/seeker]# mkdir -pv demo/{a,b,c}
+   
+   mkdir: created directory ‘demo’
+   mkdir: created directory ‘demo/a’
+   mkdir: created directory ‘demo/b’
+   mkdir: created directory ‘demo/c’
    ```
 
 5. **rmdir 命令**（remove directory），用于删除**空目录**
@@ -827,6 +1151,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    ```
    mv 旧文件名 新文件名     重命名
    mv 源文件路径 目标文件路径   移动文件
+   
    例1：mv a.txt b.txt
    例2：mv a.txt /home/    如果移动到的文件夹内存在同名的文件会提示是否覆盖,也可以重命名
    ```
@@ -881,67 +1206,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
     # q  离开less这个程序
     ```
 
-12. **tee 命令**
-
-    该命令可以从标准输入中读入信息并将其写入标准输出或文件中，具体用法如下：
-
-    ```shell
-    $ echo "第三条信息" | sudo tee -a test.asc
-    
-    # tee 命令的 "-a" 选项的作用等同于 ">>" 命令，如果去除该选项，那么 tee 命令的作用就等同于 ">" 命令。
-    ```
-    
-13. `> 命令`和`>> 命令`
-
-    `> 命令` **输出重定向** : 会将原来的文件的内容覆盖
-
-    `>> 命令` **追加**： 不会覆盖原来文件的内容，而是追加到文件的尾部
-
-    ```
-    ls -l >文件   将ls -l 显示的内容写入文件 a.txt 中（覆盖写）如果该文件不存在，就创建该文件
-    ls -al >>文件 将ls -al 显示的内容追加到文件 a.txt 的末尾
-    cat 文件 1 > 文件 2   将文件1的内容覆盖到文件2
-    echo "str">>文件  将字符串内容追加到文件中
-    echo "str">文件   将字符串的内容覆盖到文件中，原来的内容全都没了
-    ```
-
-14. `nohup`和`&`命令
-
-    在linux终端或控制台上执行命令时，可能不希望脚本占住屏幕需要在后台执行脚本，有几种方法让脚本在后台执行：
-
-    - &
-
-      > 当在前台运行某个作业时，终端被该作业占据；可以在命令后面加上& 实现后台运行。例如：sh test.sh &
-      > 需要用户交互的命令不要放在后台执行，不过，作业在后台运行一样会将结果输出到屏幕上，
-      > 如果放在后台运行的作业会产生大量的输出，最好使用下面的方法把它的输出重定向到某个文件中：
-      > `command > out.file 2>&1 &`
-      > 这样，所有的标准输出和错误输出都将被重定向到一个叫做out.file 的文件中。
-      > (注：`成功地提交进程以后，会显示出一个进程号，可以用它来监控或杀死该进程。(ps -ef | grep 进程号 或者 kill -9 进程号）`)
-
-    - nohup
-
-      > 使用&命令后，作业被提交到后台运行，当前控制台没有被占用，但是一但把当前控制台关掉(退出帐户时)，作业就会停止运行。nohup命令可以在你退出帐户之后继续运行相应的进程。nohup就是不挂起的意思( no hang up)。该命令的一般形式为：`nohup command &`
-      > 使用nohup命令提交作业，那么在缺省情况下该作业的所有输出都被重定向到一个名为nohup.out的文件中，除非另外指定了输出文件：`nohup command > myout.file 2>&1 &`
-      > 使用nohup之后有可能在当前账户非正常退出或结束的时候，命令还是会自己结束。所以在使用nohup命令后台运行后，需要使用exit正常退出当前账户，这样才能保证命令一直在后台运行。
-
-    `command > out.file 2 > &1 &` 解析：
-
-    - `command > out.file`是将command的输出重定向到out.file文件，即输出内容不打印到屏幕上，而是输出到out.file文件中
-    - `2 > &1` 是将错误输出重定向到标准输出，这里的标准输出已经重定向到了out.file文件，即将标准出错也输出到out.file文件中
-    - 最后一个`&`， 是让该命令在后台执行
-    - `0 1 2`分别代表stdin标准输入、stdout标准输出、stderr标准错误
-    - 2与>结合代表错误重定向，而1则代表错误重定向到一个文件1，而不代表标准输出
-    - 换成2>&1，&与1结合就代表标准输出了，就变成错误重定向到标准输出
-
-14. **echo 命令**，输出内容到控制台
-
-    ```
-    echo [选项] [输出内容]
-    例1  使用 echo 指令输出环境变量,输出当前的环境路径 ==> echo $PATH
-    例2  使用 echo 指令输出"hello world" ==> echo "hello world"
-    ```
-
-17. **head 命令**，用于显示文件的开头部分内容，默认情况下 head 指令显示文件的前 10 行内容
+14. **head 命令**，用于显示文件的开头部分内容，默认情况下 head 指令显示文件的前 10 行内容
 
     ```
     head 文件 
@@ -958,7 +1223,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
     如果你是用的vim修改，因为vim实际上是删除本文件，生成了新的同名文件，所以无法进行监控
     ```
 
-19. **sed -i 命令**，替换文本内容
+15. **sed -i 命令**，替换文本内容
 
     ```shell
     # 字符串替换
@@ -978,27 +1243,6 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
     其他两剑客分别是：awk 、grep
 
-20. **ln 命令**，给原文件创建一个链接
-
-    软链接也叫符号链接，类似于 windows 里的快捷方式。本质上是创建了一个 Link 类型的目录项，里面存放了目标文件的路径。
-
-    硬连接指通过索引结点来进行链接。创建硬连接时，在当前目录表新增一个目录项，同时索引结点技术变量count加1。
-
-    [关于硬连接和软连接的详细介绍](https://www.cnblogs.com/songgj/p/9115954.html)
-
-    ```
-    ln [参数] [目标文件或目录] 链接名
-    -i 交互模式，文件存在则提示用户是否覆盖
-    -s 软链接(符号链接)
-    -d 允许超级用户制作目录的硬链接
-    -b 删除，覆盖以前建立的链接
-    
-    在默认不带参数情况下，ln命令创建的是硬链接
-    
-    例： ln -s /root linkToRoot   在当前目录下创建一个软链接，链接指向root目录
-    当 cd linkToRoot 时，就会跳转到root目录，但是用pwd查看路径时，还是会显示原来目录的linkToRoot的路径
-    ```
-
     
 
 
@@ -1014,7 +1258,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
 2. **date 命令**，显示当前日期 / 设置当前日期
 
-   ```
+   ```shell
    date 显示当前时间
    date +%Y   显示当前年份
    date +%m   显示当前月份
@@ -1023,7 +1267,8 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    
    date -s 字符串时间  设置系统当前时间
    例：date -s "2020-11-11 11:11:11"
-   设置回原来的时间
+   
+   # 设置回原来的时间
    ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
    ```
 
@@ -1113,7 +1358,303 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    history -c
    ```
 
-5. **sort**  指令
+5. **readlink 命令**
+
+   readlink是Linux系统中一个常用工具，主要用来找出符号链接所指向的位置。
+
+   ```shell
+   readlink [参数] [文件]
+   
+   参数：
+     -f	递归跟随给出文件名的所有符号链接以标准化,除最后一个外所有组件必须存在
+     -e	递归跟随给出文件名的所有符号链接以标准化，所有组件都必须存在
+     -n	不输出尾随的新行
+     -s	缩减大多数的错误消息
+     -v	报告所有错误消息
+     
+   # 这里找到system-release指向的文件
+   [root@cvm-172_16_20_64:~/seeker]# ls -l /etc/system-release
+   lrwxrwxrwx 1 root root 14 Sep  3  2021 /etc/system-release -> centos-release
+   [root@cvm-172_16_20_64:~/seeker]# readlink -f /etc/system-release
+   /etc/centos-release
+   ```
+
+6. **file 指令**
+
+   file命令用于辨识文件类型。
+
+   ```shell
+   # 语法
+   file [-bcLvz][-f <名称文件>][-m <魔法数字文件>...][文件或目录...]
+   
+   # 参数
+     -b 　列出辨识结果时，不显示文件名称。
+     -c 　详细显示指令执行过程，便于排错或分析程序执行的情形。
+     -f<名称文件> 　指定名称文件，其内容有一个或多个文件名称时，让file依序辨识这些文件，格式为每列一个文件名称。
+     -L 　直接显示符号连接所指向的文件的类别。
+     -m<魔法数字文件> 　指定魔法数字文件。
+     -v 　显示版本信息。
+     -z 　尝试去解读压缩文件的内容。
+   
+   # [文件或目录...] 
+   	要确定类型的文件列表，多个文件之间使用空格分开，可以使用shell通配符匹配多个文件。
+   	
+   	
+   [root@localhost ~]# file install.log
+   install.log: UTF-8 Unicode text
+   ```
+
+
+
+## 7.6、压缩解压缩指令
+
+1. **gzip / gunzip 指令**
+
+   gzip 用于**压缩文件**， gunzip 用于**解压缩**
+
+   压缩完成后，原来的文件就没了，取而代之的是对应的压缩文件，不会保留原来的文件
+
+   ```
+   gzip 文件        压缩文件，只能将文件压缩为 *.gz 文件
+   gunzip 文件.gz   解压缩文件命令
+   ```
+
+2. **zip / unzip 指令**
+
+   zip 用于**压缩文件**， unzip 用于**解压缩**，这个在项目打包发布中很有用的
+
+   ```
+   zip [选项] XXX.zip 将要压缩的内容    压缩文件和目录的命令
+   unzip [选项] XXX.zip         解压缩文件
+   zip -r：递归压缩，即压缩目录
+   unzip -d<目录> ：指定解压后文件的存放目录
+   
+   例： zip -r home.zip /home/   # 将 /home 下的 所有文件进行压缩成 home.zip
+   例： unzip -d /home/ home.zip   # 将 mypackge.zip 解压到 /home 目录下
+   ```
+
+3. **tar 指令**，打包指令
+
+   打包且后的文件是`.tar.gz`的文件
+
+   ```shell
+   tar [选项] 打包后的文件名[.tar.gz/.tar/.tar.xz] 打包的内容
+   -c create 产生 .tar 打包文件
+   -v 显示详细信息
+   -f filename 指定压缩后的文件名
+   -z gzip 打包同时压缩
+   -x extract 解包 .tar 文件
+   -t list 
+   -j bzip2 
+   -J xz
+   
+   例1:
+   	tar -zcvf a.tar.gz a1.txt a2.txt   将 a1.txt 和 a2.txt 压缩成 a.tar.gz
+   例2:
+   	tar -zcvf myhome.tar.gz /home/ 		将 /home/ 目录下所有文件打包压缩成 myhome.tar.gz
+   例3:
+   	tar -zxvf a.tar.gz  将 a.tar.gz 解压到当前目录
+   例4:
+   	tar -zxvf myhome.tar.gz -C /home/  将 myhome.tar.gz 解压到 /home/ 目录下。-C 应该是change，改变目录(指定解压缩的目标目录一定要事先存在)
+   	
+   # 压缩/解压 xz 文件时，如果出现 tar (child): xz: Cannot exec: No such file or directory
+   # 是因为linux 没安装xz工具
+   ubuntu:
+   	apt install -y xz-utils
+   	
+   centos:
+   	yum install -y xz
+   ```
+   
+
+
+
+## 7.7、系统资源类指令
+
+详见 **服务器资源指标.md** 文档。
+
+
+
+## 7.8、输入输出类指令
+
+1. **tee 命令**
+
+   该命令可以从标准输入中读入信息并将其写入标准输出或文件中，具体用法如下：
+
+   ```shell
+   $ echo "第三条信息" | sudo tee -a test.asc
+   
+   # tee 命令的 "-a" 选项的作用等同于 ">>" 命令，如果去除该选项，那么 tee 命令的作用就等同于 ">" 命令。
+   ```
+
+2. `> 命令`和`>> 命令`
+
+   `> 命令` **输出重定向** : 会将原来的文件的内容覆盖
+
+   `>> 命令` **追加**： 不会覆盖原来文件的内容，而是追加到文件的尾部
+
+   ```
+   ls -l >文件   将ls -l 显示的内容写入文件 a.txt 中（覆盖写）如果该文件不存在，就创建该文件
+   ls -al >>文件 将ls -al 显示的内容追加到文件 a.txt 的末尾
+   cat 文件 1 > 文件 2   将文件1的内容覆盖到文件2
+   echo "str">>文件  将字符串内容追加到文件中
+   echo "str">文件   将字符串的内容覆盖到文件中，原来的内容全都没了
+   ```
+
+3. **echo 命令**，输出内容到控制台
+
+   ```
+   echo [选项] [输出内容]
+   例1  使用 echo 指令输出环境变量,输出当前的环境路径 ==> echo $PATH
+   例2  使用 echo 指令输出"hello world" ==> echo "hello world"
+   ```
+
+4. **read 命令**
+
+   read 内部命令被用来从标准输入读取单行数据。这个命令可以用来读取键盘输入，当使用重定向的时候，可以读取文件中的一行数据。
+
+   ```shell
+   # 语法
+   read [-ers] [-a aname] [-d delim] [-i text] [-n nchars] [-N nchars] [-p prompt] [-t timeout] [-u fd] [name ...]
+   
+   # 参数
+     -a 后跟一个变量，该变量会被认为是个数组，然后给其赋值，默认是以空格为分割符。
+     -d 后面跟一个标志符，其实只有其后的第一个字符有用，作为结束的标志。
+     -p 后面跟提示信息，即在输入前打印提示信息。
+     -e 在输入的时候可以使用命令补全功能。
+     -n 后跟一个数字，定义输入文本的长度，很实用。
+     -r 屏蔽\，如果没有该选项，则\作为一个转义字符，有的话 \就是个正常的字符了。
+     -s 安静模式，在输入字符时不再屏幕上显示，例如login时输入密码。
+     -t 后面跟秒数，定义输入字符的等待时间。
+     -u 后面跟fd，从文件描述符中读入，该文件描述符可以是exec新开启的
+   ```
+
+   示例：
+
+   ```shell
+   # 准备一个脚本
+   [root@cvm-172_16_20_64:~/seeker]# cat 2.sh 
+   aaaaaa
+   bbbbbb
+   cccccc
+   
+   # 通过管道输入脚本内容，read 按行读取并赋值给变量row
+   [root@cvm-172_16_20_64:~/seeker]# cat 2.sh | while read row; do echo ">>>: $row"; done
+   >>>: aaaaaa
+   >>>: bbbbbb
+   >>>: cccccc
+   ```
+
+
+
+## 7.9、命令行快捷键
+
+linux命令行执行命令时，快速移动光标可节省不少时间，如下是快速移动光标的快捷键：
+
+1. 上下切换历史命令
+
+   ```shell
+   ↑(Ctrl+p): 显示上一条命令
+   ↓(Ctrl+n): 显示下一条命令
+   ```
+
+2. 快速切换到行首行尾
+
+   ```shell
+   ctrl+a: 行首
+   ctrl+e: 行尾
+   ```
+
+3. 前后移动一个单词
+
+   ```shell
+   Esc b: 左移一个单词[back]
+   Esc f: 右移一个单词[forward]
+   ```
+
+4. 删除光标前一个单词
+
+   ```shell
+   Ctrl+w: 可以清除当前光标位置之前的一个单词
+   ```
+
+5. 删除整行命令
+
+   ```shell
+   ctrl+u: 可以直接将整行命令直接清除
+   ```
+
+6. 剪切光标前后的所有字符
+
+   ```shell
+   Ctrl+u: 剪切命令行中光标所在处之前的所有字符(不包括自身)
+   Ctrl+k: 剪切命令行中光标所在处之后的所有字符(包括自身)
+   
+   Ctrl+y: 粘贴刚才所删除的字符
+   ```
+
+   
+
+## 7.10、其他常用指令
+
+1. **man 和 help**
+
+   当我们对某个指令不熟悉的时候，我们可以使用Linux提供的帮助指令来了解这个指令的使用方法
+
+   1. 通过man指令获得帮助信息：`man [命令或配置文件]`
+   2. 通过help指令获得 shell 内置命令的帮助信息：`help [命令]`
+
+2. **ln 命令**，给原文件创建一个链接
+
+   软链接也叫符号链接，类似于 windows 里的快捷方式。本质上是创建了一个 Link 类型的目录项，里面存放了目标文件的路径。
+
+   硬连接指通过索引结点来进行链接。创建硬连接时，在当前目录表新增一个目录项，同时索引结点计数变量count加1。
+
+   [关于硬连接和软连接的详细介绍](https://www.cnblogs.com/songgj/p/9115954.html)
+
+   ```
+   ln [参数] [目标文件或目录] 链接名
+   
+   -i 交互模式，文件存在则提示用户是否覆盖
+   -s 软链接(符号链接)
+   -d 允许超级用户制作目录的硬链接
+   -b 删除，覆盖以前建立的链接
+   
+   在默认不带参数情况下，ln命令创建的是硬链接
+   
+   例： ln -s /root linkToRoot   在当前目录下创建一个软链接，链接指向root目录
+   当 cd linkToRoot 时，就会跳转到root目录，但是用pwd查看路径时，还是会显示原来目录的linkToRoot的路径
+   ```
+
+3. **`nohup`和`&`命令**
+
+   在linux终端或控制台上执行命令时，可能不希望脚本占住屏幕需要在后台执行脚本，有几种方法让脚本在后台执行：
+
+   - &
+
+     > 当在前台运行某个作业时，终端被该作业占据；可以在命令后面加上& 实现后台运行。例如：sh test.sh &
+     > 需要用户交互的命令不要放在后台执行，不过，作业在后台运行一样会将结果输出到屏幕上，
+     > 如果放在后台运行的作业会产生大量的输出，最好使用下面的方法把它的输出重定向到某个文件中：
+     > `command > out.file 2>&1 &`
+     > 这样，所有的标准输出和错误输出都将被重定向到一个叫做out.file 的文件中。
+     > (注：`成功地提交进程以后，会显示出一个进程号，可以用它来监控或杀死该进程。(ps -ef | grep 进程号 或者 kill -9 进程号）`)
+
+   - nohup
+
+     > 使用&命令后，作业被提交到后台运行，当前控制台没有被占用，但是一但把当前控制台关掉(退出帐户时)，作业就会停止运行。nohup命令可以在你退出帐户之后继续运行相应的进程。nohup就是不挂起的意思( no hang up)。该命令的一般形式为：`nohup command &`
+     > 使用nohup命令提交作业，那么在缺省情况下该作业的所有输出都被重定向到一个名为nohup.out的文件中，除非另外指定了输出文件：`nohup command > myout.file 2>&1 &`
+     > 使用nohup之后有可能在当前账户非正常退出或结束的时候，命令还是会自己结束。所以在使用nohup命令后台运行后，需要使用exit正常退出当前账户，这样才能保证命令一直在后台运行。
+
+   `command > out.file 2 > &1 &` 解析：
+
+   - `command > out.file`是将command的输出重定向到out.file文件，即输出内容不打印到屏幕上，而是输出到out.file文件中
+   - `2 > &1` 是将错误输出重定向到标准输出，这里的标准输出已经重定向到了out.file文件，即将标准出错也输出到out.file文件中
+   - 最后一个`&`， 是让该命令在后台执行
+   - `0 1 2`分别代表stdin标准输入、stdout标准输出、stderr标准错误
+   - 2与>结合代表错误重定向，而1则代表错误重定向到一个文件1，而不代表标准输出
+   - 换成2>&1，&与1结合就代表标准输出了，就变成错误重定向到标准输出
+
+4. **sort**  指令
 
    > **参数说明**：
    >
@@ -1154,7 +1695,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    this is a test 
    ```
 
-6. **uniq** 去重指令
+5. **uniq** 去重指令
 
    > - -c或--count 在每列旁边显示该行重复出现的次数。
    > - -d或--repeated 仅显示重复出现的行列。
@@ -1193,7 +1734,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    Linux 85  
    ```
 
-7. **wc** 统计指令
+6. **wc** 统计指令
 
    > - -c或--bytes或--chars 只显示Bytes数。
    > - -l或--lines 显示行数。
@@ -1211,7 +1752,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    9 test.txt
    ```
 
-8. **xargs** 指令
+7. **xargs** 指令
 
    xargs（eXtended ARGuments）是给命令传递参数的一个过滤器，也是组合多个命令的一个工具。
 
@@ -1281,77 +1822,14 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    
    # 查找所有的 jpg 文件，并且压缩它们
    [root@public-vm-arm seeker]# find . -type f -name "*.jpg" -print | xargs tar -czvf images.tar.gz
-   
    ```
 
-   
-
-## 7.6、压缩和解压缩类指令
-
-1. **gzip / gunzip 指令**
-
-   gzip 用于**压缩文件**， gunzip 用于**解压缩**
-
-   压缩完成后，原来的文件就没了，取而代之的是对应的压缩文件，不会保留原来的文件
-
-   ```
-   gzip 文件        压缩文件，只能将文件压缩为 *.gz 文件
-   gunzip 文件.gz   解压缩文件命令
-   ```
-
-2. **zip / unzip 指令**
-
-   zip 用于**压缩文件**， unzip 用于**解压缩**，这个在项目打包发布中很有用的
-
-   ```
-   zip [选项] XXX.zip 将要压缩的内容    压缩文件和目录的命令
-   unzip [选项] XXX.zip         解压缩文件
-   zip -r：递归压缩，即压缩目录
-   unzip -d<目录> ：指定解压后文件的存放目录
-   
-   例： zip -r home.zip /home/   # 将 /home 下的 所有文件进行压缩成 home.zip
-   例： unzip -d /home/ home.zip   # 将 mypackge.zip 解压到 /home 目录下
-   ```
-
-3. **tar 指令**，打包指令
-
-   打包且后的文件是`.tar.gz`的文件
-
-   ```shell
-   tar [选项] 打包后的文件名[.tar.gz/.tar/.tar.xz] 打包的内容
-   -c create 产生 .tar 打包文件
-   -v 显示详细信息
-   -f filename 指定压缩后的文件名
-   -z gzip 打包同时压缩
-   -x extract 解包 .tar 文件
-   -t list 
-   -j bzip2 
-   -J xz
-   
-   例1:
-   	tar -zcvf a.tar.gz a1.txt a2.txt   将 a1.txt 和 a2.txt 压缩成 a.tar.gz
-   例2:
-   	tar -zcvf myhome.tar.gz /home/ 		将 /home/ 目录下所有文件打包压缩成 myhome.tar.gz
-   例3:
-   	tar -zxvf a.tar.gz  将 a.tar.gz 解压到当前目录
-   例4:
-   	tar -zxvf myhome.tar.gz -C /home/  将 myhome.tar.gz 解压到 /home/ 目录下。-C 应该是change，改变目录(指定解压缩的目标目录一定要事先存在)
-   	
-   # 压缩/解压 xz 文件时，如果出现 tar (child): xz: Cannot exec: No such file or directory
-   # 是因为linux 没安装xz工具
-   ubuntu:
-   	apt install -y xz-utils
-   	
-   centos:
-   	yum install -y xz
-   ```
-   
 
 
 
-## 7.7、系统资源类指令
 
-详见 **服务器资源指标.md** 文档。
+
+
 
 
 
@@ -1959,7 +2437,7 @@ ping ip地址
 
 
 
-## 12.2、Linux网络环境配置
+## 12.2、静态IP
 
 1. 可以通过**图形化界面**进行设置，设置**自动连接**
 
@@ -1994,6 +2472,305 @@ ping ip地址
    ```
 
 
+
+## 12.3、iptables
+
+netfilter/iptables：IP 信息包过滤系统，它实际上由两个组件 netfilter 和 iptables 组成。
+
+主要工作在网络层，针对 IP 数据包。针对 TCP/IP 数据包实施过滤和限制，属于典型的包过滤防火墙（或称为网络层防火墙）
+
+1. **netfilter/iptables关系**
+
+   - **netfilter**: 属于“内核态”( Kernel Space， 又称为内核空间 ) 的防火墙功能体系。 是内核的一部分，由一些数据包过滤表组成，这些表包含内核用来控制数据包过滤处理的规则集。
+
+   - **iptables**: 属于“用户态”( User Space，又称为用户空间 ) 的防火墙管理体系。 是一种用来管理Linux防火墙的命令程序，它使插入，修改和删除数据包过滤表中的规则变得容易，通常位于 /sbin/iptables 目录下。
+
+   netfilter/iptables后期简称为iptables。iptables是基于内核的防火墙其中内置了 raw、mangle 、nat 和 filter 四个规则表。
+
+   表中所有规则配置后，立即生效，不需要重启服务。
+
+   > NAT（Network Address Translation），是指网络地址转换。
+   >
+   > 当在专用网内部的主机分配到了本地IP地址（即仅在本专用网内使用的专用地址），但又想和因特网上的主机通信（并不需要加密）时，可使用NAT方法。
+   >
+   > NAT 需要在专用网（私网IP）连接到因特网（公网IP）的路由器上安装NAT软件。装有NAT软件的路由器叫做NAT路由器，它至少有一个有效的外部全球IP地址（公网IP地址）。这样，所有使用本地地址（私网IP地址）的主机在和外界通信时，都要在NAT路由器上将其本地地址转换成全球IP地址，才能和公网通信。
+
+2. **iptables 四表五链**
+
+   - **四表**
+
+     - raw ：主要用来决定是否对数据包进行状态跟踪包含两个规则链，OUTPUT、PREROUTING
+
+     - mangle ：修改数据包内容，用来做流量整形的，给数据包设置标记。包含五个规则链：INPUT、OUTPUT、FORWARD、PREROUTING、POSTROUTING
+
+     - nat ：负责网络地址转换，用来修改数据包中的源、目标IP地址或端口。包含三个规则链：OUTPUT、PEROUTTNG、POSTROUTING
+
+     - filter ：负责过滤数据包，确定是否放行该数据包(过滤)。包含三个链：PREROUTTNG、POSTROUTING、OUTPUT
+
+     注 ：在iptables的四个规则表中，mangle表和raw表的应用相对较少
+
+   - **五链**
+
+     - INPUT ：处理入站数据包，匹配目标 IP是否为本机的数据包。
+
+     - OUTPUT ：处理出站数据包，一般不在此链上做配置。
+
+     - FORWARD ：处理转发数据包，匹配流经本机的数据包。
+
+     - PREROUTING链 ：在进行路由选择前处理数据包，用来修改目的地址，用来做 DNAT（Destination NAT）。相当于把内网中的 80 端口映射到路由器外网端口上。
+
+     - POSTROUTING链 ：在进行路由选择后处理数据包，用来修改源地址，用来做 SNAT（Source NAT）。相当于内网通过路由器 NAT 转换功能实现内网主机通过一个公网IP地址上网。
+
+   - 表链结构示意图
+
+     优先顺序 ：规则表应用顺序 ： raw → mangle → nat → filter
+
+     <img src="./images/linux_003.png" style="float:left;">
+
+   - 规则链之间的匹配顺序
+
+     入站数据：PREROUTING→>INPUT
+
+     出站数据：OUTPUT→POSTROUTING
+
+     转发数据：PREROUTING→FORWARD→POSTROUTING
+
+     <img src="./images/linux_004.png" style="float:left;">
+
+   -  规则链内的匹配顺序
+
+     自上向下按顺序依次进行检查，找到相匹配的规则即停止(LOG策略例外，表示记录相关日志)要么放行要么丢弃
+
+     若在该链内找不到相匹配的规则，则按该链的默认策略处理(未修改的状况下，默认策略为允许)
+
+     默认规则用 iptables -L 查看，规则链后面出现 ( policy ACCEPT ) 即是默认放行，默认策略不参与链内规则的顺序编排，-F 清空链时，默认策略不受影响
+
+3. **iptables 命令**
+
+   语法格式：
+
+   ```shell
+   iptables [-t 表名] 命令选项 ［链名］ ［条件匹配］ ［-j 目标动作或跳转］
+   或：iptables [-t 表名] 命令选项 ［链名] 规则定义
+   
+   # 说明：
+   表名、链名用于指定 iptables命令所操作的表和链，命令选项用于指定管理iptables规则的方式（比如：插入、增加、删除、查看等；条件匹配用于指定对符合什么样条件的数据包进行处理；目标动作或跳转用于指定数据包的处理方式（比如允许通过、拒绝、丢弃、跳转（Jump）给其它链处理。
+   
+   # 命令选项
+   -t 参数指定表 
+   -A 在指定链的末尾添加（append）一条新的规则
+   -D 删除（delete）指定链中的某一条规则，可以按规则序号和内容删除
+   -I 在指定链中插入（insert）一条新的规则，默认在第一行添加
+   -R 修改、替换（replace）指定链中的某一条规则，可以按规则序号和内容替换
+   -L 列出（list）指定链中所有的规则进行查看
+   -E 重命名用户定义的链，不改变链本身
+   -F 清空（flush）
+   -N 新建（new-chain）一条用户自己定义的规则链
+   -X 删除指定表中用户自定义的规则链（delete-chain）
+   -P 设置指定链的默认策略（policy）
+   -Z 将所有表的所有链的字节和数据包计数器清零
+   -n 使用数字形式（numeric）显示输出结果
+   -v 查看规则表详细信息（verbose）的信息
+   -V 查看版本(version)
+   -n 将source和destination字段显示为 IP地址/掩码
+   -o 指定数据包发出的网卡。如：-o eth0
+   -h 获取帮助（help）
+   
+   # 其它选项
+   -p protocol，tcp，udp，icmp，all
+   --dport 目标端口，指定端口一定要加上协议
+   --sport  源端口source
+   -s --source源ip
+   -d --destination目标ip
+   -m 指定模块
+       #这里扩展下-m 后面接模块名，这里罗列常用的模块名字
+       -m state --state NEW
+       -m limit
+       -m tcp 
+       -m multiport --ports
+       #详细查看man iptables-extensions 
+   
+   # -j参数，防火墙处理数据包的方式，都是大写。
+   -j 参数深入理解：
+       每条链是一个规则列表，它可以匹配一组数据包。 每个规则都指定了如何处理匹配的数据包， 这被称为“目标target”，它可以跳转到同一个表中的用户定义链(链的嵌套，docker安装的时候就有调用，比如看到某个链是docker的，这样便于分类管理)，在自定义链中也是写如何处理这个数据包，这里可以理解为链的相互嵌套，相互调用，设置白名单的时候用到：比如定义一个链叫白名单，里面是一些ip是接受还是拒绝。 用户定义的链的名称（man iptables-extensions(8)有描述），或者-j参数特殊值之一（ACCEPT，DROP，REJECT）  
+   ACCEPT 允许数据包通过
+   DROP 直接丢弃数据包，不给任何回应信息
+   REJECT 拒绝数据包通过，必要时会给数据发送端一个响应的信息。
+   LOG 在/var/log/messages文件中记录日志信息，然后将数据包传递给下一条规则
+   
+   -j 参数用来指定要进行的处理动作，常用的处理动作包括：
+       ACCEPT、REJECT、DROP、REDIRECT、MASQUERADE、LOG、DNAT、SNAT、MIRROR、QUEUE、RETURN、MARK。
+   # RETURN 结束在目前规则链中的过滤程序，返回主规则链继续过滤，如果把自订规则链看成是一个子程序，那么这个动作，就相当提早结束子程序并返回到主程序中。
+   # ACCEPT 将数据包放行，进行完此处理动作后，将不再比对其它规则，直接跳往下一个规则链（natostrouting）。
+   # REJECT 拦阻该数据包，并传送数据包通知对方，可以传送的数据包有几个选择：ICMP port-unreachable、ICMP echo-reply 或是tcp-reset（这个数据包会要求对方关闭联机），进行完此处理动作后，将不再比对其它规则，直接 中断过滤程序。 范例如下：
+   # DNAT 目的地址转换，改变数据包的目的地址
+   # MASQUERADE IP伪装，不管现在eth0的出口获得了怎样的动态ip，MASQUERADE会自动读取eth0现在的ip地址然后做SNAT出去，这样就实现了很好的动态SNAT地址转换。
+   
+   iptables -A FORWARD -p TCP --dport 22 -j REJECT --reject-with tcp-reset
+   
+   # DROP 丢弃包不予处理，进行完此处理动作后，将不再比对其它规则，直接中断过滤程序。
+   ```
+
+   实例演示：
+
+   ```shell
+   # 查看 nat表中所有链的规则表
+   [root@cvm-172_16_20_64:~]# iptables -L -t nat
+   
+   Chain PREROUTING (policy ACCEPT)
+   target     prot opt source               destination         
+   DOCKER     all  --  anywhere             anywhere             ADDRTYPE match dst-type LOCAL
+   
+   Chain INPUT (policy ACCEPT)
+   target     prot opt source               destination         
+   
+   Chain OUTPUT (policy ACCEPT)
+   target     prot opt source               destination         
+   DOCKER     all  --  anywhere            !loopback/8           ADDRTYPE match dst-type LOCAL
+   
+   Chain POSTROUTING (policy ACCEPT)
+   target     prot opt source               destination         
+   MASQUERADE  all  --  172.29.96.0/20       anywhere            
+   MASQUERADE  all  --  172.21.0.0/16        anywhere            
+   MASQUERADE  tcp  --  172.29.96.3          172.29.96.3          tcp dpt:recvr-rc
+   MASQUERADE  tcp  --  172.19.0.2           172.19.0.2           tcp dpt:mysql
+   MASQUERADE  tcp  --  172.17.0.5           172.17.0.5           tcp dpt:mysql
+   
+   Chain DOCKER (2 references)
+   target     prot opt source               destination                   
+   RETURN     all  --  anywhere             anywhere            
+   RETURN     all  --  anywhere             anywhere            
+   DNAT       tcp  --  anywhere             anywhere             tcp dpt:recvr-rc to:172.29.96.3:43000
+   DNAT       tcp  --  anywhere             anywhere             tcp dpt:mysql to:172.19.0.2:3306
+   DNAT       tcp  --  anywhere             anywhere             tcp dpt:3366 to:172.17.0.5:3306
+   
+   # 这里可以理解一下docker默认的网络模式bridge，借助docker0虚拟网桥和nat表配置来实现容器服务访问。
+   #		这里docker配置了自己的DOCKER链。
+   #		1、DOKCER链的最后一个规则，把从anywhere到anywhere的数据包，只要目标端口是3366的，都将目标地址从新改成了172.17.0.5:3306
+   #		2、docker还在POSTROUTING链中增加了规则，把 172.17.0.5/172.19.0.2 来源的包伪装源地址后再发布
+   #		3、当机器再收到数据包时，通过 DOCKER链倒数第二个规则，将请求打到了容器ip和端口上，最终完成请求
+   ```
+
+   常用命令：
+
+   ```shell
+   #写规则注意事项
+   1，规则放在链中，链放在表中，表最大。
+   2，table表是小写，链是大写，链前面的参数大多是大写，-j参数后target都是大写。默认filter表。只要是端口就要加协议。
+   3，拒绝的规则通常写在最前面，最后一条接收。不记得的参数不要随便写，-F选项会清空所有策略。
+   4，常用filter表的INPUT链，nat表的PREROUTING，POSTROUTING
+   5，centos7 安装iptables-services
+   6，通常写规则方法是在记事本写好了，先自己看好，再复制粘贴上去，因为命令马上生效很容易弄掉线。
+   
+   #查看类
+   #默认是filter表，如果不指定表的话，总共有4表5链，我们常用到的有：fitler表也是默认表的INPUT链，nat表的PREROUTING ,POSTROUTING链。
+   iptables -nL  #n要放到前面，否则报错。（iptables -t filter -nL等于iptables -nL）
+   iptables -t nat -nL  #列出nat表的所有规则
+   iptables -L 
+   iptables -L -n  #列出（list）指定链中所有的规则进行查看，使用数字形式（numeric）显示输出结果
+   iptables -L -n -v  #来查看匹配的次数，pkts字段显示的值，bytes是字节数。
+   iptables -L INPUT -n -v  #只看INPUT链，v参数看到的命中次数，pkts字段显示的值，bytes是字节数。
+   watch iptables -L INPUT -n -v  #每隔2秒，查看INPUT链
+   iptables -L --line-numbers  #看到每条规则的序号，不记得命令man iptables|grep line
+   iptables -S #查看filter表所有链的规则，打印出的规则，可以在前面加上iptables关键字就可以执行了，这个备份的时候经常用到。
+   iptables -S INPUT #查看INPUT链的规则
+   
+   
+   #增加类
+   iptables -I INPUT -p icmp -j DROP          #ping过来的包直接丢弃，不回复，此时别人ping不通自己，自己也ping不通别人。
+   iptables -I INPUT -p icmp -s 10.36.113.199 -j REJECT  #ping过来的对应主机ip地址包给与回应，拒绝。
+   iptables -A INPUT -p icmp -s 10.36.113.0/24 -j REJECT  #对网段的icmp包拒绝。-A 在指定链的末尾添加（append）一条新的规则
+   #禁止其他主机ping防火墙主机，但是允许从防火墙上ping其他主机
+   iptables -I INPUT -p icmp --icmp-type Echo-Request -j DROP 
+   
+   #删除类
+   #通常重置一台机器的时候下面这3个都要执行：
+   iptables -F #清空当前表(默认filter表)所有规则，不删除链
+   iptables -X #删除当前表(默认filter表)用户自定义的链，只留下默认INPUT,OUTPUT,FORWARD
+   iptables -Z # 当前表(默认filter表)所有链命中数和字节数设置为0
+   #注意： iptables -F -X -Z不能这么执行。
+   iptables -D INPUT 1 #删除INPUT链第一条策略
+   iptables -Z INPUT #清空INPUT链命中数和命中字节数为0，zero
+   
+   #修改默认规则类。
+   默认都是ACCEPT，可以修改的。
+    iptables -P INPUT (DROP|ACCEPT) #默认规则只有DROP|ACCEPT,默认规则修改为DROP就马上掉线，所以一般都不修改。
+   
+   #取反
+    iptables -I INPUT -p all ! -s 192.168.68.1 -j REJECT #除了192.168.68.1机器访问外，其他机器访问都拒绝。！只是-s参数取反，如果要协议取反在-p前面加！
+   
+   #多端口
+    [!] --ports port[,port|,port:port]...  #端口前面也是可以取反的。ports看前面中括号，可以只写一个端口。（有端口必须要指定协议）
+    [!] --dports port[,port|,port:port]...
+    [!] --sports port[,port|,port:port]...
+    -m multiport --ports 22,21,23,50:100  #22,21,23,50到100的端口。
+   
+   iptables -I INPUT -s 192.168.68.131/32 -p tcp -m multiport --dports 22,23 -j REJECT  #192.168.68.131/32访问本机器的22,23端口拒绝
+   iptables -I INPUT -s 192.168.68.131/32 -p tcp -m multiport --dports 24 -j DROP  #只写一个端口也是可以的。
+   
+   #限制网段
+   iptables -I INPUT -s 192.168.68.0/24 -p tcp -m tcp --dport 10000 -j REJECT   #直接在后面加掩码
+   
+   #常见一些情况
+   #4.丢弃从外网接口（eth1）进入防火墙本机的源地址为私网地址的数据包
+   iptables -A INPUT -i eth1 -s 192.168.0.0/16 -j DROP 
+   iptables -A INPUT -i eth1 -s 172.16.0.0/12 -j DROP 
+   iptables -A INPUT -i eth1 -s 10.0.0.0/8 -j DROP
+   
+   #5.封堵网段（192.168.30.0/24），两小时后解封。
+   iptables -I INPUT -s 10.20.30.0/24 -j DROP 
+   iptables -I FORWARD -s 10.20.30.0/24 -j DROP 
+   at now 2 hours at> iptables -D INPUT 1 at> iptables -D FORWARD 1
+   说明：这个策略咱们借助crond计划任务来完成，就再好不过了。
+   [1]   Stopped     at now 2 hours
+   
+   #6.只允许管理员从202.13.0.0/16网段使用SSH远程登录防火墙主机。
+   iptables -A INPUT -p tcp --dport 22 -s 202.13.0.0/16 -j ACCEPT 
+   iptables -A INPUT -p tcp --dport 22 -j DROP
+   说明：这个用法比较适合对设备进行远程管理时使用，比如位于分公司中的SQL服务器需要被总公司的管理员管理时。
+   
+   #7.允许本机开放从TCP端口20-1024提供的应用服务。
+   iptables -A INPUT -p tcp --dport 20:1024 -j ACCEPT 
+   iptables -A OUTPUT -p tcp --sport 20:1024 -j ACCEPT
+   
+   #8.允许转发来自192.168.0.0/24局域网段的DNS解析请求数据包。
+   iptables -A FORWARD -s 192.168.0.0/24 -p udp --dport 53 -j ACCEPT 
+   iptables -A FORWARD -d 192.168.0.0/24 -p udp --sport 53 -j ACCEPT
+   
+   #9.禁止其他主机ping防火墙主机，但是允许从防火墙上ping其他主机
+   iptables -I INPUT -p icmp --icmp-type Echo-Request -j DROP 
+   iptables -I INPUT -p icmp --icmp-type Echo-Reply -j ACCEPT 
+   iptables -I INPUT -p icmp --icmp-type destination-Unreachable -j ACCEPT
+   
+   #10.禁止转发来自MAC地址为00：0C：29：27：55：3F的和主机的数据包
+   iptables -A FORWARD -m mac --mac-source 00:0c:29:27:55:3F -j DROP
+   说明：iptables中使用“-m 模块关键字”的形式调用显示匹配。咱们这里用“-m mac –mac-source”来表示数据包的源MAC地址。
+   
+   #11.允许防火墙本机对外开放TCP端口20、21、25、110以及被动模式FTP端口1250-1280
+   iptables -A INPUT -p tcp -m multiport --dport 20,21,25,110,1250:1280 -j ACCEPT
+   说明：这里用“-m multiport –dport”来指定目的端口及范围
+   
+   #12.禁止转发源IP地址为192.168.1.20-192.168.1.99的TCP数据包。
+   iptables -A FORWARD -p tcp -m iprange --src-range 192.168.1.20-192.168.1.99 -j DROP
+   说明：此处用“-m –iprange –src-range”指定IP范围。
+   
+   #13.禁止转发与正常TCP连接无关的非—syn请求数据包。
+   iptables -A FORWARD -m state --state NEW -p tcp ! --syn -j DROP
+   说明：“-m state”表示数据包的连接状态，“NEW”表示与任何连接无关的，新的嘛！
+   
+   #14.拒绝访问防火墙的新数据包，但允许响应连接或与已有连接相关的数据包
+   iptables -A INPUT -p tcp -m state --state NEW -j DROP 
+   iptables -A INPUT -p tcp -m state --state ESTABLISHED,RELATED -j ACCEPT
+   说明：“ESTABLISHED”表示已经响应请求或者已经建立连接的数据包，“RELATED”表示与已建立的连接有相关性的，比如FTP数据连接等。
+   
+   #15.只开放本机的web服务（80）、FTP(20、21、20450-20480)，放行外部主机发住服务器其它端口的应答数据包，将其他入站数据包均予以丢弃处理。
+   iptables -I INPUT -p tcp -m multiport --dport 20,21,80 -j ACCEPT 
+   iptables -I INPUT -p tcp --dport 20450:20480 -j ACCEPT 
+   iptables -I INPUT -p tcp -m state --state ESTABLISHED -j ACCEPT 
+   iptables -P INPUT DROP
+   ```
+
+   
 
 # 13、进程管理
 
@@ -2246,18 +3023,19 @@ service iptables start
 ## 13.7、**chkconfig 指令**
 
 - 通过`chkconfig` 命令可以 **为每个服务 在各个运行级别下 设置 自启动/关闭**
+
 - 但是这个指令只能在CentOS中使用
 
-```shell
-# 当前系统所有服务的各个运行级别的运行状态
-chkconfig --list|grep xxx
-
-# 查看服务
-chkconfig 服务名 --list
-
-# 修改服务在某个运行级别下的自启动
-chkconfig --level 5 服务名 on/off
-```
+  ```shell
+  # 当前系统所有服务的各个运行级别的运行状态
+  chkconfig --list|grep xxx
+  
+  # 查看服务
+  chkconfig 服务名 --list
+  
+  # 修改服务在某个运行级别下的自启动
+  chkconfig --level 5 服务名 on/off
+  ```
 
 - chkconfig 重新设置服务后自启动或关闭，需要重启机器 reboot 才能生效
 
@@ -2617,7 +3395,7 @@ make install
 
 
 
-# 16、搭建python开发环境
+# 16、内核相关
 
  待补充
 
@@ -3634,7 +4412,7 @@ ubuntu@VM-16-9-ubuntu:~/learning$ ./logicTest03.sh
 
 
 
-### 17.10.4、while 循环
+### 17.10.4、while和until
 
 **语法：**
 
@@ -3642,6 +4420,11 @@ ubuntu@VM-16-9-ubuntu:~/learning$ ./logicTest03.sh
 while [ 条件判断式 ]
 do
 	程序
+done
+
+until [ 条件判断式 ]
+do 
+  程序
 done
 ```
 
@@ -3673,6 +4456,16 @@ then
 fi
 ```
 
+```shell
+a=10
+
+until [ $a -eq 0 ];do
+        a=$[ a - 2 ]
+        echo $a
+done
+echo "finish!!"
+```
+
 
 
 **测试：**
@@ -3682,29 +4475,19 @@ ubuntu@VM-16-9-ubuntu:~/learning$ ./logicTest04.sh
 根据输入的值，从1 到该值求和
 请输入求和的最后一个值：500
 计算结果：125250
+
+[root@cvm-172_16_20_64:~/seeker]# bash 1.sh
+8
+6
+4
+2
+0
+finish!!
 ```
 
 
 
-
-
-## 17.11、读取控制台输入
-
-前面的实例中已包含该语法的使用方法，此处不再举例演示。
-
-**语法：**
-
-```shell
-# read 语法，与控制台交互
-read [选项] [参数] 赋值变量名
-
-# -p：指定读取值时的提示符，然后会阻塞等你输入一个值，回车后继续执行
-# -t：指定读取值时等待的时间（秒），如果没有在指定的时间内输入，就不再等待了
-```
-
-
-
-## 17.12、函数
+## 17.11、函数
 
 1. **函数介绍**
 
@@ -3864,7 +4647,7 @@ read [选项] [参数] 赋值变量名
 
 
 
-## 17.13、多命令执行
+## 17.12、多命令执行
 
 方式一：
 
@@ -3931,7 +4714,7 @@ ubuntu@VM-16-9-ubuntu:~$ echo ${LOCATION4}
 
 
 
-## 17.14、实用脚本
+## 17.13、实用脚本
 
 ### 离线安装依赖包
 
