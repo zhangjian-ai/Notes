@@ -1500,14 +1500,14 @@ apiVersion: v1       #必选，版本号，例如v1
 kind: Pod       #必选，Pod
 metadata:       #必选，元数据
   name: verify       #必选，Pod名称
-  namespace: devops-30033520-auto-test-env   #必选，Pod所属的命名空间
+  namespace: devops-30008834-sit-bot-master   #必选，Pod所属的命名空间
 spec:         
   imagePullSecrets: # 从私有仓库拉取镜像，引用 配置好的 Secret 对象
   - name: registry-secrets
   containers:
   - name: verify
-    image: 172.16.50.105:58710/tester/bot3-env-verify:v3.0.3-renshoubaoxian-rc1
-    imagePullPolicy: Always 
+    image: registry01-cache.wezhuiyi.com/alpine-runtime_amd64_v3.16.2/tester/bot3-env-verify:fa41c67
+    imagePullPolicy: Never 
     command: ["bash", "-c", "while true;do sleep 1;done"] 
     resources:      
       limits:     

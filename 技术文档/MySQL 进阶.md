@@ -459,33 +459,34 @@ DECIMAL 类型用于存储精确的小数。但因为CPU不支持对DECIMAL的�
 > 接下来唯一的问题是保存日期和时间的时候需要做什么。
 
 - **DATETIME**
-  - （1）这个类型能保存大范围的值，从1001年到9999年，精度为秒。 
-  - （2）DATETIME把时间和日期封装到格式为YYYYMMDDHHMMSS的整数中，与时区无关。 
-  - （3）DATETIME使用8个字节的存储空间。
+  1. 这个类型能保存大范围的值，从1001年到9999年，精度为秒。
+  2. DATETIME把时间和日期封装到格式为YYYYMMDDHHMMSS的整数中，与时区无关。 
+  3. DATETIME使用8个字节的存储空间。
 
 - **TIMESTAMP**
   
-  - （1）TIMESTAMP类型保存了从1970年1月1日午夜以来的秒数，它和UNIX时间戳相同。 
-  - （2）TIMESTAMP只使用4个字节的存储空间，因此**它的范围比DATETIME小得多**。 
-  - （3）TIMESTAMP显示的值依赖时区。
+  1. TIMESTAMP类型保存了从1970年1月1日午夜以来的秒数，它和UNIX时间戳相同。 
+  2. TIMESTAMP只使用4个字节的存储空间，因此**它的范围比DATETIME小得多**。 
+  3. TIMESTAMP显示的值依赖时区。
   
   ``` mysql
-  CREATE TABLE demo_time(
+  CREATE TABLE demo_time
   `id` INT PRIMARY KEY,
   `date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
   ```
   
 - **DATETIME和TIMESTAMP的对比:**
-  - （1）默认情况下，如果插入时没有指定第一个TIMESTAMP列的值，Mysql则设置这个列的值为当前时间。（这是DATETIME没有的特性）
-  - （2）在插入一行记录时，Mysql默认也会更新第一个TIMESTAMP列的值。 
-  - （3）TIMESTAMP列默认为NOT NULL，这与其他的数据类型不一样。
+  
+  - 默认情况下，如果插入时没有指定第一个TIMESTAMP列的值，Mysql则设置这个列的值为当前时间。（这是DATETIME没有的特性）
+  - 在插入一行记录时，Mysql默认也会更新第一个TIMESTAMP列的值。 
+  - TIMESTAMP列默认为NOT NULL，这与其他的数据类型不一样。
 
 **总结**
 
-- （1）除了特殊行为之外，通常也应该尽可能使用TIMESTAMP，因为它比DATETIME空间效率更高。 
-- （2）一般来讲不建议把UNIX时间戳保存为整数值，这不会带来任何收益，用整数保存时间戳格式通常不方便处理。 
-- （3）如果需存储比秒更小粒度的日期和时间值，可以使用BIGINT类型存储微秒级别的时间戳，或者使用DOUBLE存储秒之后的小数部分，也可以用MariaDB替代Mysql。
+- 除了特殊行为之外，通常也应该尽可能使用TIMESTAMP，因为它比DATETIME空间效率更高。 
+- 一般来讲不建议把UNIX时间戳保存为整数值，这不会带来任何收益，用整数保存时间戳格式通常不方便处理。 
+- 如果需存储比秒更小粒度的日期和时间值，可以使用BIGINT类型存储微秒级别的时间戳，或者使用DOUBLE存储秒之后的小数部分，也可以用MariaDB替代Mysql。
 
 
 
@@ -495,17 +496,17 @@ DECIMAL 类型用于存储精确的小数。但因为CPU不支持对DECIMAL的�
 
 - BIT
 
-  可以使用BIT列在一列中存储一个或多个true/false值。BIT(1)定义了一个包含单个位的字段，BIT(2)存储2个位，依次类推。BIT列的最大长度是64位。
+  可以使用BIT列在一列中存储一个或多个true/false值。BIT(1)定义了一个包含 单个 位的字段，BIT(2)存储2个位，依次类推。BIT列的最大长度是64位。
 
   如果想在一个bit的存储空间中存储一个true/false值，另一个方法是创建一个可以为空的CHAR(0)列。该列可以保存空值(NULL)或者长度为零的字符串(空字符串)。
 
 - SET
 
-  如果需要保存很多true/false 值，可以考虑合并这些列到一个SET 数据类型，它在MySQL 内部是以一系列打包的位的集合来表示的。这样就有效地利用了存储空间，并且MySQL 有像FIND_IN_SET（） 和FIELD（） 这样的函数，方便地在查询中使用。它的主要缺点是改变列的定义的代价较高：需要ALTER TABLE,这对大表来说是非常昂贵的操作。一般来说，也无法在SET 列上通过索引查找。
+  如果需要保存很多true/false 值，可以考虑合并这些列到一个SET 数据类型，它在MySQL 内部是以一系列打包的位的集合来表示的。这样就有效地利用了存储空间，并且MySQL 有像FIND_IN_SET（） 和FIELD（） 这样的函数，方便地在查询中使用。它的主要缺点是改变列的定义的代价较高：需要ALTER TABLE，这对大表来说是非常昂贵的操作。一般来说，也无法在SET 列上通过索引查找。
 
   **一种替代SET 的方式是使用一个整数包装一系列的位。例如，可以把8 个位包装到一个TINYINT 中，并且按位操作来使用。可以在应用中为每个位定义名称常量来简化这个工作。**
 
-  比起SET,这种办法主要的好处在于可以不使用ALTER TABLE 改变字段代表的”枚举”值，缺点是查询语句更难写，并且更难理解（当第5 个bit 位被设置时是什么意思？）。一些人非常适应这种方式，也有一些人不适应，所以是否采用这种技术取决于个人的偏好。
+  比起SET，这种办法主要的好处在于可以不使用ALTER TABLE 改变字段代表的”枚举”值，缺点是查询语句更难写，并且更难理解（当第5 个bit 位被设置时是什么意思？）。一些人非常适应这种方式，也有一些人不适应，所以是否采用这种技术取决于个人的偏好。
 
 
 
@@ -797,7 +798,7 @@ Empty set (0.00 sec)
     </tr>
     <tr>
     	<td>一致性（Consistent）</td>
-      <td>事务从一个状态转移到另一个状态，不会存在某个中间状态。例如转账，转出方-200，那么转入方一定是+200</td>
+      <td>一个事物修改数据并提交后，另一个事物读取到也应该是修改后的数据，而不能是修改前的旧数据。</td>
     </tr>
     <tr>
     	<td>隔离性（Isolation）</td>
@@ -824,11 +825,11 @@ Empty set (0.00 sec)
   <tbody>
   	<tr>
     	<td>丢失更新（Lost Update）</td>
-      <td>当两个或多个事物操作同一行数据，最初的事物修改的值，会被后面的事物修改的值覆盖。</td>
+      <td>当两个或多个事物操作同一行数据，最初的事物修改的值，会被后面的事物修改的值覆盖。（这个问题通常由应用自身来处理，mysql无法避免这种操作）</td>
     </tr>
     <tr>
     	<td>脏读（Dirty Reads）</td>
-      <td>当一个事物在访问数据，并对数据进行了修改，而这种情况下还没有提交到数据库中。这时，另外一个事物也访问这个数据，然后使用了这个数据。</td>
+      <td>当一个事物在访问数据，并对数据进行了修改，但是还没有提交。这时，另外一个事物也访问这个数据，然后使用了这个数据。</td>
     </tr>
     <tr>
     	<td>不可重复读（Non-RepeatableReads）</td>
@@ -840,6 +841,7 @@ Empty set (0.00 sec)
     </tr>
   </tbody>
 </table>
+
 
 
 
@@ -1900,7 +1902,7 @@ mysql> select func1(1);
 >
 > 使用别名 old 和 new 来引用触发器中发生变化的行记录内容。mysql目前还只支持行级触发，不支持语句级触发。
 >
-> old: 表示修改前的行对象，可以通过 . 调用行的字段；
+> old: 表示修改前的行对象，可以通过点号(.)调用行的字段；
 >
 > new: 表示修改后的行对象；
 
@@ -1978,13 +1980,19 @@ InnoDB的三大特性是：自适应Hash索引、BufferPool、双写缓冲区。
 
 - **自适应Hash索引**
 
-  InnoDB存储引擎内部自己去监控索引表，如果监控到某个索引经常用，那么就认为是热数据，然后内部自己创建一个hash索引，称之为自适应哈希索引( Adaptive Hash Index,AHI)，创建以后，如果下次又查询到这个索引，那么直接通过hash算法推导出记录的地址，直接一次就能查到数据。
+  InnoDB存储引擎内部自己去监控索引表，如果监控到某个索引经常用，那么就认为是热数据，然后内部自己创建一个hash索引，称之为自适应哈希索引( Adaptive Hash Index，AHI)，创建以后，如果下次又查询到这个索引，那么直接通过hash算法推导出记录的地址，直接一次就能查到数据。
 
   InnoDB存储引擎使用的[哈希函数](https://so.csdn.net/so/search?q=哈希函数&spm=1001.2101.3001.7020)采用除法散列方式，其冲突机制采用链表方式。
 
 - **Buffer Pool**
 
   为了提高访问速度，MySQL预先就分配/准备了许多这样的空间，为的就是与MySQL数据文件中的页做交换，来把数据文件中的页放到事先准备好的内存中。数据的访问是按照页（默认为16KB）的方式从数据文件中读取到 buffer pool中。Buffer Pool按照最少使用算法（LRU），来管理内存中的页。
+
+  > LRU和LFU都是内存管理的页面置换算法。
+  >
+  > 1. LRU：最近最少使用(最长时间)淘汰算法（Least Recently Used）。LRU是淘汰最长时间没有被使用的页面。
+  >
+  > 2. LFU：最不经常使用(最少次)淘汰算法（Least Frequently Used）。LFU是淘汰一段时间内，使用次数最少的页面。
 
   Buffer Pool实例允许有多个，每个实例都有一个专门的mutex保护。Buffer Pool中缓存的数据页类型有: 索引页、数据页、undo页、插入缓冲（insert buffer)、自适应哈希索引、InnoDB存储的锁信息、数据字典信息（data dictionary)等等。
 
@@ -2144,8 +2152,8 @@ update语句执行逻辑：
   # host：用户连接的来源IP和端口
   # db：当前进程目前连接的数据库名
   # command：当前链接正在执行的命令。一般为 sleep、query、connect 等
-  # time：这个状态持续的时间，状态时s
-  # state：显示当前链接的SQL语句的状态。描述的时SQL语句在执行中的某一个状态，一个SQL语句，以查询为例。可能需要经过 starting、copying to tmp table, sorting result, sending data 等状态
+  # time：这个状态持续的时间，状态时间s
+  # state：显示当前链接的SQL语句的状态。描述的是SQL语句在执行中的某一个状态，一个SQL语句，以查询为例。可能需要经过 starting、copying to tmp table, sorting result, sending data 等状态
   # info：显示执行的SQL语句，是判断问题语句的重要依据。如果是客户端链接，还会显示客户端信息。
   ```
 
@@ -2699,7 +2707,7 @@ mysql> explain select * from seller where name = 'baidu' and nickname = 'baidu t
 
 #### 2. 最左前缀法则
 
-如果索引包含了多列，要遵守最左前缀法则。指的是查询从索引的最左则开始，且不跳过中间的列。如果where条件中不包含最左侧的列，那么查询将不使用索引；如果跳过中间的列，那么将只使用跳过列之前的列的索引。
+如果索引包含了多列，要遵守最左前缀法则。指的是查询从索引的最左侧开始，且不跳过中间的列。如果where条件中不包含最左侧的列，那么查询将不使用索引；如果跳过中间的列，那么将只使用跳过列之前的列的索引。
 
 说明：where条件后的索引字段是没有先后顺序限制的。
 
@@ -2787,7 +2795,7 @@ mysql> explain select * from seller where name = 'google';
 +----+-------------+--------+------------+------+--------------------+--------------------+---------+-------+------+----------+-------+
 1 row in set, 1 warning (0.00 sec)   # name字段走索引
 
-mysql> explain select * from seller where substring(name, 4, 3) = 'gle';   # mysql中字符串索引从1开始，这里截取3个
+mysql> explain select * from seller where substring(name, 4, 3) = 'gle';   # mysql中字符串索引从4开始，这里截取3个
 +----+-------------+--------+------------+------+---------------+------+---------+------+------+----------+-------------+
 | id | select_type | table  | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra       |
 +----+-------------+--------+------------+------+---------------+------+---------+------+------+----------+-------------+
@@ -2905,6 +2913,8 @@ mysql> explain select name, nickname from seller where name like '%technology';
 
 
 #### 9. 如果mysql评估使用索引比全表扫描更慢，则不使用索引
+
+通常在某一列数据中，绝大多数都是同一个值。此时直接走全表扫描比通过索引查询时更快的。
 
 ```mysql
 # 为 address 列再单独创建一个单列索引
@@ -3855,13 +3865,13 @@ key_buffer_size=512M
 
 ### InnoDB 内存优化
 
-InnoDB用一块内存区做IO缓存池，该缓存池即用来缓存innodb的索引块，也用来缓存innodb的数据块。
+InnoDB用一块内存区做IO缓存池，该缓存池即用来缓存Innodb的索引块，也用来缓存Innodb的数据块。
 
 
 
 **innodb_buffer_pool_size**
 
-该变量决定了innodb存储引擎表数据和索引数据的最大缓存区大小，在保证操作系统和其他程序有足够可用内存的情况下，innodb_buffer_pool_size 的值越大，缓存命中率越高，访问InnoDB表需要的磁盘IO就越少，性能也就越高。
+该变量决定了Innodb存储引擎表数据和索引数据的最大缓存区大小，在保证操作系统和其他程序有足够可用内存的情况下，innodb_buffer_pool_size 的值越大，缓存命中率越高，访问InnoDB表需要的磁盘IO就越少，性能也就越高。
 
 ```mysql
 # 查看当前默认配置
@@ -3882,7 +3892,7 @@ Query OK, 0 rows affected (0.02 sec)
 
 **innodb_log_buffer_size**
 
-决定了innodb重做日志缓存的大小，对于可能产生大量更新记录的大事物，增加 innodb_log_buffer_size 的大小，可以避免innodb在事物提交前执行不必要的日志写入磁盘的操作。
+决定了Innodb 重做日志（undo log） 缓存的大小，对于可能产生大量更新记录的大事物，增加 innodb_log_buffer_size 的大小，可以避免innodb在事物提交前执行不必要的日志写入磁盘的操作。
 
 ```mysql
 mysql> show variables like 'innodb_log_buffer_size';
@@ -4825,10 +4835,10 @@ mysql> select * from seller where name regexp 'oo|ou';
   mysql -u root -p
   
   # 可以指定IP和端口，连接远程数据库
-  mysql -h 191.168.22.33 -p 3300 -u root -p
+  mysql -h 191.168.22.33 -P 3300 -u root -p
   
   # 选项和参数之间可以不加空格，这时可以直接接密码
-  mysql -h191.168.22.33 -p3300 -uroot -p123456
+  mysql -h191.168.22.33 -P3300 -uroot -p123456
   ```
 
 - 执行选项
@@ -4845,7 +4855,9 @@ mysql> select * from seller where name regexp 'oo|ou';
   示例：
 
   ```mysql
-  mysql -uroot -p123456 demo_01 -e "select * from seller;"
+  mysql -uroot -p123456 demo_01 -N -e "select * from seller;"
+  
+  # -N: 只返回查询结果的值，而不返回列名
   ```
 
 
@@ -5224,7 +5236,7 @@ mysqlbinlog -vv mysql-bin.000001
 
 **日志删除**
 
-对于比较繁忙的系统，每天都会产生大量的日志，如果不清楚或占用大量的磁盘空间。下面介绍几种删除二进制日志的方法。
+对于比较繁忙的系统，每天都会产生大量的日志，如果不清除会占用大量的磁盘空间。下面介绍几种删除二进制日志的方法。
 
 - 方式一
 
@@ -5307,8 +5319,6 @@ Time                 Id Command    Argument
 2021-10-27T05:33:28.109819Z    2 Query	select * from seller
 2021-10-27T05:34:56.469156Z    2 Query	insert into seller values (10, 'jiedian', 'jiedian technology company', 'zj123456', 1 ,'chengdu', '2021-10-27 13:34:33')
 ```
-
-
 
 
 
@@ -5402,14 +5412,16 @@ InnoDB的事务日志主要分为redo log(重做日志，提供前滚操作)和u
 
 - **redo log**
 
+  Redo log 记录的是新数据的备份。
+
   它包含两部分内容（日志缓存[redo log_buffer]和redo log file[datadir/ib_logfileN]），InnoDB通过force log at commit机制实现事务的持久性。
 
   <img src='./images/mysql_005.png' style='width: 80%; float: left'>
 
   - log buffer刷日志文件配置参数
 
-    MySQL通过控制innodb_flush_log_at_trx_commit参数值方式自定义刷盘方式，从log buffer中的日志刷log file中。这个变量只是控制commit动作是否刷新log buffer到磁盘（图往上看）。
-
+    MySQL通过控制innodb_flush_log_at_trx_commit参数值方式自定义刷盘方式，把log buffer中的日志刷到log file中。这个变量只是控制commit动作是否刷新log buffer到磁盘（图往上看）。
+  
     ```shell
     innodb_flush_log_at_trx_commit=1
     # 事务每次提交都会将log buffer中的日志写入os buffer并调用fsync()刷到log file on disk中。这种方式即使系统崩溃也不会丢失任何数据，但是因为每次提交都写入磁盘，IO的性能较差。
@@ -5426,7 +5438,7 @@ InnoDB的事务日志主要分为redo log(重做日志，提供前滚操作)和u
     Innodb存储引擎中，redo log以块为单位进行存储的，每个块占512字节，这称为redo log block。所以不管是log buffer中还是os buffer中以及redo log file on disk中，都是这样以512字节的块存储的。
 
   - rodo log参数
-
+  
     ```shell
     > show global variables like 'innodb_log%';
     +-----------------------------+----------+
@@ -5442,7 +5454,7 @@ InnoDB的事务日志主要分为redo log(重做日志，提供前滚操作)和u
     +-----------------------------+----------+
     
     # innodb_log_write_ahead_size：
-    # 	为了处理redo log block得大小和OS block间操作数据块大小协调一致得问题。
+    # 	为了处理redo log block的大小和OS block间操作数据块大小协调一致得问题。
     #		在InnoDB中以512字节一个block的方式对齐写入redo file(ib_logfileN)文件，而操作系统一般以4096字节为一个block单位(OS block)读写。如果即将写入的日志块不在OS buffer Cache时，就需要将对应的4096字节的block读入内存，修改其中的512字节，然后再把该block写回磁盘。
     #		引入write-ahead是将当前写入redo文件的偏移量整除innodb_log_write_ahead_size参数值，不能整除时则补0补全，使得需要写入的内容刚好是block的倍数，那么就直接覆盖写入即可。不再需要read-modify-write得过程。提升效率。
     ```
@@ -5452,7 +5464,7 @@ InnoDB的事务日志主要分为redo log(重做日志，提供前滚操作)和u
     log buffer中未刷到磁盘的日志称为脏日志(dirty log)。
 
     刷日志到磁盘规则：
-
+  
     - 发出commit动作时，是否刷日志由变量 innodb_flush_log_at_trx_commit 控制。
     - 每秒刷一次。刷日志的频率由变量 innodb_flush_log_at_timeout 值决定，默认是1秒。这个刷日志频率和commit动作无关。
     - 当log buffer中已经使用的内存超过一半时。
@@ -5463,7 +5475,7 @@ InnoDB的事务日志主要分为redo log(重做日志，提供前滚操作)和u
     内存中(buffer pool)未刷到磁盘的数据称为脏数据(dirty data)。由于数据和日志都以页的形式存在，所以脏页表示脏数据和脏日志。在InnoDB中触发checkpoint动作将buffer中的脏数据页和脏日志页都刷到磁盘中。
 
     触发checkpoint的情形：
-
+  
     - sharp checkpoint：在切换日志文件的时候，将所有已记录到redo log 文件中对应的脏数据刷到磁盘。
     - fuzzy checkpoint：一次只刷一小部分的日志到磁盘，而非将所有脏日志刷盘。有以下几种情况会触发该检查点：
       - master thread checkpoint：由master线程控制，每秒或每10秒刷入一定比例的脏页到磁盘。
@@ -5472,10 +5484,12 @@ InnoDB的事务日志主要分为redo log(重做日志，提供前滚操作)和u
       - dirty page too much checkpoint：脏页太多时强制触发检查点，目的是为了保证缓存有足够的空闲空间。too much的比例由变量 innodb_max_dirty_pages_pct 控制，MySQL 5.6默认的值为75，即当脏页占缓冲池的百分之75后，就强制刷一部分脏页到磁盘。
 
     由于刷脏页需要一定的时间来完成，所以记录检查点的位置是在每次刷盘结束之后才在redo log中标记的。
-
+  
     MySQL服务停止时是否将脏数据和脏日志刷入磁盘，由变量innodb_fast_shutdown={ 0|1|2 }控制，默认值为1，即停止时只做一部分purge，忽略大多数flush操作(但至少会刷日志)，在下次启动的时候再flush剩余的内容，实现fast shutdown。
 
 #### undo log
+
+Undo log 记录的是旧数据的备份。
 
 undo log的作用是提供事务的回滚和多个行版本控制（MVCC-非锁定读）。undo log是逻辑日志，如执行一条delete操作时，undo log将它的反向操作记录下来，undo log也会产生redo日志。当事务失败需要回滚时，就可以从undo log中的逻辑记录进行回滚到修改前的样子。
 
@@ -6238,7 +6252,7 @@ mysql> select a.name, a.sex, a.score from Score a where (a.score, a.sex) in  (se
 
 - **写多读少：**
 
-  就不是特别适合读写分离，因为大量的写入同步多个从库开销太高，比较影响数据库整体的性能；而更适合使用数据分片后的分库分表场景，将写压力分散到多库对表上。
+  就不是特别适合读写分离，因为大量的写入同步多个从库开销太高，比较影响数据库整体的性能；而更适合使用数据分片后的分库分表场景，将写压力分散到多库多表上。
 
 
 
