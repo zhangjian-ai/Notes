@@ -276,7 +276,7 @@ enum MsgType {
   END = 2;
 }
 
-// 消息类型
+// 角色类型
 enum Role {
   CUSTOMER = 0;
   AGENT = 1;

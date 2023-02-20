@@ -1,4 +1,4 @@
-##  Kubernetes详细教程
+
 
 ### 1. Kubernetes介绍
 
@@ -51,7 +51,7 @@ docker-compose只能把这些容器在一台机器上启动起来。它是一个
 
 kubernetes是一个集群的管理解决方案，它负责管理数量庞大的节点，节点的动态增减，资源的有效分配，搭建虚拟的网络及服务，配置的管理等。其能力要比docker-compose强的多。
 
-kubernetes，是一个全新的基于容器技术的分布式架构领先方案，是谷歌严格保密十几年的秘密武器----Borg系统的一个开源版本，于2014年9月发布第一个版本，2015年7月发布第一个正式版本。
+kubernetes，是一个全新的基于容器技术的分布式架构领先方案，是谷歌严格保密十几年的秘密武器 Borg系统 的一个开源版本，于2014年9月发布第一个版本，2015年7月发布第一个正式版本。
 
 kubernetes的本质是**一组服务器集群**，它可以在集群的每个节点上运行特定的程序，来对节点中的容器进行管理。目的是实现资源管理的自动化，主要提供了如下的主要功能：
 
@@ -5184,7 +5184,7 @@ spec:
 
 在前面已经提到，容器的生命周期可能很短，会被频繁地创建和销毁。那么容器在销毁时，保存在容器中的数据也会被清除。这种结果对用户来说，在某些情况下是不乐意看到的。为了持久化保存容器的数据，kubernetes引入了Volume的概念。
 
-Volume是Pod中能够被多个容器访问的共享目录，它被定义在Pod上，然后被一个Pod里的多个容器挂载到具体的文件目录下，kubernetes通过Volume实现同一个Pod中不同容器之间的数据共享以及数据的持久化存储。Volume的生命容器不与Pod中单个容器的生命周期相关，当容器终止或者重启时，Volume中的数据也不会丢失。
+Volume是Pod中能够被多个容器访问的共享目录，它被定义在Pod上，然后被一个Pod里的多个容器挂载到具体的文件目录下，kubernetes通过Volume实现同一个Pod中不同容器之间的数据共享以及数据的持久化存储。Volume的生命周期不与Pod中单个容器的生命周期相关，当容器终止或者重启时，Volume中的数据也不会丢失。
 
 kubernetes的Volume支持多种类型，比较常见的有下面几个：
 
@@ -5789,6 +5789,220 @@ PVC和PV是一一对应的，PV和PVC之间的相互作用遵循以下生命周�
   对于PV，管理员可以设定回收策略，用于设置与之绑定的PVC释放资源之后如何处理遗留数据的问题。只有PV的存储空间完成回收，才能供新的PVC绑定和使用
 
 ![img](./images/kube-037.png)
+
+
+
+##### 8.2.4 local-path-provisioner
+
+>Local PV（Local Persistent Volume）是Kubernetes在v1.10推出的功能(后面简称local pv)，用于解决用户使用host-path映射本地目录时存在的以下问题：
+>
+>- 提供一种使用本地存储的PV，使没有存储系统的K8S集群可以正常部署那些使用PVC的应用
+>- 解决host-path在使用过程中的调度问题，即re-schedule的情况下，Local PV保证pod依然能再次调度到相同的节点
+
+[local-path-provisioner](https://github.com/rancher/local-path-provisioner) 是Rancher集成在K3S中的一个小工具，用于在kubernetes节点中自动创建Local PV。 local-path-provisioner相比local-static-provisioner做到了完全自动化，当用户创建对应PVC时会自动在该目录下创建子目录作为PV Volume，无需用户干预。
+
+local-path-provisioner通过监听K8S中的PVC请求，在指定节点创建Helper Pod。Helper Pod挂载对应节点的目录，创建子目录作为Volume或者删除对应Volume中的数据。 当Helper Pod正常结束时，local-path-provisioner的控制器将创建/删除PV。
+
+local-path-provisioner 提供以下能力：
+
+- 自动创建/删除PV的数据目录
+- 指定数据目录（PS：PV中的数据实际存放在对应的子目录，子目录的名称是随机的）
+- 指定Helper Pod的脚本（setup/teardown）
+
+
+
+**部署安装**
+
+官方示例文档：
+
+```shell
+#安装
+kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
+
+#使用
+kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/examples/pvc/pvc.yaml
+kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/examples/pod/pod.yaml
+```
+
+默认的存储路径为/opt/local-path-provisioner，默认安装到local-path-storage命名空间。
+
+
+
+local-path-storage.yaml
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: local-path-storage
+ 
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: local-path-provisioner-service-account
+  namespace: local-path-storage
+ 
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: local-path-provisioner-role
+rules:
+  - apiGroups: [ "" ]
+    resources: [ "nodes", "persistentvolumeclaims", "configmaps" ]
+    verbs: [ "get", "list", "watch" ]
+  - apiGroups: [ "" ]
+    resources: [ "endpoints", "persistentvolumes", "pods" ]
+    verbs: [ "*" ]
+  - apiGroups: [ "" ]
+    resources: [ "events" ]
+    verbs: [ "create", "patch" ]
+  - apiGroups: [ "storage.k8s.io" ]
+    resources: [ "storageclasses" ]
+    verbs: [ "get", "list", "watch" ]
+ 
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: local-path-provisioner-bind
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: local-path-provisioner-role
+subjects:
+  - kind: ServiceAccount
+    name: local-path-provisioner-service-account
+    namespace: local-path-storage
+ 
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: local-path-provisioner
+  namespace: local-path-storage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: local-path-provisioner
+  template:
+    metadata:
+      labels:
+        app: local-path-provisioner
+    spec:
+      serviceAccountName: local-path-provisioner-service-account
+      containers:
+        - name: local-path-provisioner
+          image: rancher/local-path-provisioner:master-head
+          imagePullPolicy: IfNotPresent
+          command:
+            - local-path-provisioner
+            - --debug
+            - start
+            - --config
+            - /etc/config/config.json
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/config/
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+      volumes:
+        - name: config-volume
+          configMap:
+            name: local-path-config
+ 
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-path  # 默认的 StorageClass 名称
+provisioner: rancher.io/local-path
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Delete
+ 
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: local-path-config
+  namespace: local-path-storage
+data:
+  config.json: |-
+    {
+            "nodePathMap":[
+            {
+                    "node":"DEFAULT_PATH_FOR_NON_LISTED_NODES",
+                    "paths":["/opt/local-path-provisioner"]  # 可在此处修改节点存储路径
+            }
+            ]
+    }
+  setup: |-
+    #!/bin/sh
+    set -eu
+    mkdir -m 0777 -p "$VOL_DIR"
+  teardown: |-
+    #!/bin/sh
+    set -eu
+    rm -rf "$VOL_DIR"
+  helperPod.yaml: |-
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: helper-pod
+    spec:
+      containers:
+      - name: helper-pod
+        image: busybox
+        imagePullPolicy: IfNotPresent
+```
+
+
+
+pvc.yaml
+
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: local-path-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce # 在rancher/local-path-provisioner里，这里不能用ReadWriteMany
+  storageClassName: local-path # 此处为默认的 StorageClass 名称
+  resources:
+    requests:
+      storage: 128Mi
+```
+
+
+
+pod.yaml
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: volume-test
+spec:
+  containers:
+  - name: volume-test
+    image: nginx:stable-alpine
+    imagePullPolicy: IfNotPresent
+    volumeMounts:
+    - name: volv
+      mountPath: /data
+    ports:
+    - containerPort: 80
+  volumes:
+  - name: volv
+    persistentVolumeClaim:
+      claimName: local-path-pvc
+```
 
 
 

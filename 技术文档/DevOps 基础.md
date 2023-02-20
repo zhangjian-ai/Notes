@@ -1002,6 +1002,8 @@ docker network
 		# 创建网络，指定子网网段和网关。demo_02 就是 网络的名字。通过 docker network inspect demo_02 即可查看新建网络详情
 		docker network create --subnet 172.36.0.0/24 --gateway 172.36.0.1 demo_02
 		
+		# 创建自定义网络后，则可以在启动容器时，用 --net 指定网络，用 --ip 申明当前容器的ip
+		
 		# 删除网络
 		docker network rm <network>
 		
@@ -1240,9 +1242,57 @@ Docker 的容器利用了 LXC，管理利用 namespaces 来做权限的控制和
 
 
 
+### Docker 网络
+
+- **docker的网络模式**
+
+  ```shell
+  # 使用 docker run 创建Docker容器时，可以用--net 或--network 选项指定容器的网络模式
+  host模式：使用 --net=host 指定。
+  none模式：使用 --net=none 指定。
+  container模式：使用--net=container:NAME/ID指定。
+  bridge模式：使用 --net=bridge 指定，默认设置，可省略。
+  ```
+
+  - **Host：** 容器不会虚拟出自己的网卡，也不会配置容器IP，而是直接使用宿主机的IP和端口；
+  - **Container：** 创建的容器不会创建自己的网卡，配置自己的IP，而是和一个指定的容器共享IP和端口范围；
+  - **None：** 该模式关闭了容器的网络功能；
+  - **Bridge：** 默认的网络模式，此模式会为每一个容器分配并设置IP，并将容器连接到一个 docker0 的虚拟网桥，通过docker0 网桥以及配置宿主机 iptables nat 表来实现与宿主机通信。
+
+- **host 模式**
+
+  - 相当于Vmware中的桥接模式，与宿主机在同一个网络中，但没有独立IP地址。
+  - Docker使用了Linux的Namespaces技术来进行资源隔离，如PID Namespace隔离进程，Mount Namespace隔离文件系统，Network Namespace隔离网络等。
+  - 一个Network Namespace提供了一 份独立的网络环境，包括网卡、路由、iptables规则等都与其他的Network Namespace隔离。
+  - 一个Docker容器一般会分配一个独立的Network Namespace。但如果启动容器的时候使用host模式，那么这个容器将不会获得一个独立的NetworkNamespace，而是和宿主机共用一个NetworkNamespace。容器将不会虚拟出自己的网卡、配置自己的IP等，而是使用宿主机的IP和端口。
+
+- **container 模式**
+
+  - container模式： 使用 --net=contatiner:NAME/ID 指定。
+  - 这个模式指定新创建的容器和已经存在的一个容器共享一个Network Namespace，而不是和宿主机共享。新创建的容器不会创建自己的网卡、配置自己的IP，而是和一个指定的容器共享IP，端口范围等。可以在一定程度上节省网络资源，容器内部依然不会拥有所有端口。
+  - 两个容器除了网络方面，其他的如文件系统，进程列表等还是隔离的。
+  - 两个容器的进程可以通过lo网卡设备通信。
+
+- **none 模式**
+
+  - none模式：使用 --net=none 指定。
+  - 使用none 模式，docker 容器有自己的network Namespace ，但是并不为Docker 容器进行任何网络配置。也就是说，这个Docker 容器没有网卡、ip、路由等信息。
+  - 这种网络模式下，容器只有lo 回环网络，没有其他网卡。
+  - 这种类型没有办法联网，但是封闭的网络能很好的保证容器的安全性。
+  - 特殊情况下才会用到，一般不用。
+
+- **bridge 模式**
+
+  bridge模式是docker的默认网络模式，不用--net参数， 就是bridge模式。
+
+  - 当Docker进程启动时，会在主机上创建一个名为`docker0`的虚拟网桥，此主机上启动的Docker容器会连接到这个虚拟网桥上。虚拟网桥的工作方式和物理交换机类似（连接多个不同的网段），这样主机上的所有容器就通过`docker0`虚拟网桥连在了一个二层网络中。
+  - 从docker0子网中分配一个IP给容器使用（分配一个和网桥相同网段内的IP，网桥作为网关），并设置docker0的IP地址为容器的默认网关。在主机上创建一对虚拟网卡veth pair设备。veth设备总是成对出现的，它们组成了一个数据的通道，数据从一个设备进入，就会从另一个设备出来。因此，veth设备常用来连接两个网络的设备。
+  - Docker将 veth pair设备的一端放在新创建的容器中，并命名为eth0 (容器的网卡)，另一端放在主机中，以veth*这样类似的名字命名，并将这个网络设备加入到docker0 网桥中。可以通过`brctl show`命令查看。
+  - 使用docker run -P 时，docker实际 是在iptables做了DNAT规则，实现端口转发功能。可以使用 `iptables -t nat -vnl` 查看。
 
 
-# Kubernates
+
+# Kubernetes
 
 ## 常用命令
 

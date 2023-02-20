@@ -1,11 +1,12 @@
 ##  一、基础入门
 
 1. **Django 和 Flask 的区别**
+   
    - Django是一个内部扩展全面的框架，Flask 是一个轻量级的框架。
-   - Django 内部提供了非常多的组件：orm/session/cookie/admin/form/modelfrom/路由/视图/模版/中间件/分页/auth/缓存/信号/多数据库连接 等。
+   - Django 内部提供了非常多的组件：orm/session/cookie/admin/form/modelform/路由/视图/模版/中间件/分页/auth/缓存/信号/多数据库连接 等。
    - Flask 框架本身只是一个框架，没什么扩展，主要就是：路由/视图/模板(jinja2)/session/中间件等，但是第三方组件非常丰富。
    - <font color='red'>Django 的请求是逐一封装并传递到对应的函数来处理；Flask 的请求是利用上下文管理来实现的。</font>
-
+   
 2. **Flask 的快速使用**
 
    ``` python
@@ -415,7 +416,7 @@ def price():
 # 蓝图目录结构：见基础入门 第四节
 ```
 
-### 5. Flask 请求传参
+### 5. Flask 路由传参
 
 - Url路径传参-默认转换器
 
@@ -853,7 +854,7 @@ def check_user():
     if user_id:
         g.user_id = user_id
     else:
-        return "身份信息为提供"  # 钩子函数返回后，将不再调用视图函数
+        return "身份信息未提供"  # 钩子函数返回后，将不再调用视图函数
 
 
 def auth(func):  # 认证装饰器

@@ -83,45 +83,45 @@ Ubuntu采用自行加强的内核，默认不能直接root登陆，必须从第�
 
 ## 2.2、根目录
 
-```
-/bin   这个目录存放着最经常使用的命令，主要有cat、chmod、chown、date、mv、mkdir、cp、bash等
+```shell
+/bin		# 二进制文件目录，存放着最经常使用的命令，如：cat、chmod、chown、date、mv、mkdir、cp、bash等
 
-/sbin   存放着系统管理员使用的系统管理程序，包括开机过程所需要的开机、修复、还原系统所需要的命令
+/sbin   # super bin 管理员权限使用的一些二进制文件，存放着系统管理员使用的系统管理程序，包括开机过程所需要的开机、修复、还原系统所需要的命令
 
-/home  存放普通用户的主目录，每个用户都有一个自己的目录，一般目录名以用户账号命名，主文件夹有两种代号：～代表当前这个用户的主文件夹
+/home		# 存放普通用户的主目录，每个用户都有一个自己的目录，一般目录名以用户账号命名，主文件夹有两种代号：～代表当前这个用户的主文件夹
 
-/root   超级权限者的用户主目录，系统管理员的主文件夹
+/root   # 超级权限者的用户主目录，系统管理员的主文件夹
 
-/lib  放置的是系统开机所需要最基本的动态链接共享库，类似于Windows的DLL文件，包括开机时会用到的数据库，以及在/bin和/sbin下命令会调用的函数库
+/lib		# 放置的是系统开机所需要最基本的 动态链接共享库，类似于Windows的DLL文件，包括开机时会用到的数据库，以及在/bin和/sbin下命令会调用的函数库
 
-/lost+found  一般情况下是空的，系统非法关机后，系统就会存放一些文件
+/lost+found		# 一般情况下是空的，系统非法关机后，系统就会存放一些文件
 
-/etc   所有系统管理员所需要的配置文件和子目录，例如人员的帐号密码文件，各种服务的起始文件等。一般来说，这个目录下面的各文件属性是可以让一般的用户查阅的，但是只有root用户有权先修改。FHS建议不要放置可执行的文件在这个目录下
+/etc   # 所有系统管理员所需要的配置文件和子目录，例如人员的帐号密码文件，各种服务的起始文件等。一般来说，这个目录下面的各文件属性是可以让一般的用户查阅的，但是只有root用户有权先修改。FHS建议不要放置可执行的文件在这个目录下   
 
-/usr  这里面放置的数据属于可分享的与不可变动的（shareable，static），其实usr是UNIX SOFTWARE RESOURCE的缩写，而非user的缩写，也就是unix操作系统软件放置的位置而非用户的数据
+/usr	# 这里面放置的数据属于可分享的与不可变动的（shareable，static），其实usr是UNIX SOFTWARE RESOURCE的缩写，而非user的缩写，也就是unix操作系统软件放置的位置而非用户的数据
 
-/boot  这个目录主要放置开机能够使用到的文件，包括linux内核文件和开机菜单与开机所以需要的配置文件
+/boot  # 这个目录主要放置开机能够使用到的文件，包括linux内核文件和开机菜单与开机所以需要的配置文件
 ====================================================================================================
 以下三个目录跟Linux内核有关，一般不要动
-/proc  这个目录本身是一个虚拟文件系统，它放置的数据都是在内存当中，不占用硬盘的容量
+/proc  # 这个目录本身是一个虚拟文件系统，它放置的数据都是在内存当中，不占用硬盘的容量
 
-/src  src可以视作source的缩写，是一些网络服务启动后，这些服务需要取用的数据目录，常见的服务例如www,ftp等
+/src  # src可以视作source的缩写，是一些网络服务启动后，这些服务需要取用的数据目录，常见的服务例如www,ftp等
 
-/sys  这个目录其实跟/proc非常的相似，也是一个虚拟的文件系统主要也是记录与内核相关的信息，不占用硬盘容量
+/sys  # 这个目录其实跟/proc非常的相似，也是一个虚拟的文件系统主要也是记录与内核相关的信息，不占用硬盘容量
 ====================================================================================================
-/tmp  这是让一般的用户或者是正在执行的程序暂时放置文件的地方
+/tmp  # 这是让一般的用户或者是正在执行的程序暂时放置文件的地方
 
-/dev   在linux中任何的设备和接口设备都是以文件的形式存在于这个目录当中。你只要通过访问这个目录下的某个文件就相当于访问某个设备，类似于Windows的设备管理器
+/dev  # 在linux中任何的设备和接口设备都是以文件的形式存在于这个目录当中。你只要通过访问这个目录下的某个文件就相当于访问某个设备，类似于Windows的设备管理器
 
-/media  放置的就是可以删除的设备。包括软盘，光盘，dvd等都临时挂放在此。
+/media  # 放置的就是可以删除的设备。包括软盘，光盘，dvd等都临时挂放在此。
 
-/mnt  系统提供该目录是为了让用户临时挂载别的文件系统的，我们可以将外部的存储挂载在该目录下，然后进入该目录就能看见了，例如vmtools的共享文件夹
+/mnt		# 该目录是为了让用户临时挂载别的文件系统的，我们可以将外部的存储挂载在该目录下，然后进入该目录就能看见了，例如vmtools的共享文件夹
 
-/opt  这个是给第三方软件放置的目录。不过，在以前的linux下我们喜欢放置在/usr/local下面，一般是通过编译源码方式安装的程序。
+/opt		# 这个是给第三方软件放置的目录。不过，在以前的linux下我们喜欢放置在/usr/local下面，一般是通过编译源码方式安装的程序。
 
-/var  这个目录下面主要放置常态性变动的文件，包括cache,logfile以及某些软件运行所产生的文件。例如MYSQL数据库文件等
+/var		# 这个目录下面主要放置常态性变动的文件，包括cache,logfile以及某些软件运行所产生的文件。例如MYSQL数据库文件等
 
-/selinux SeLinux是一种安全子系统他能控制程序只能访问特定文件
+/selinux  # SeLinux是一种安全子系统他能控制程序只能访问特定文件
 ```
 
 
@@ -207,7 +207,7 @@ Ubuntu采用自行加强的内核，默认不能直接root登陆，必须从第�
 /proc/ksyms # 核心符号表。
 /proc/net # 网络协议状态信息。
 /proc/self # 存放到查看/proc的程序的进程目录的符号连接。
-/proc/stat # 系统的不同状态，例如:系统启动后页面发生错误的次数。
+/proc/stat # 系统的统计信息，例如:系统启动后页面发生错误的次数。
 ```
 
 
@@ -276,7 +276,7 @@ Ubuntu采用自行加强的内核，默认不能直接root登陆，必须从第�
 
 2. **Linux虚拟机的三种网络连接形式**
 
-   - 桥接模式：与主机在同一网段，Linux可以和其他系统通信，但是如果Linux虚拟机数量多可能造成ip冲突
+   - 桥接模式：与主机在同一网段，虚拟机使用主机IP与其他系统通信，但是如果Linux虚拟机数量多可能造成IP冲突
    - NAT模式：网络地址转换方式，即母机代理通讯，再创建子网供虚拟机使用，其缺点Linux无法和本局域网中的其他真实主机进行通讯
    - 仅主机模式：即单机模式，是一个独立的主机，不能访问外网
 
@@ -286,7 +286,7 @@ Ubuntu采用自行加强的内核，默认不能直接root登陆，必须从第�
 
 ## 3.3、SCP安全传输
 
-scp 是 secure copy 的缩写, scp 是 linux 系统下基于 ssh 登陆进行安全的远程文件拷贝命令。
+scp 是 secure copy 的缩写，scp 是 linux 系统下基于 ssh 登陆进行安全的远程文件拷贝命令。
 
 scp 是加密的，[rcp](https://www.runoob.com/linux/linux-comm-rcp.html) 是不加密的，scp 是 rcp 的加强版。
 
@@ -339,19 +339,18 @@ scp root@121.4.47.229:/var/local/111.html /var/local/
 
 rsync 可以理解为 remote sync（远程同步），但它不仅可以远程同步数据（类似于 scp 命令），还可以本地同步数据（类似于 cp 命令）。不同于 cp 或 scp 的一点是，使用 rsync 命令备份数据时，不会直接覆盖以前的数据（如果数据已经存在），而是先判断已经存在的数据和新数据的差异，只有数据不同时才会把不相同的部分覆盖。
 
-```
-1）本地使用：
+```shell
+# 本地使用：
 rsync [OPTION...] SRC... [DEST]
 
-2）通过远程 Shell 使用：
+# 通过远程 Shell 使用：
 拉: rsync [OPTION...] [USER@]HOST:SRC... [DEST]
 推: rsync [OPTION...] SRC... [USER@]HOST:DEST
 
-3）访问 rsync 服务器:
+# 访问 rsync 服务器:
 拉: rsync [OPTION...] [USER@]HOST::SRC... [DEST]
 推: rsync [OPTION...] SRC... [USER@]HOST::DEST
-拉: rsync [OPTION...] rsync://[USER@]HOST[:PORT]/SRC... [DEST]
-推: rsync [OPTION...] SRC... rsync://[USER@]HOST[:PORT]/DEST
+
 
 其中：
   - SRC: 是要复制的源位置
@@ -434,14 +433,6 @@ rsync -avuP -e "ssh -p 11220" develop@10.4.1.58:/data/customize/code .
 
 
 
-
-
-## 3.6、wget 获取在线资源
-
-
-
-
-
 # 4、Vi 和 Vim
 
 ## 4.1、基本介绍
@@ -471,7 +462,7 @@ rsync -avuP -e "ssh -p 11220" develop@10.4.1.58:/data/customize/code .
 
 2. 插入模式（编辑模式）
 
-   在模式下，程序员可以**输入内容**。
+   在该模式下，程序员可以**输入内容**。
 
    按下` i, I, o, O, a, A, r, R` 等任何一个字母之后才会进入编辑模式, **一般来说按`i`即可**
 
@@ -510,7 +501,7 @@ public class Hello{
 1. **拷贝当前行** `yy` , 拷贝当前行向下的 5 行 `5yy`，并粘贴 `p`
 2. **删除当前行** `dd` , 删除当前行向下的 5 行 `5dd`
 3. 删除当前行并进入编辑模式，`shift + s`
-4. 在文件中查**找某个单词**：命令行下 `/` 关键字 ， 回车 查找 , 输入 `n` 就是查找下一个
+4. 在文件中查**找某个单词**：命令行下 `/` 关键字 ， 回车 查找 ， 输入 `n` 就是查找下一个
 5. **设置文件的行号**，**取消文件的行号**：命令行下`:set nu` 和 `:set nonu`
 6. 跳转到文档的**最末行**`shift + g`和**最首行**`gg`
 7. **撤销上一个动作**，在正常模式下输入 `u`
@@ -569,7 +560,7 @@ sync # 代表把内存的数据同步到磁盘上
 
 - Linux 系统是一个多用户多任务的操作系统，任何一个要使用系统资源的用户，都必须首先向系统管理员申请一个账号，然后以这个账号的身份进入系统
 - 用户组：Linux下有很多地用户组，这是Linux对用户管理地一种管理，每一个用户至少属于一个组，例如 root 用户属于 root 组
-- 家目录：`/home/` 目录下有各个创建的用户对应的家目录，当用户登录时会自动地进入到自己地家目录
+- 家目录：`/home/` 目录下有各个创建的用户对应的家目录，当用户登录时会自动地进入到自己的家目录
 
 
 
@@ -594,17 +585,19 @@ sync # 代表把内存的数据同步到磁盘上
 
 使用命令 `passwd 用户名`
 
-```
-passwd [-k] [-l] [-u [-f]] [-d] [-S] username
--d 删除密码
--f 强制执行
--k 更新只能发送在过期之后
--l 停止账号使用
--S 显示密码信息
--u 启用已被停止的账户
--x 设置密码的有效期
--g 修改群组密码
--i 过期后停止用户账号
+```shell
+passwd [options] username
+
+# 选项参数
+  -d 删除密码
+  -f 强制执行
+  -k 更新只能发送在过期之后
+  -l 停止账号使用
+  -S 显示密码信息
+  -u 启用已被停止的账户
+  -x 设置密码的有效期
+  -g 修改群组密码
+  -i 过期后停止用户账号
 ```
 
 
@@ -613,9 +606,9 @@ passwd [-k] [-l] [-u [-f]] [-d] [-S] username
 
 使用命令`userdel username`
 
-```
-userdel xiaoming   删除用户 xiaoming 但是要保留家目录
-userdel -r xiaoming    删除用户 xiaoming 以及用户主目录
+```shell
+userdel xiaoming   # 删除用户 xiaoming 但是要保留家目录
+userdel -r xiaoming    # 删除用户 xiaoming 以及用户家目录
 ```
 
 - 实际开发工作中，删除用户时一般不会将家目录删除，以免一些文件被误删
@@ -667,23 +660,21 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
 ## 6.8、用户和组的相关文件
 
-### 6.8.1、/etc/passwd 文件
+1. /etc/passwd 文件
+   - 用户（user）的配置文件，**记录用户的各种信息**
+   - 每行的含义：`用户名:密码:用户id:组id:注释性描述::家目录:登录时运行的Shell`
 
-- 用户（user）的配置文件，**记录用户的各种信息**
-- 每行的含义：`用户名:密码:用户id:组id:注释性描述::家目录:登录时运行的Shell`
+2. /etc/group 文件
+   - 组(group)的配置文件，**记录 Linux 包含的组的信息**
+   - 每行含义：`组名:口令:组标识号:组内用户列表`
 
-### 6.8.2、/etc/group 文件
+3. /etc/shadow 文件
 
-- 组(group)的配置文件，**记录 Linux 包含的组的信息**
-- 每行含义：`组名:口令:组标识号:组内用户列表`
+   - 口令的配置文件（密码和登录信息，是加密的）
 
-### 6.8.3、/etc/shadow 文件
+   - 每行的含义：
 
-- 口令的配置文件（密码和登录信息，是加密的）
-
-- 每行的含义：
-
-  `登录名:加密口令:最后一次修改时间:最小时间间隔:最大时间间隔:警告时间:不活动时间:失效时间:标志`
+     `登录名:加密口令:最后一次修改时间:最小时间间隔:最大时间间隔:警告时间:不活动时间:失效时间:标志`
 
 
 
@@ -693,7 +684,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
 - **七大运行级别**
 
-  ```
+  ```shell
   0：关机
   1：单用户【找回丢失密码】
   2：多用户状态没有网络服务
@@ -727,11 +718,11 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    wget [options] [url]
    
    # options:
-   	-O 选项以其他名称保存下载的文件
-   	-P 选项将文件下载到指定目录
-   	-c 选项断点续传
-   	-b 选项在后台下载
-   	-i 选项下载多个文件。-i 后面应该接一个写入了多个url的文本文件
+   	-O 以其他名称保存下载的文件
+   	-P 将文件下载到指定目录
+   	-c 断点续传
+   	-b 在后台下载
+   	-i 下载多个文件。-i 后面应该接一个写入了多个url的文本文件
    	--limit-rate 选项限制下载速度。如：wget --limit-rate=1m xxxx
    	--tries 选项增加重试次数
    ```
@@ -755,22 +746,22 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
    ```shell
    # 语法
-   ping [-dfnqrRv][-c<完成次数>][-i<间隔秒数>][-I<网络界面>][-l<前置载入>][-p<范本样式>][-s<数据包大小>][-t<存活数值>][主机名称或IP地址]
+   ping [options] 主机名称或IP地址
    
-   # 参数
+   # 选项参数
      -d 使用Socket的SO_DEBUG功能。
      -c <完成次数> 设置完成要求回应的次数。
      -f 极限检测。
-     -i<间隔秒数> 指定收发信息的间隔时间。
-     -I<网络界面> 使用指定的网络接口送出数据包。
-     -l<前置载入> 设置在送出要求信息之前，先行发出的数据包。
+     -i <间隔秒数> 指定收发信息的间隔时间。
+     -I <网络界面> 使用指定的网络接口送出数据包。
+     -l <前置载入> 设置在送出要求信息之前，先行发出的数据包。
      -n 只输出数值。
-     -p<范本样式> 设置填满数据包的范本样式。
+     -p <范本样式> 设置填满数据包的范本样式。
      -q 不显示指令执行过程，开头和结尾的相关信息除外。
      -r 忽略普通的Routing Table，直接将数据包送到远端主机上。
      -R 记录路由过程。
-     -s<数据包大小> 设置数据包的大小。
-     -t<存活数值> 设置存活数值TTL的大小。
+     -s <数据包大小> 设置数据包的大小。
+     -t <存活数值> 设置存活数值TTL的大小。
      -v 详细显示指令的执行过程。
      -w <deadline> 在 deadline 秒后退出。
      -W <timeout> 在等待 timeout 秒后开始执行。
@@ -948,7 +939,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
        curl -d '{"login": "emma", "pass": "123"}' -H 'Content-Type: application/json' https://google.com/login
        ```
 
-   11. -i：`-i`参数打印出服务器回应的 HTTP 标头。
+   11. -i：`-i`参数打印出服务器回应的 HTTP 响应头。
 
        例1：收到服务器回应后，先输出服务器回应的标头，然后空一行，再输出网页的源码。
 
@@ -1068,7 +1059,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
 > 斜杠在前表示绝对路径，没有斜杠表示相对路径，斜杠在后表示某文件夹下的一个文件
 
-1. **pwd 命令**( print woking dictionary )，显示当前工作目录的绝对路径
+1. **pwd 命令**( print woking directory )，显示当前工作目录的绝对路径
 
    ```
    使用方法：pwd
@@ -1153,7 +1144,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    mv 源文件路径 目标文件路径   移动文件
    
    例1：mv a.txt b.txt
-   例2：mv a.txt /home/    如果移动到的文件夹内存在同名的文件会提示是否覆盖,也可以重命名
+   例2：mv a.txt /home/    如果移动到的文件夹内存在同名的文件会提示是否覆盖，也可以重命名
    ```
 
 10. **cat 命令**，查看文件内容，以只读的方式打开
@@ -1179,8 +1170,8 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
     more 要查看的文件
     
     # 常用快捷键
-    # Enter键 一行一行的看就按 
-    # 空格键 一页一页的看就按 
+    # Enter键 一行一行的看
+    # 空格键 一页一页的看
     # Ctrl+B 回到上一页
     # Ctrl+F 下一页
     # q 立即离开more，不再显示文本内容
@@ -1280,7 +1271,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
    ```shell
    语法：
-   find   path   -option   [   -print ]   [ -exec   -ok   command ]   {} \;
+   find   path   [options]   [   -print ]   [ -exec   -ok   command ]   {} \;
    
    # find 根据下列规则判断 path 和 expression，在命令列上第一个 - ( ) , ! 之前的部份为 path，之后的是 expression。如果 path 是空字串则使用目前路径，如果 expression 是空字串则使用 -print 为预设 expression。
    
@@ -1331,7 +1322,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    例：cat hello.txt | grep -n yes  在 hello.txt 文件中，查找 "yes" 所在行，并且显示行号
    ```
 
-   grep 命令基本 正则表达式 搜索多个匹配模式的语法如下：
+   grep 命令使用 正则表达式 搜索多个匹配模式的语法如下：
 
    - 普通模式下的多值匹配。这里需要注意的是，始终要用单引号将正则表达式括起来，因为单引号内的内容均视为原始字符串；同时需要转义OR运算符(|)，否则将被解释为管道符。
 
@@ -1390,9 +1381,9 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    # 参数
      -b 　列出辨识结果时，不显示文件名称。
      -c 　详细显示指令执行过程，便于排错或分析程序执行的情形。
-     -f<名称文件> 　指定名称文件，其内容有一个或多个文件名称时，让file依序辨识这些文件，格式为每列一个文件名称。
+     -f   <名称文件> 　指定名称文件，其内容有一个或多个文件名称时，让file依序辨识这些文件，格式为每列一个文件名称。
      -L 　直接显示符号连接所指向的文件的类别。
-     -m<魔法数字文件> 　指定魔法数字文件。
+     -m   <魔法数字文件> 　指定魔法数字文件。
      -v 　显示版本信息。
      -z 　尝试去解读压缩文件的内容。
    
@@ -1503,8 +1494,12 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
 3. **echo 命令**，输出内容到控制台
 
-   ```
+   ```shell
    echo [选项] [输出内容]
+   
+   # 参数
+   e 将内容转义后输出
+   
    例1  使用 echo 指令输出环境变量,输出当前的环境路径 ==> echo $PATH
    例2  使用 echo 指令输出"hello world" ==> echo "hello world"
    ```
@@ -1575,7 +1570,7 @@ linux命令行执行命令时，快速移动光标可节省不少时间，如下
 4. 删除光标前一个单词
 
    ```shell
-   Ctrl+w: 可以清除当前光标位置之前的一个单词
+   Ctrl+w: 清除当前光标位置之前的一个单词
    ```
 
 5. 删除整行命令
@@ -1777,13 +1772,13 @@ linux命令行执行命令时，快速移动光标可节省不少时间，如下
    >- -p 当每次执行一个argument的时候询问一次用户。
    >- -n num 后面加次数，表示命令在执行的时候一次用的argument的个数，默认是用所有的。
    >- -t 表示先打印命令，然后再执行。
-   >- -i 或者是-I，这得看linux支持了，将xargs的每项名称，一般是一行一行赋值给 {}，可以用 {} 代替。
+   >- -i 或者是-I，这得看linux支持了，将xargs的每项名称，一般是一行一行赋值给 {}。
    >- -r no-run-if-empty 当xargs的输入为空的时候则停止xargs，不用再去执行了。
    >- -s num 命令行的最大字符数，指的是 xargs 后面那个命令的最大命令行字符数。
    >- -L num 从标准输入一次读取 num 行送给 command 命令。
    >- -l 同 -L。
-   >- -d delim 分隔符，默认的xargs分隔符是回车，argument的分隔符是空格，这里修改的是xargs的分隔符。
-   >- -x exit的意思，主要是配合-s使用。。
+   >- -d delimiter 分隔符，默认的xargs分隔符是回车，argument的分隔符是空格，这里修改的是xargs的分隔符。
+   >- -x exit的意思，主要是配合-s使用
    >- -P 修改最大的进程数，默认是1
 
    示例：
@@ -1823,10 +1818,6 @@ linux命令行执行命令时，快速移动光标可节省不少时间，如下
    # 查找所有的 jpg 文件，并且压缩它们
    [root@public-vm-arm seeker]# find . -type f -name "*.jpg" -print | xargs tar -czvf images.tar.gz
    ```
-
-
-
-
 
 
 
@@ -2609,15 +2600,21 @@ netfilter/iptables：IP 信息包过滤系统，它实际上由两个组件 netf
    iptables -A FORWARD -p TCP --dport 22 -j REJECT --reject-with tcp-reset
    
    # DROP 丢弃包不予处理，进行完此处理动作后，将不再比对其它规则，直接中断过滤程序。
+   
+   -j 参数也用来引用自定义规则链（自定义链中定义的规则不会生效，他需要被内置链引用才可以生效）：
+   
+   # 在内置INPUT规则链上引用test_rule规则链
+   iptables -A INPUT -j test_rule
+   
    ```
-
+   
    实例演示：
-
+   
    ```shell
    # 查看 nat表中所有链的规则表
    [root@cvm-172_16_20_64:~]# iptables -L -t nat
    
-   Chain PREROUTING (policy ACCEPT)
+   Chain PREROUTING (policy ACCEPT)  # 
    target     prot opt source               destination         
    DOCKER     all  --  anywhere             anywhere             ADDRTYPE match dst-type LOCAL
    
@@ -2630,27 +2627,19 @@ netfilter/iptables：IP 信息包过滤系统，它实际上由两个组件 netf
    
    Chain POSTROUTING (policy ACCEPT)
    target     prot opt source               destination         
-   MASQUERADE  all  --  172.29.96.0/20       anywhere            
-   MASQUERADE  all  --  172.21.0.0/16        anywhere            
-   MASQUERADE  tcp  --  172.29.96.3          172.29.96.3          tcp dpt:recvr-rc
-   MASQUERADE  tcp  --  172.19.0.2           172.19.0.2           tcp dpt:mysql
    MASQUERADE  tcp  --  172.17.0.5           172.17.0.5           tcp dpt:mysql
    
-   Chain DOCKER (2 references)
+   Chain DOCKER (2 references)  # 自定义的规则链被PREROUTING和OUTPUT引用，使得自定义规则能生效
    target     prot opt source               destination                   
-   RETURN     all  --  anywhere             anywhere            
-   RETURN     all  --  anywhere             anywhere            
-   DNAT       tcp  --  anywhere             anywhere             tcp dpt:recvr-rc to:172.29.96.3:43000
-   DNAT       tcp  --  anywhere             anywhere             tcp dpt:mysql to:172.19.0.2:3306
    DNAT       tcp  --  anywhere             anywhere             tcp dpt:3366 to:172.17.0.5:3306
    
    # 这里可以理解一下docker默认的网络模式bridge，借助docker0虚拟网桥和nat表配置来实现容器服务访问。
    #		这里docker配置了自己的DOCKER链。
-   #		1、DOKCER链的最后一个规则，把从anywhere到anywhere的数据包，只要目标端口是3366的，都将目标地址从新改成了172.17.0.5:3306
-   #		2、docker还在POSTROUTING链中增加了规则，把 172.17.0.5/172.19.0.2 来源的包伪装源地址后再发布
-   #		3、当机器再收到数据包时，通过 DOCKER链倒数第二个规则，将请求打到了容器ip和端口上，最终完成请求
+   #		1、PREROUTING 链，ADDRTYPE match dst-type LOCAL 作用是 把目标地址类型属于主机系统的本地网络地址的数据包，在数据包进入NAT表PREROUTING链时，都让它们直接jump到一个名为DOCKER的链。
+   #		2、OUTPUT 链，目的地址不是 127 开头的（! 表示非，loopback/8 回环地址 8位掩码），目标地址类型属于主机系统的本地网络地址的数据包，在数据包进入NAT表OUTPUT链时，都让它们直接jump到一个名为DOCKER的链。
+   #		3、DOKCER链的最后一个规则，把从anywhere到anywhere的数据包，只要目标端口是3366的，都将目标地址从新改成了172.17.0.5:3306
    ```
-
+   
    常用命令：
 
    ```shell
@@ -2769,7 +2758,7 @@ netfilter/iptables：IP 信息包过滤系统，它实际上由两个组件 netf
    iptables -I INPUT -p tcp -m state --state ESTABLISHED -j ACCEPT 
    iptables -P INPUT DROP
    ```
-
+   
    
 
 # 13、进程管理
