@@ -3832,7 +3832,7 @@ mysql> show status like 'Qcache%';
 
 
 
-### MyLSAM 内存优化
+### MyISAM 内存优化
 
 myisam存储引擎使用 key_buffer 缓存索引块，加速myisam索引的读写速度。对于myisam表的数据块，mysql没有特别的缓存机制，完全依赖于操作系统的IO缓存。
 
