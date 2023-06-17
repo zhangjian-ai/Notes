@@ -1553,20 +1553,18 @@ metadata:       #必选，元数据
   name: verify       #必选，Pod名称
   namespace: devops-30005604-sit-vcm-master   #必选，Pod所属的命名空间
 spec:         
-  imagePullSecrets: # 从私有仓库拉取镜像，引用 配置好的 Secret 对象
-  - name: registry-secrets
   containers:
   - name: verify
     image: registry01.wezhuiyi.com/alpine-runtime_amd64_v3.16.2/tester/vcm-env-verify:d4a3036
-    imagePullPolicy: IfNotPresent 
+    imagePullPolicy: Never 
     command: ["bash", "-c", "while true;do sleep 1;done"] 
     resources:      
       limits:     
         cpu: 2000m    
-        memory: 1024Mi
+        memory: 2048Mi
       requests: 
         cpu: 500m    
-        memory: 1024Mi
+        memory: 2048Mi
 ```
 
 
