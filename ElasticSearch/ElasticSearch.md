@@ -55,7 +55,7 @@ PUT /megacorp/employee/1
 - 节点Node：节点是集群的一部分，是集群的最小单元，是可以提供服务的节点。
 - 分片shard：分片位于节点上，分片是elasticsearch数据存储的单元，elasticsearch中的数据会存储在分片中。分片可以存储在任意一个节点上。分片分为主分片Primary Shard和副本分片Replica Shard。
 - 主分片Primary Shard：当存储一个文档document的时候，会先存储到主分片中，然后再复制到其他的副本分片Replica Shard中。
-- 副本分片Replica Shard：副本分片是主分片的复制（备份）。默认情况下，主分片有一个副本分片，主分片不能修改，但副本分片可以后续再增加。
+- 副本分片Replica Shard：副本分片是主分片的复制（备份）。默认情况下，主分片有一个副本分片，主分片数量不能修改，但副本分片可以后续再增加。
   - 为了保证数据的不丢失，通常来说**Replica Shard不能与其对应的Primary Shard处于同一个节点中**。【因为万一这个节点损坏了，那么存储在这个节点上的原数据（primary shard）和备份数据（replica shard）就全部丢失了】
   - 当主分片挂掉的时候，会选择一个副本分片作为主分片。
   - 查询可以在主分片或副本分片上进行查询，这样可以提升查询效率。【但数据的修改只发生在主分片上。】
@@ -1917,7 +1917,7 @@ GET users/_doc/1
 }
 
 # ----------使用POST update，将实现真正意义上的更新-----------
-POST users/_update/1
+POST users/_update/1/retry_on_conflict=5 # 过设置参数 retry_on_conflict 来自动完成， 这个参数规定了失败之前 update 应该重试的次数，它的默认值为 0
 {
   "doc": {
     "message": "Fucking"
@@ -1979,7 +1979,7 @@ DELETE users
 
 
 
-## 批量创建
+## 批量操作
 
 > _bulk 批量插入文档。每条指令包含两行：
 >
@@ -2029,9 +2029,58 @@ POST demo9/_bulk
 POST demo9/_bulk
 {"create": {"_id": 4}}
 {"name": "武侯", "age": 18, "content": "诸葛武侯奇门异术"}
-{"update": {"_id": 2}}
+{"update": {"_id": 2, "_retry_on_conflict" : 3}} # 并发更新时可能会遇到版本不一致的问题，_retry_on_conflict 可以增加冲突时的重试次数，避免直接失败，该配置默认重试 0 次。
 {"doc": {"content": "风后奇门继承人"}}  # 注意：update时要多一层 "doc"，和基础CRUD是一样的
 ```
+
+
+
+## upsert
+
+Elasticsearch Upsert是一种操作，可以更新已有文档，也可以在不存在时创建新的文档。这种操作常用于不知道文档是否存在的情况下，需要实现只更新存在的文档而避免创建新文档的操作，很大程度的提升了数据操作的灵活性。
+
+如果文档不存在，会直接使用Upsert的数据在数据库中创建一个新文档。
+
+如果文档存在，检查更新操作的script，如果找到任何冲突，Elasticsearch将在es系统级别上抛出错误，并且无法完成Upsert操作。如果不存在冲突，则会更新数据。
+
+
+
+**示例：**
+
+```shell
+# 更新文档部分字段
+POST /index/_doc/1/_update
+{
+    "script": {
+        "source": "ctx._source.field += params.param1;
+        					 if (ctx._source.qps < params.qps) {ctx._source.qps = params.qps;};",
+        "lang": "painless",
+        "params": {
+            "param1": 1,
+            "qps": 10
+        }
+    },
+    "upsert": {
+        "field": 1
+    }
+}
+
+
+# 整个文档全部更新
+POST /index/_doc/1/_update
+{
+    "doc": {
+        "field": "value"
+    },
+    "doc_as_upsert": true
+}
+```
+
+
+
+
+
+
 
 
 
@@ -2733,7 +2782,7 @@ GET users/_search
 
 
 
-### **指标（Mertric）聚合**
+### **指标（Metric）聚合**
 
 > ```text
 > #1、单值分析，只输出一个分析结果
@@ -5188,8 +5237,10 @@ es = Elasticsearch(
   body = [
     {"create": {"_id": 8}},
     {"name": "西门吹雪", "age": 22},
-    {"update": {"_id": 5}},
+    {"update": {"_id": 5, "retry_on_conflict": 5}}, # 更新冲突时的重试次数
     {"doc": {"name": "伯强"}}
+    {"update": {"_id": 5 , "retry_on_conflict": 3} }
+		{"script" : {"source": "ctx._source.age += params.age", "lang" : "painless", "params" : {"age" : 1}}, "upsert" : {"name": "伯强", "age": 18}} # 通过脚本更新数据，实现累加
 	]
 	result_1 = es.bulk(index="py_demo1", body=body)  # 使用方法同原生批量操作
   
@@ -5222,7 +5273,8 @@ es = Elasticsearch(
                 "name": "江流儿",
                 "age": 14
             }
-        }
+        },
+      	"_retry_on_conflict": 3
     },
     {
         "_index": "py_demo1",
@@ -5231,7 +5283,7 @@ es = Elasticsearch(
     }
 ]
 
-s = helpers.bulk(es, actions=actions)
+s = helpers.bulk(es, actions=actions, raise_on_error=False) # 批量操作过程中不引发异常
 
 print(s)  # 返回值 (成功条数, 错误items) 或 (成功条数, 失败条数)
 (4, [])
