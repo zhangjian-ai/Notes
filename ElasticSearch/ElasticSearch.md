@@ -1214,7 +1214,7 @@ ik分词器有以下两种模式：
 
    ```shell
    # 下面的启动方式带上了认证的账号密码，可以避免kibana使用时还要再web上输入密码。
-   docker run --name kibana -e ELASTICSEARCH_HOSTS=http://elastic:Zj1340026934@101.43.61.175:9200 -p 5601:5601 -d kibana:7.6.2
+   docker run --name kibana -e ELASTICSEARCH_HOSTS=http://elastic:XXX@101.43.61.175:9200 -p 5601:5601 -d kibana:7.6.2
    ```
 
 5. 在kibana容器内部，修改配置
@@ -1224,7 +1224,7 @@ ik分词器有以下两种模式：
    
    # 为kibana访问es添加身份认证信息
    elasticsearch.username: "elastic"
-   elasticsearch.password: "Zj1340026934"
+   elasticsearch.password: "XXX"
    ```
 
 6. 重启kibana服务
@@ -1455,7 +1455,7 @@ EFK和大名鼎鼎的ELK只有一个区别，那就是 EFK 把 ELK 的 Logstash 
    setup.kibana:
        host: "http://101.43.61.175:5601"
        username: "elastic"   # kibana 服务用户名
-       password: "Zj1340026934"  # kibana 服务密码
+       password: "XXX"  # kibana 服务密码
    setup.dashboards.enabled: true
    
    ## 定义模板相关信息
@@ -1468,7 +1468,7 @@ EFK和大名鼎鼎的ELK只有一个区别，那就是 EFK 把 ELK 的 Logstash 
    output.elasticsearch:
        hosts: ["http://101.43.61.175:9200"]
        username: "elastic"   # elasticsearch 服务用户名
-       password: "Zj1340026934"  # elasticsearch 服务密码
+       password: "XXX"  # elasticsearch 服务密码
        index: "filebeat-%{+yyyy.MM.dd}"  # 前缀和模板pattern匹配
    
    ## 设置解析json格式日志的规则
@@ -1537,7 +1537,7 @@ EFK和大名鼎鼎的ELK只有一个区别，那就是 EFK 把 ELK 的 Logstash 
    setup.kibana:
        host: "http://101.43.61.175:5601"
        username: "elastic"
-       password: "Zj1340026934"
+       password: "XXX"
    setup.dashboards.enabled: true
    
    ## 定义模板相关信息
@@ -1550,7 +1550,7 @@ EFK和大名鼎鼎的ELK只有一个区别，那就是 EFK 把 ELK 的 Logstash 
    output.elasticsearch:
        hosts: ["http://101.43.61.175:9200"]
        username: "elastic"
-       password: "Zj1340026934"
+       password: "XXX"
        ## ========== 配置不同的 output ==========
        # 前缀与 pattern 匹配，不符合下面的 indices 规则的统一收集到这里
        index: "jiedian-%{[fields.source]}"
@@ -5143,7 +5143,7 @@ pip3 install elasticsearch
 # 创建 es 连接客户端
 # 单结点
 es = Elasticsearch(hosts=["121.4.47.229:9200"], 
-                   http_auth=("elastic", "Zj1340026934") # 认证信息
+                   http_auth=("elastic", "XXX") # 认证信息
                   )
 
 # 动态连接
@@ -5380,7 +5380,7 @@ def news_to_es():
         db="chatroom",
         mincached=10
     )
-    es = Elasticsearch(hosts=["121.4.47.229:9200"], http_auth=("elastic", "Zj1340026934"))
+    es = Elasticsearch(hosts=["121.4.47.229:9200"], http_auth=("elastic", "XXX"))
 
     # 判断es索引是否存在，不存在就创建
     if not es.indices.exists(index="cars_news"):
