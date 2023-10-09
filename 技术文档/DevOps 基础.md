@@ -1550,12 +1550,12 @@ spec:         #必选，Pod中容器的详细定义
 apiVersion: v1       #必选，版本号，例如v1
 kind: Pod       #必选，Pod
 metadata:       #必选，元数据
-  name: verify       #必选，Pod名称
-  namespace: devops-30005604-sit-vcm-master   #必选，Pod所属的命名空间
+  name: bi       #必选，Pod名称
+  namespace: devops-30038255-sit-bot-300-guochanhua   #必选，Pod所属的命名空间
 spec:         
   containers:
   - name: verify
-    image: registry01.wezhuiyi.com/alpine-runtime_amd64_v3.16.2/tester/vcm-env-verify:d4a3036
+    image: registry01.wezhuiyi.com/kylinos-runtime_arm64_v10.0.12/product-application-data/ddp-bi:dac54b1
     imagePullPolicy: Never 
     command: ["bash", "-c", "while true;do sleep 1;done"] 
     resources:      

@@ -801,7 +801,7 @@ def func():
           self.idx += 1
           return self.arr[self.idx - 1]
   
-        # 重置索引，结束当前迭代后可在此进入迭代
+        # 重置索引，结束当前迭代后可再次进入迭代
         self.idx = 0
         raise StopIteration
   
@@ -810,7 +810,7 @@ def func():
   for i in it:
       print(i)
       
-  # 又冲头开始迭代
+  # 又重头开始迭代
   # 下面两个next方法是等价的，只是第一个是系统内置的
   print(next(it))
   print(it.__next__())
