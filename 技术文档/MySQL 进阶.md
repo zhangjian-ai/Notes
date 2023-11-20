@@ -1,6 +1,6 @@
 ## MYSQL入门
 
-### MYSQL 的分支、变种及替代
+### 分支变种
 
 - Drizzle：从mysql fork 出来的，但是和mysql很不兼容。主要是用来提高数据库的可用性问题。
 - MariaDB：包含了mysql所有功能，并提供更多的扩展。
@@ -10,7 +10,36 @@
 
 
 
-### MYSQL 体系架构
+### 快速开始
+
+这里基于Docker快速创建mysql服务。注意：此处没有将容器数据挂载到磁盘。
+
+容器指令：
+
+```shell
+# 创建容器
+docker run -d --name mysql-mybatis --privileged=true -p 3307:3306 -e MYSQL_ROOT_USER=root -e MYSQL_ROOT_PASSWORD=mybatis123 mysql:8.0
+
+# 进入容器
+docker exec -it mysql-mybatis bash
+```
+
+
+
+建库语句：
+
+```mysql
+# 进入容器后，连接数据库
+mysql -uroot -pmybatis123
+
+# 创建数据库。字符集为 utf8 ；校对规则为 utf8_general_ci
+# 这两项在建表时同样可以指定
+CREATE DATABASE IF NOT EXISTS DB_Name DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
+```
+
+
+
+### 体系架构
 
 #### 架构组件
 
