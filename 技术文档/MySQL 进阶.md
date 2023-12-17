@@ -673,6 +673,10 @@ DECIMAL 类型用于存储精确的小数。但因为CPU不支持对DECIMAL的�
 
 **增加约束语法：**
 
+> 在已有表结构上新增列：
+>
+> ALTER TABLE 表名 ADD COLUMN 列名 数据类型 约束类型;
+
 - 增加列级约束
 
   ```mysql

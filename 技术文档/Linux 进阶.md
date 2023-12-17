@@ -3337,6 +3337,21 @@ apt 命令执行需要超级管理员权限(root)。
 
 ## 源码安装
 
+### 动态编译
+
+>通过源码编译的过程中执行`./configure && make && make install`，在默认情况下都是进行动态编译。
+>
+>Linux的可执行文件在链接过程中可以通过使用动态链接，在可执行文件加载过程中链接第三方的SO库文件，这种使用动态链接的可执行文件编译过程称之为动态编译。
+>
+>优点：
+>
+>1. 编译速度快；
+>2. 编译出来的文件体积小；
+>
+>缺点：
+>
+>1. 如果系统缺少相关SO库就会无法执行。
+
 一般情况都要经过解压、配置（configure）、编译（make）、安装（make install）
 
 下面以我之前的安装openlava为例子
@@ -3353,7 +3368,7 @@ cd openlava-4.0
 . /configure --prefix=/data/openlava
 
 # 编译make，这里的-j参数定义了使用线程数，这里是2线程
-# 可以用下面的命令查看线程数
+# 可以用下面的命令查看 cpu 核心数
 # grep 'processor' /proc/cpuinfo | sort -u | wc -l
 make -j 2
 
@@ -3381,7 +3396,43 @@ make install
 
 
 
+### 静态编译
 
+> 通过源码编译的过程中执行`./configure`时增加参数，即`./configure LDFLAGS="-static -static-libgcc" ... && make && make install`，即可进行静态编译。
+>
+> Linux可真行文件静态编译会在链接过程中链接所有用到的第三方.a库文件，哪怕只用到第三方库中其中几个函数，也会将整个第三方库链接过来。
+>
+> 优点：
+>
+> 1. 执行过程中不需要依赖任何SO库。
+>
+> 缺点：
+>
+> 1. 编译速度慢；
+> 2. 编译出来的文件体积大；
+
+使用静态编译安装，需要系统级依赖：
+
+```shell
+yum install glibc-static
+```
+
+
+
+下面静态安装 curl 工具。
+
+```shell
+# 解压源码安装包
+tar -zxvf curl-8.4.0.tar.gz
+
+# 进入文件夹后，配置安装
+./configure LDFLAGS="-static -static-libgcc" --prefix=/root/seeker/curl_install  --without-ssl --without-zlib
+
+# 然后 编译 & 编译安装
+make & make install
+```
+
+这样编译出来的 bin 文件，就可以直接拷贝到其他 linux 环境直接运行，而不需要关心目标环境是否有对应的 so库。
 
 
 
