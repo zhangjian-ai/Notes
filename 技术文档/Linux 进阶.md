@@ -782,7 +782,42 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    Escape character is '^]'.
    ```
 
-4. **curl 指令**
+4. **nc 指令**
+
+   nc命令用于设置路由器。
+
+   > - -g<网关> 设置路由器跃程通信网关，最多可设置8个。
+   > - -G<指向器数目> 设置来源路由指向器，其数值为4的倍数。
+   > - -h 在线帮助。
+   > - -i<延迟秒数> 设置时间间隔，以便传送信息及扫描通信端口。
+   > - -l 使用监听模式，管控传入的资料。
+   > - -n 直接使用IP地址，而不通过域名服务器。
+   > - -o<输出文件> 指定文件名称，把往来传输的数据以16进制字码倾倒成该文件保存。
+   > - -p<通信端口> 设置本地主机使用的通信端口。
+   > - -r 乱数指定本地与远端主机的通信端口。
+   > - -s<来源位址> 设置本地主机送出数据包的IP地址。
+   > - -u 使用UDP传输协议。
+   > - -v 显示指令执行过程。
+   > - -w<超时秒数> 设置等待连线的时间。
+   > - -z 使用0输入/输出模式，只在扫描通信端口时使用。
+
+   ```shell
+   nc [-hlnruz][-g<网关...>][-G<指向器数目>][-i<延迟秒数>][-o<输出文件>][-p<通信端口>][-s<来源位址>][-v...][-w<超时秒数>][主机名称][通信端口...]
+   ```
+
+   **TCP端口扫描:**
+
+   ```shell
+   # nc -v -z -w2 192.168.0.3 1-100  # 扫描192.168.0.3 的端口 范围是 1-100
+   192.168.0.3: inverse host lookup failed: Unknown host
+   (UNKNOWN) [192.168.0.3] 80 (http) open
+   (UNKNOWN) [192.168.0.3] 23 (telnet) open
+   (UNKNOWN) [192.168.0.3] 22 (ssh) open
+   ```
+
+   
+
+5. **curl 指令**
 
    > 1. curl 是常用的命令行工具，用来请求 Web 服务器。它的名字就是客户端（client）的 URL 工具的意思。
    > 2. curl 命令用作网络数据包收发，常应用于非交互式环境中。
@@ -1056,7 +1091,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
        
 
-## 7.3、文件目录类指令
+## 7.3、文件操作类指令
 
 > 斜杠在前表示绝对路径，没有斜杠表示相对路径，斜杠在后表示某文件夹下的一个文件
 
@@ -1103,7 +1138,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
 5. **rmdir 命令**（remove directory），用于删除**空目录**
 
-   ```
+   ```shell
    rmdir [选项] 要删除的空目录
    rm -rf 要删除的非空目录
    注意！rm -rf /* 删除根目录下的所有内容，可不能开玩笑
@@ -1111,14 +1146,14 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
 6. **touch 命令**，用于创建空文件
 
-   ```
+   ```shell
    touch 文件名称
    也可以一次创建多个文件，空格分开即可
    ```
 
 7. **cp 命令**（copy），拷贝文件到指定目录
 
-   ```
+   ```shell
    cp [选项] 要拷贝的文件 要粘贴的目录
    -r  递归复制整个文件夹
    -f  覆盖已经存在的目标文件而不给出提示
@@ -1132,7 +1167,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
 8. **rm 命令**，删除文件或目录
 
-   ```
+   ```shell
    rm [选项] 要删除的文件或目录
    -r  递归删除整个文件夹
    -f  强制删除不提示
@@ -1140,7 +1175,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
 
 9. **mv 命令**，移动文件与目录，或重命名
 
-   ```
+   ```shell
    mv 旧文件名 新文件名     重命名
    mv 源文件路径 目标文件路径   移动文件
    
@@ -1148,9 +1183,9 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    例2：mv a.txt /home/    如果移动到的文件夹内存在同名的文件会提示是否覆盖，也可以重命名
    ```
 
-10. **cat 命令**，查看文件内容，以只读的方式打开
+10. **cat 命令 ** 代表"concatenate"，是用于连接并打印文件的内容
 
-    ```
+    ```shell
     cat [选项] 要查看的文件
     -n ：显示行号
     
@@ -1159,6 +1194,42 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
     cat 只能浏览文件，而不能修改文件，为了浏览方便，一般会带上 管道命令 | more
     cat 文件名 | more [分页浏览]
     回车翻页
+    
+    例2：cat file1 file2
+    此命令将按顺序显示两个文件的内容
+    ```
+
+    **`cat <<EOF` 介绍**
+
+    它的作用是从标准输入读取一个文本块，直到遇到结束标识符 “EOF”，然后将该文本块写入标准输出。在输入输出指令中有关于 `<<` 命令的介绍。
+
+    `cat <<EOF` 在很多场景中都非常有用。例如，它可以用于生成配置文件，创建脚本，甚至用于网络编程。
+
+    **生成配置文件**
+
+    ```shell
+    cat <<EOF > /etc/myconfig.conf
+    HOME_DIR=/home/user
+    LOG_DIR=/var/log/myapp
+    EOF
+    ```
+
+    **创建脚本**
+
+    ```shell
+    cat <<EOF > myscript.sh
+    #!/bin/bash
+    echo "Hello, World!"
+    EOF
+    ```
+
+    **网络编程**
+
+    ```shell
+    cat <<EOF | nc localhost 1234  # 像本机 1234 端口发送GET请求
+    GET / HTTP/1.1
+    Host: localhost
+    EOF
     ```
 
 11. **more 命令**
@@ -1479,13 +1550,13 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    # tee 命令的 "-a" 选项的作用等同于 ">>" 命令，如果去除该选项，那么 tee 命令的作用就等同于 ">" 命令。
    ```
 
-2. `> 命令`和`>> 命令`
+2. **`> 命令`和`>> 命令`**
 
    `> 命令` **输出重定向** : 会将原来的文件的内容覆盖
 
    `>> 命令` **追加**： 不会覆盖原来文件的内容，而是追加到文件的尾部
 
-   ```
+   ```shell
    ls -l >文件   将ls -l 显示的内容写入文件 a.txt 中（覆盖写）如果该文件不存在，就创建该文件
    ls -al >>文件 将ls -al 显示的内容追加到文件 a.txt 的末尾
    cat 文件 1 > 文件 2   将文件1的内容覆盖到文件2
@@ -1493,7 +1564,26 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    echo "str">文件   将字符串的内容覆盖到文件中，原来的内容全都没了
    ```
 
-3. **echo 命令**，输出内容到控制台
+3. **<< 命令**
+
+   `<<` 是一个特殊的重定向运算符，被称为 "here document" 或者 "heredoc"。
+
+   这种结构允许用户指定一个定界符，然后输入一些数据，直到遇到相同的定界符结束。
+
+   例：
+
+   ```shell
+   cat <<DELIMITER
+   This is line 1.
+   This is line 2.
+   DELIMITER
+   
+   # 遇到界定符 DELIMITER 后将退出输入模式并打印输出的内容
+   This is line 1.
+   This is line 2.
+   ```
+
+4. **echo 命令**，输出内容到控制台
 
    ```shell
    echo [选项] [输出内容]
@@ -1505,7 +1595,7 @@ uid=1001(zhangjian) gid=1001(zhangjian) groups=1001(zhangjian),4(adm),24(cdrom),
    例2  使用 echo 指令输出"hello world" ==> echo "hello world"
    ```
 
-4. **read 命令**
+5. **read 命令**
 
    read 内部命令被用来从标准输入读取单行数据。这个命令可以用来读取键盘输入，当使用重定向的时候，可以读取文件中的一行数据。
 

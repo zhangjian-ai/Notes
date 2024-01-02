@@ -903,7 +903,7 @@ docker run [选项参数] ${IMAGE NAME} [命令行参数]    #运行一个容器
 			docker run -d --name node --link selenium_hub:hub selenium/node-chrome-debug
 			
 			# 说明：
-			# 		selenium_hub是上面启动的1cbbf6f07804（容器ID）容器的名字，这里作为源容器，hub是该容器在link下的别名（alias），通					俗易懂的讲，站在node容器的角度，selenium_hub和hub都是1cbbf6f07804容器的名字，并且作为容器的hostname，node用这2个名					字中的哪一个都可以访问到1cbbf6f07804容器并与之通信（docker通过DNS自动解析）。
+			# selenium_hub是上面启动的1cbbf6f07804（容器ID）容器的名字，这里作为源容器，hub是该容器在link下的别名（alias），通俗易懂的讲，站在node容器的角度，selenium_hub和hub都是1cbbf6f07804容器的名字，并且作为容器的hostname，node用这2个名字中的哪一个都可以访问到1cbbf6f07804容器并与之通信（docker通过DNS自动解析）。
 ```
 
 
@@ -1047,13 +1047,23 @@ dokcer inspect
 > - `ENV \<key\>\<value\>`
 > - `ENV \<key\>=\<value\>`
 >
-> 为容器声明环境变量，环境变量在子镜像中也可以使用。可以直接使用环境变量$variable_name 运行容器指定环境变量：`docker run --env <key>=<value>`
+> 两者的区别就是第一种是一次设置一个，第二种是一次设置多个
 >
-> ## RUN
+> 为容器声明环境变量，环境变量在子镜像中也可以使用。
 >
-> 格式：
+> 可以直接使用环境变量 $variable_name，运行容器指定环境变量：`docker run --env <key>=<value>`
 >
-> - `RUN \<command\>` (类似`/bin/sh -c`shell格式)
+> ## ARG
+> 语法：
+>ARG `<name>`[=`<default value>`]
+> 设置变量命令，ARG命令定义了一个变量，在docker build创建镜像的时候，使用 --build-arg `<varname>`=`<value>`来指定参数
+>如果用户在build镜像时指定了一个参数没有定义在Dockerfile种，那么将有一个Warning
+> 
+>## RUN
+> 
+>格式：
+> 
+>- `RUN \<command\>` (类似`/bin/sh -c`shell格式)
 > - `RUN ["executable", "param1", "param2"]` (exec格式)
 >
 > **第一种** 使用shell格式时，命令通过`/bin/sh -c`执行;
@@ -1063,15 +1073,15 @@ dokcer inspect
 > 举例： `RUN [ "echo", "$HOME" ]`$HOME变量不会被替换,如果你想运行shell程序，使用：`RUN [ "sh", "-c", "echo", "$HOME" ]`
 >
 > ## COPY
->
-> 格式：COPY <src><dest>
->
-> 拷贝本地<src>目录下的文件到容器中<dest>目录。
->
-> ## ADD
->
-> 格式：
->
+> 
+>格式：COPY <src><dest>
+> 
+>拷贝本地<src>目录下的文件到容器中<dest>目录。
+> 
+>## ADD
+> 
+>格式：
+> 
 > - ADD <src><dest>
 > - ADD ["",... ""]
 >
@@ -1084,30 +1094,30 @@ dokcer inspect
 > - `CMD \<commadn\> param1 param2`(shell格式)
 > - `CMD ["executable", "param1", "param2"]` （exex格式）
 > - `CMD ["param1", "param2"]`（为ENTRYPOINT命令提供参数）
->
-> 虽然有三种格式，但在Dockerfile中如果有多个CMD命令，只有最后一个生效。
->
-> `CMD`命令主要是提供容器运行时得默认值。默认值，可以是一条指令，也可以是参数（ENTRYPOINT），`CMD`命令参数是一个动态值，信息会保存到镜像的JSON文件中。
->
-> 举例：
->
-> ```
+> 
+>虽然有三种格式，但在Dockerfile中如果有多个CMD命令，只有最后一个生效。
+> 
+>`CMD`命令主要是提供容器运行时得默认值。默认值，可以是一条指令，也可以是参数（ENTRYPOINT 的参数），`CMD`命令参数是一个动态值，信息会保存到镜像的JSON文件中。
+> 
+>举例：
+> 
+>```
 > ENTRYPOINT ["executable"]
 > CMD ["param1", "param2"]
-> ```
->
-> 启动容器执行：`["executable", "param1", "param2"]` **注意：** 如果在命令行后面运行`docker run`时指定了命令参数，则会把`Dockerfile`中定义的`CMD`命令参数覆盖
->
+>```
+> 
+>启动容器执行：`["executable", "param1", "param2"]` **注意：** 如果在命令行后面运行`docker run`时指定了命令参数，则会把`Dockerfile`中定义的`CMD`命令参数覆盖
+> 
 > ## ENTRYPOINT
 >
 > 格式：
 >
 > - `ENTRYPOINT \<command\>` (shell格式)
-> - `ENTRYPOINT ["executable", "param1", "param2"]`（exec格式）
->
-> `ENTRYPOINT`和`CMD`命令类似，也是提供容器运行时得默认值，但它们有不同之处。同样一个Dockerfile中有多个ENTRYPOINT命令，只有最后一个生效。
->
-> - 当`ENTRYPOINT`命令使用<commmand>格式，`ENTRYPOINT`会忽略任何`CMD`指令和`docker run `传来的参数，直接运行在`/bin/sh -c`中;也就是说`ENTRYPOINT`执行的进程会是`/bin/sh -c`的**子进程**。所以进程的PID不会是1，而且也不能接受Unix信号。（执行docker stop $container_id的时候，进程接收不到SIGTERM信号）
+>- `ENTRYPOINT ["executable", "param1", "param2"]`（exec格式）
+> 
+>`ENTRYPOINT`和`CMD`命令类似，也是提供容器运行时得默认值，但它们有不同之处。同样一个Dockerfile中有多个ENTRYPOINT命令，只有最后一个生效。
+> 
+>- 当`ENTRYPOINT`命令使用<commmand>格式，`ENTRYPOINT`会忽略任何`CMD`指令和`docker run `传来的参数，直接运行在`/bin/sh -c`中;也就是说`ENTRYPOINT`执行的进程会是`/bin/sh -c`的**子进程**。所以进程的PID不会是1，而且也不能接受Unix信号。（执行docker stop $container_id的时候，进程接收不到SIGTERM信号）
 > - 使用`exec`格式，`docker run`传入的命令参数会覆盖`CMD`命令，并附加到`ENTRYPOINT`命令的参数中。推荐使用`exec`方式
 >
 > ## ONBUILD
@@ -1151,22 +1161,24 @@ dokcer inspect
 > 设定一个用户或者用户ID,在执行`RUN``CMD``ENTRYPOINT`等指令时指定以那个用户得身份去执行
 >
 > ## WORKDIR
->
+> 
 > 格式：`WORKDIR /path/to/workdir`
->
+> 
 > 当执行`RUN``CMD``ENTRYPOINT``ADD``CMD`等命令，设置工作目录
->
-> ## .dockerignore
->
-> 如果在Dockerfile文件目录下有.dockerignore文件，docker在构建镜像的时候会把在.dockerignore文件中定义的文件排除出去
->
-> ```shell
-> */temp*
-> */*/temp*
-> temp?
-> *.md
-> !LICENSE.md
-> ```
+
+
+
+### .dockerignore 文件
+
+如果在Dockerfile文件目录下有.dockerignore文件，docker在构建镜像的时候会把在.dockerignore文件中定义的文件排除出去
+
+```shell
+*/temp*
+*/*/temp*
+temp?
+*.md
+!LICENSE.md
+```
 
 
 
@@ -1255,7 +1267,7 @@ Docker 的容器利用了 LXC，管理利用 namespaces 来做权限的控制和
   - **Host：** 容器不会虚拟出自己的网卡，也不会配置容器IP，而是直接使用宿主机的IP和端口；
   - **Container：** 创建的容器不会创建自己的网卡，配置自己的IP，而是和一个指定的容器共享IP和端口范围；
   - **None：** 该模式关闭了容器的网络功能；
-  - **Bridge：** 默认的网络模式，此模式会为每一个容器分配并设置IP，并将容器连接到一个 docker0 的虚拟网桥，通过docker0 网桥以及配置宿主机 iptables nat 表来实现与宿主机通信。
+  - **Bridge：** 默认的网络模式，此模式会为每一个容器分配并设置IP，并将容器连接到一个 docker0 的虚拟网桥，通过docker0 网桥以及配置宿主机 iptables NAT 表来实现与宿主机通信。
 
 - **host 模式**
 

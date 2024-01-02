@@ -473,7 +473,108 @@ DECIMAL 类型用于存储精确的小数。但因为CPU不支持对DECIMAL的�
   insert into demo_enum(sex) values ('男'), (2);
   ```
 
-  
+
+
+
+ - **JSON类型**
+
+    >  JSON 是 JavaScript Object Notation（JavaScript 对象表示法）的缩写，是一个轻量级的，基于文本的，跨语言的数据交换格式。易于阅读和编写。
+    >
+    > JSON支持的数据类型：
+    >
+    > - 空值：null。
+    >
+    > - 数值：十进制数，不能前导0，可以为负数或小数，还可以为e或E表示的指数。
+    > - 字符串：字符串必须用双引号括起来。
+    > - 布尔值：true、false。
+    > - 数组：一个由零或多个值组成的有序序列。每个值可以为任意类型。数组使用方括号**[ ]** 括起来，元素之间用逗号  **，** 分隔。
+    > - 对象：一个由零或者多个键值对组成的无序集合。其中键必须是字符串，值可以为任意类型。对象使用花括号 { } 括起来，键值对之间使用逗号，分隔，键与值之间用冒号：分隔。
+
+    JSON数据类型是MySQL5.7.8开始支持的。在此之前，只能通过字符类型（CHAR、VARCHAR或TEXT）来保存JSON文档。
+
+    **优势：**
+
+    1. 在插入时能自动校验文档是否满足JSON格式的要求。
+    2. 优化了存储格式，无需读取整个文档就能快速访问某个元素的值。
+    3. 节省网络带宽，结合索引还能降低磁盘IO消耗。
+
+    
+
+    **插入操作**
+
+    1. 直接插入JSON数据
+
+        ```sql
+        create table if not exists json_demo(
+            id bigint unsigned auto_increment primary key comment 'ID',
+            json json not null comment 'JSON数据'
+        )engine InnoDB charset utf8mb4 collate utf8mb4_general_ci;
+        
+        insert into json_demo(json) value ('["吃了吗", 1, null, true, "2023-12-18 19:30:00"]');
+        ```
+
+    2. **JSON_ARRAY** 函数构造数组插入
+
+        ```sql
+        insert into json_demo(json) value (json_array('在干嘛', 2, null, false, '12:40'));
+        ```
+
+    3. **JSON_OBJECT** 函数构造json对象插入
+
+        ```sql
+        insert into json_demo(json) value (json_object('name', 'tomcat', 'age', 18, 'male', false));
+        ```
+
+    
+
+    **查询操作**
+
+    直接查询JSON数据就不演示了，和正常查询列值都是一样的。
+
+    1. **JSON_EXTRACT** 函数，接受两个参数。第一个就是 json 列名，第二个是 jsonpsth 表达式，直接匹配出JSON结构中的某个值
+
+        ```sql
+        select IFNULL(JSON_EXTRACT(json, '$.name'), '未知') as name from json_demo;
+        
+        # 查询结果
+        name
+        ----
+        未知
+        未知
+        "tomcat"
+        ```
+
+    
+
+    2. **JSON_INSERT**
+
+        **仅当指定位置或指定 KEY 的值不存在时，才执行插入操作**。另外，如果指定的 path 是数组下标，且 json_doc 不是数组，该函数首先会将 json_doc 转化为数组，然后再插入新值。
+
+        ```sql
+        # 前两条数据在索引3处都有值，故不会插入。而第三条数据则会把整个 对象 当成一个值，放到数组中
+        select JSON_INSERT(json, '$[3]', '玩吧单') from json_demo;
+        
+        # ---------
+        "[""吃了吗"", 1, null, true, ""2023-12-18 19:30:00""]"
+        "[""在干嘛"", 2, null, false, ""12:40""]"
+        "[{""age"": 18, ""male"": false, ""name"": ""tomcat""}, ""玩吧单""]"
+        
+        # 在最后插入
+        select JSON_INSERT(json, '$[6]', '{"province": "sichuan"}') from json_demo;
+        
+        # -------
+        "[""吃了吗"", 1, null, true, ""2023-12-18 19:30:00"", ""{\""province\"": \""sichuan\""}""]"
+        "[""在干嘛"", 2, null, false, ""12:40"", ""{\""province\"": \""sichuan\""}""]"
+        "[{""age"": 18, ""male"": false, ""name"": ""tomcat""}, ""{\""province\"": \""sichuan\""}""]"
+        ```
+
+    3. 其他一些查询时的操作函数
+
+        - **JSON_SET(json_doc, path, val[, path, val] ...)** 插入新值，并替换已经存在的值。如果指定位置或指定 KEY 的值不存在，会执行插入操作，如果存在，则执行更新操作。
+        - **JSON_REPLACE(json_doc, path, val[, path, val] ...)** 替换已经存在的值。
+        - **JSON_REMOVE(json_doc, path[, path] ...)** 删除 JSON 文档指定位置的元素。
+
+
 
 #### 日期时间类型
 
@@ -876,8 +977,6 @@ Empty set (0.00 sec)
 </table>
 
 
-
-
 #### 隔离级别
 
 在上面讲到的并发事务处理带来的问题中，更新丢失通常是应该完全避免的。但防止更新丢失，并不能单靠数据库事务控制器来解决，需要应用程序对要更新的数据加必要的锁来解决，因此，防止更新丢失应该是应用的责任。
@@ -894,7 +993,7 @@ Empty set (0.00 sec)
 | 隔离级别                     | 读数据一致性                                                 | 脏读 | 不可重复读 | 幻读 |
 | ---------------------------- | ------------------------------------------------------------ | ---- | ---------- | ---- |
 | 未提交读（read uncommitted） | 最低级别。事务中的修改，即使没有提交，对其他事务也是可见的。只能保证不读取物理上损坏的数据。 | 是   | 是         | 是   |
-| 已提交读（read committed）   | 语句级别。在同一个事物中，查询语句只能**看见**已经提交的事务所做的修改。但是相同的查询语句多次查询结果可能不同，因为语句级别的控制，在执行过程中可能有其他事物提交修改。 | 否   | 是         | 是   |
+| 已提交读（read committed）   | 语句级别。在一个事物中，查询语句只能**看见**已经提交的事务所做的修改。但是相同的查询语句多次查询结果可能不同，因为语句级别的控制，在执行过程中可能有其他事物提交修改。 | 否   | 是         | 是   |
 | 可重复读（repeatable read）  | 事务级别。同一个事务中，多次读取**相同范围的记录**的结果是一致的。SQL 92 标准中可能产生 幻读；MYSQL 标准中 已基本解决幻读，是mysql默认的事物隔离级别。 | 否   | 否         | 是   |
 | 可串行化（serializable）     | 最高级别，事务级。读取每一行数据都加上锁，可能导致大量的超时和锁争用问题，同时也不存在数据不安全的问题，但牺牲了数据库性能和并发能力，一般不使用。 | 否   | 否         | 否   |
 
@@ -4270,8 +4369,6 @@ mysql> show status like 'Table_locks%';
 
 
 
-
-
 ### InnoDB 行锁
 
 #### 行锁介绍
@@ -5151,7 +5248,7 @@ Database: demo_01  Wildcard: seller
 
 错误日志是MySQL中最重的日志之一，它记录了当MySQL启动、停止以及服务器在运行过程中发生的任何严重错误的相关信息。当数据库出现任何故障导致无法使用时，可以首先查看此日志。
 
-该日志是默认开启的，默认存放目录是mysql的数据目录（/var/lib/mysql），默认的日志文件名为 hostname.err （hostname是主机名）。
+该日志是**默认开启**的，默认存放目录是mysql的数据目录（/var/lib/mysql），默认的日志文件名为 hostname.err （hostname是主机名）。
 
 查看错误日志的存放路径：
 
@@ -5438,7 +5535,7 @@ InnoDB的事务日志主要分为redo log(重做日志，提供前滚操作)和u
 
 - **redo log 和 二进制日志（bin log） 的区别**
 
-  1. binlog日志是在Server层产生的，适用所有存储引擎。所有对数据库变更的写入到binlog日志。redo log是由InnoDB存储引擎产生的，只记录该存储引擎对象的数据变更页。**并且二进制日志先于redo log被记录**；
+  1. binlog日志是在Server层产生的，适用所有存储引擎。所有对数据库的变更写入到binlog日志。redo log是由InnoDB存储引擎产生的，只记录该存储引擎对象的数据变更页。**并且二进制日志先于redo log被记录**；
   2. 日志格式不同，binlog是一种基于行格式的记录的逻辑日志（DML语句），而redo log是物理格式日志，记录innodb引擎数据页的修改；
   3. 刷盘时间点不同，binlog只在事务提交完成后一次写入（对于非事务表的操作，则是每次执行语句成功后就直接写入），而redo log是在事务执行过程不断写入；
   4. 因为二进制日志只在提交的时候一次性写入，所以二进制日志中的记录方式和提交顺序有关，且一次提交对应一次记录。而redo log中是记录的物理页的修改，redo log文件中同一个事务可能多次记录，最后一个提交的事务记录会覆盖所有未提交的事务记录。
@@ -5470,7 +5567,7 @@ InnoDB的事务日志主要分为redo log(重做日志，提供前滚操作)和u
 
     Innodb存储引擎中，redo log以块为单位进行存储的，每个块占512字节，这称为redo log block。所以不管是log buffer中还是os buffer中以及redo log file on disk中，都是这样以512字节的块存储的。
 
-  - rodo log参数
+  - redo log参数
   
     ```shell
     > show global variables like 'innodb_log%';
