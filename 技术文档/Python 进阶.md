@@ -1,16 +1,18 @@
 ## 知识点
 
+
+
 ### 1、对象创建过程
 
-`__new__`： 对象的创建，是一个类方法，第一个参数是cls，返回一个实例对象，此时该对象还不具有实例属性，但已经有类属性了。
-`__init__`： 对象的初始化， 是一个实例方法，第一个参数是self（也就是`__new__`方法返回的实例对象），为其初始化实例属性。
-`__call__`： 对象是callable的，是一个实例方法，注意不是类方法。对象被调用时，等同于调用所属类的`__call__`函数，如果所属类未实现该方法，则调用元类的 `__call__` 方法。
 
-类：理解为是元类(type)的实例对象，所以当运行 类()  时，元类中的`__call__`函数将会被调用。
+
+`__new__`： 对象的创建，是一个类方法，第一个参数是cls，返回一个实例对象，此时该对象还不具有实例属性，但已经有类属性了。 `__init__`： 对象的初始化， 是一个实例方法，第一个参数是self（也就是`__new__`方法返回的实例对象），为其初始化实例属性。 `__call__`： 对象是callable的，是一个实例方法，注意不是类方法。对象被调用时，等同于调用所属类的`__call__`函数，如果所属类未实现该方法，则调用元类的 `__call__` 方法。
+
+类：理解为是元类(type)的实例对象，所以当运行 类() 时，元类中的`__call__`函数将会被调用。
 
 type中`__call__`函数的实现逻辑：
 
-``` python
+```
     def __call__(cls, *args, **kwargs):
         obj = super().__new__(cls, *args, **kwargs)
         # 返回对象是类的实例才执行__init__
@@ -19,21 +21,25 @@ type中`__call__`函数的实现逻辑：
         return obj
 ```
 
+
+
 有了上面的理解，那么实例化对象的逻辑就出来了：
 
-	- instance = class()
-	- class 作为元类的实例对象，运行class()时，即调用元类type中的__call__方法，在__call__方法中，依次调用class类中__new__和__init__方法，最终返回一个当前class类的实例对象。
+```
+- instance = class()
+- class 作为元类的实例对象，运行class()时，即调用元类type中的__call__方法，在__call__方法中，依次调用class类中__new__和__init__方法，最终返回一个当前class类的实例对象。
+```
+
+
 
 > 扩展：
 >
->  - 构造函数：python 中的通过构造函数`__new__`创建一个实例对象
->  - 析构函数：python 中的析构函数`__del__`在对象被GC回收时调用，并不是通过执行`__del__`删除对象，而是删除时调用该函数。
-
-
+> - 构造函数：python 中的通过构造函数`__new__`创建一个实例对象
+> - 析构函数：python 中的析构函数`__del__`在对象被GC回收时调用，并不是通过执行`__del__`删除对象，而是删除时调用该函数。
 
 综合示例：
 
-```python
+```
 class A:
     name = "jack"
 
@@ -72,7 +78,9 @@ jack
 
 ### 2、生成器通信
 
-``` python
+
+
+```
 # 生成器是一种使用普通函数语法定义(包含yield关键字即可)的迭代器。
 # 迭代器的特点是可以按需获取序列值，而不是一次性实例化出整个可迭代对象。
 
@@ -136,7 +144,9 @@ if __name__ == '__main__':
 
 ### 3、动态创建类
 
-``` python
+
+
+```
 # -------------动态导入模块中的类------------
 '''
 1. 首先import相关工具模块`import importlib`
@@ -225,16 +235,17 @@ type(name, bases, dict)
 #   - 元类就是类的类，python中函数type实际上是一个元类。
 #   - type就是Python在背后用来创建所有类的元类。Python中所有的东西都是对象。这包括整数、字符串、函数以及类。
 #   - 所有对象，都是从一个类创建而来，这个类就是type。type就是Python的内建元类，当然了，也可以创建自己的元类(基于metaclass实现单例)
-
 ```
 
 
 
 ### 4、动态创建函数
 
+
+
 **lambda：创建匿名函数**
 
-``` python
+```
 # lambda 动态创建匿名函数。通常用在推导式和几个高阶函数中
 
 # 示例：
@@ -256,7 +267,7 @@ print(a) # [100, 100, 99]
 
 **内置函数`compile()` + `types.FunctionType` 模块，动态创建函数**
 
-```python
+```
 """
 compile 函数：
 	compile(source, filename, mode, flags=0, dont_inherit=False, optimize=- 1)
@@ -314,7 +325,9 @@ if __name__ == '__main__':
 
 ### 5、类属性和实例属性
 
-``` python
+
+
+```
 '''
 理解类属性:
     - 类属性就相当于全局变量，是类和其实例对象共有的属性；而实例属性为实例对象自己私有，通过类是无法直接调用的。
@@ -333,31 +346,28 @@ if __name__ == '__main__':
 
 ### 6、socket粘包问题
 
+
+
 **准备知识：**
 
-> ​		任何应用程序发送和接收数据，都是基于操作系统中转，应用有发送和接收数据时，直接对接操作系统，由操作系统来完成真正发送和接收的数据。在这个过程中，操作系统在拿到数据后，并不会立即将数据发送到互联网或者应用程序，而是存在一个缓冲区，将多次收到的数据一次发送出去，但这个缓冲时间是很短的，人为很难感知。同时，缓冲区也是有大小的，当缓冲区数据满了就直接发，不再继续缓冲。
+>  任何应用程序发送和接收数据，都是基于操作系统中转，应用有发送和接收数据时，直接对接操作系统，由操作系统来完成真正发送和接收的数据。在这个过程中，操作系统在拿到数据后，并不会立即将数据发送到互联网或者应用程序，而是存在一个缓冲区，将多次收到的数据一次发送出去，但这个缓冲时间是很短的，人为很难感知。同时，缓冲区也是有大小的，当缓冲区数据满了就直接发，不再继续缓冲。
 
 **A、为什么会发生TCP粘包、拆包**
 
 1. 应用程序写入的数据大于套接字缓冲区大小，这将会发生拆包。
-
 2. 应用程序写入数据小于套接字缓冲区大小，网卡将应用多次写入的数据发送到网络上，这将会发生粘包。
-
 3. 进行MSS（最大报文长度）大小的TCP分段，当TCP报文长度-TCP头部长度>MSS的时候将发生拆包。
-
 4. 接收方不及时读取套接字缓冲区数据，这将发生粘包。
 
 **B、如何处理粘包、拆包**
 
 1. 使用带消息头的协议、消息头存储消息开始标识及消息长度信息，服务端获取消息头的时候解析出消息长度，然后向后读取该长度的内容。
-
 2. 设置定长消息，服务端每次读取既定长度的内容作为一条完整消息，当消息不够长时，空位补上固定字符。
-
 3. 设置消息边界，服务端从网络流中按消息边界分离出消息内容，一般使用‘\n’。
 
-
-
 ### 7、socket断点续传
+
+
 
 > 文件断点续传，是指文件在传输过程中因为某些原因程序停止运行文件终止传输，下一次重新传输文件的时候还能从上一次断开的位置开始传输，而不需要重新从头开始。
 
@@ -369,9 +379,9 @@ if __name__ == '__main__':
 - 如果是上传，服务器返回已经上传文件大小给客户端，客户端根据返回值作为字节起点开始上传
 - 下载则反过来
 
-
-
 ### 8、导包方式 和 pyc文件
+
+
 
 ```
 sys.path 系统导包路径列表说明：
@@ -379,35 +389,35 @@ sys.path 系统导包路径列表说明：
 	- sys.path 列表中的第一个路径，总是当前执行文件所在的目录路径。所以我们执行文件时，总是可以基于当前路径导入同级模块或同级以下的模块。
 ```
 
-　　**方式一：from 包名  import  模块名**
-
-　          使用时：模块名.函数名()
-
-　　**方式二：from 包名.模块名  import 函数名**
-
-　　        使用时：函数名()
-
-　　**方式三 ：import  包名.模块名   ** 
-
-　　        使用时:  包名.模块名.函数名()
-
-　　**方式四：from  包名  import  *   **
-
-　　        前提是：在 `__init__.py`  文件中写入`__all__`列表变量，写入当前路径下级模块名
-
-​                   导入哪个模块，不写则什么都不导入
-
-　　        使用时：模块名.函数名()
-
-　　**方式五：import 包名**   
-
-　　        前提是：在包里面的`__init__.py`  文件里写入   from . import  模块名`__init__.py`  里面导入哪个模块
-
-​                   通过本方式就能使用哪个模块
-
-　　        使用时：模块名.函数名()
 
 
+　　**方式一：from 包名 import 模块名**
+
+　 使用时：模块名.函数名()
+
+　　**方式二：from 包名.模块名 import 函数名**
+
+　　 使用时：函数名()
+
+　　**方式三 ：import 包名.模块名 **
+
+　　 使用时: 包名.模块名.函数名()
+
+　　**方式四：from 包名 import * **
+
+　　 前提是：在 `__init__.py` 文件中写入`__all__`列表变量，写入当前路径下级模块名
+
+ 导入哪个模块，不写则什么都不导入
+
+　　 使用时：模块名.函数名()
+
+　　**方式五：import 包名**
+
+　　 前提是：在包里面的`__init__.py` 文件里写入 from . import 模块名`__init__.py` 里面导入哪个模块
+
+ 通过本方式就能使用哪个模块
+
+　　 使用时：模块名.函数名()
 
 **pyc文件**
 
@@ -415,9 +425,9 @@ sys.path 系统导包路径列表说明：
 
   > 注释：
   >
-  > ​	1、c 是compiled 「编译过」的意思
+  >  1、c 是compiled 「编译过」的意思
   >
-  > ​	2、python在解释源程序时是分成两个步骤，先是将源码编译成字节码，再对字节码进行处理生成CPU能识别的机器码
+  >  2、python在解释源程序时是分成两个步骤，先是将源码编译成字节码，再对字节码进行处理生成CPU能识别的机器码
 
   py文件在被当作模块首次/更新后导入时，Python解释器会生成pyc文件。
 
@@ -431,25 +441,25 @@ sys.path 系统导包路径列表说明：
 
      > 因为py文件是可以直接看到源码的，对于一般的商业公司来说，这有点不妙，因为pyc文件可以独立于py文件，删除py文件也不会出错。这就是太好了，只需要编译成pyc文件再发布出去就好了。
 
-
-
 ### 9、富比较方法
+
+
 
 **运算符号与比较方法的映射关系：**
 
-​	x<y 调用 `x.__lt__(y)`、
+ x<y 调用 `x.__lt__(y)`、
 
-​	x<=y 调用` x.__le__(y)`、
+ x<=y 调用` x.__le__(y)`、
 
-​	x==y 调用` x.__eq__(y)`、
+ x==y 调用` x.__eq__(y)`、
 
-​	x!=y 调用` x.__ne__(y)`、
+ x!=y 调用` x.__ne__(y)`、
 
-​	x>y 调用` x.__gt__(y)`、
+ x>y 调用` x.__gt__(y)`、
 
-​	x>=y 调用` x.__ge__(y)`
+ x>=y 调用` x.__ge__(y)`
 
-```python
+```
 class Car():
    def __init__(self,carname,oilcostper100km, price):
        self.carname,self.oilcostper100km,self.price = carname,oilcostper100km, price
@@ -478,8 +488,9 @@ execute __le__
 execute __gt__
 execute __ge__
 (True, False, True, False)
-
 ```
+
+
 
 **字符串大小比较：**
 
@@ -487,9 +498,9 @@ execute __ge__
   - 需要注意的是 空格 的ascii码是32，空（null）的ascii码是0。
   - 如果两个字符串字符相同，但是一个字符串的字符多，则多的大。原理就是字符的ascii码都是大于0的，字符串少的就会取null的ascii码来与之比较。
 
-
-
 ### 10、GC机制和GIL锁
+
+
 
 - **Python GC(Garbage Collection):**
 
@@ -510,7 +521,7 @@ execute __ge__
 
      > 核心概念：变量是指向一个对象的指针；有n个变量指向某一个对象，那该对象的引用计数则为n，又称该对象有n个引用
      >
-     > ```python
+     > ```
      > import sys
      > 
      > a = [1, 2, 3]
@@ -519,6 +530,8 @@ execute __ge__
      > print(id(a), id(b))  # 4483101696 4483101696，变量a b的id相同，说明a b指向同一对象
      > print(sys.getrefcount(a))  # 3, 其中调用getrefcount函数会使引用+1
      > ```
+     >
+     > 
 
      为了跟踪每个对象的引用次数，每个对象都有一个名为**引用计数(ob_refcnt)**的额外属性，当创建或删除指向对象的指针时，该属性的值会相应的增加或减少。以下三种情况会使对象的引用次数增加：
 
@@ -532,7 +545,7 @@ execute __ge__
 
      示例：
 
-     ```python
+     ```
      import sys
      
      foo = []
@@ -547,13 +560,15 @@ execute __ge__
      print(sys.getrefcount(foo)) # 2 references, the function scope is destroyed
      ```
 
+     
+
      当你想删除全局或局部变量时，可以使用删除变量及其引用（而不是对象本身）的 del语句。这在 jupyter notebook中工作时通常很有用，因为在jupyter notebook中所有单元格变量都是全局变量。CPython 使用引用计数的主要原因是历史原因，现在有很多关于这种技术的弱点的争论。比如，有人认为现代的垃圾回收算法可以更高效，无需使用引用计数。引用计数算法存在很多问题，例如循环引用、线程锁定以及额外内存和性能开销。**必须指出的是，引用计数是 Python 无法摆脱全局解释锁 (GIL) 的原因之一。**
 
   2. **标记-清除**
 
      上面提到了 引用计数 的缺点，无法释放 **循环引用** 的对象。看下面的代码理解下循环引用。
 
-     ```python
+     ```
      # 对象自己引用自己
      lst = []
      lst.append(lst)
@@ -564,6 +579,8 @@ execute __ge__
      object_1['obj2'] = object_2
      object_2['obj1'] = object_1
      ```
+
+     
 
      标记-清除原理：当应用程序可用的内存空间被耗尽时，就会停止整个程序，然后进行两项工作，标记和清除
 
@@ -582,11 +599,9 @@ execute __ge__
 
      分代指的是根据容器对象的存活时间来划分出的不同等级。垃圾回收器将container对象分成三代(0, 1, 2)，每个新对象都从第一代开始。如果一个对象在一个垃圾回收轮次中幸存下来，它将移至较旧（更高）的一代。较低代的回收频率高于较高代，因为大多数新对象往往会被先销毁。这样分代回收的策略能提高性能并减少垃圾回收带来的暂停时间。
 
-     
-
      **示例：**
 
-     ```python
+     ```
      import gc
      import sys
      import ctypes
@@ -640,23 +655,25 @@ execute __ge__
 
      **分析：**
 
-     ​		在上面的示例中，del语句删除了对我们对象的引用（引用计数减 1）。 Python 执行 del语句后，我们的对象不再可以从 Python 代码访问。但是，这些对象仍然存在于内存中。发生这种情况是因为它们仍在相互引用，并且每个对象的引用计数为 1。因为我们前面通过gc.disable()禁用了分代回收，因此循环引用对象无法释放；这时，我们可以通过调用`gc.collect()`手动触发对象回收。
+      在上面的示例中，del语句删除了对我们对象的引用（引用计数减 1）。 Python 执行 del语句后，我们的对象不再可以从 Python 代码访问。但是，这些对象仍然存在于内存中。发生这种情况是因为它们仍在相互引用，并且每个对象的引用计数为 1。因为我们前面通过gc.disable()禁用了分代回收，因此循环引用对象无法释放；这时，我们可以通过调用`gc.collect()`手动触发对象回收。
 
-     ​		在python中对象分为可变对象和不可变对象。不可变对象包括`int`, `float`, `complex`, `strings`, `bytes`, `tuple`, `range` 和 `frozenset`；可变对象包括`list`, `dict`, `bytearray`和 `set`。循环引用仅存在于container对象（比如，`list`, `dict`, `classes`, `tuple`），python垃圾回收算法主要追踪可变对象及不可变对象`tuple`。如果`tuple`包含的元素都是不可变对象，那么回收算法可以不对该对象进行追踪。
-     
+      在python中对象分为可变对象和不可变对象。不可变对象包括`int`, `float`, `complex`, `strings`, `bytes`, `tuple`, `range` 和 `frozenset`；可变对象包括`list`, `dict`, `bytearray`和 `set`。循环引用仅存在于container对象（比如，`list`, `dict`, `classes`, `tuple`），python垃圾回收算法主要追踪可变对象及不可变对象`tuple`。如果`tuple`包含的元素都是不可变对象，那么回收算法可以不对该对象进行追踪。
 
      **扩展：**
 
-     ​		为了决定何时进行一轮垃圾回收，每一代都有一个单独的计数器和阈值。计数器存储自上次收集以来的对象分配数减去释放数的差值。每次分配新的容器对象时，CPython 都会检查第0代的计数器是否超过阈值（通过`gc.get_count()`获得三代对象计数器存储的数值）。如果超过阈值，Python 将触发垃圾回收。我们可以通过`gc.get_threshold()`和`gc.set_threshold()`查看、设置阈值：
-     ```python
+      为了决定何时进行一轮垃圾回收，每一代都有一个单独的计数器和阈值。计数器存储自上次收集以来的对象分配数减去释放数的差值。每次分配新的容器对象时，CPython 都会检查第0代的计数器是否超过阈值（通过`gc.get_count()`获得三代对象计数器存储的数值）。如果超过阈值，Python 将触发垃圾回收。我们可以通过`gc.get_threshold()`和`gc.set_threshold()`查看、设置阈值：
+
+     ```
      import gc
      gc.get_threshold()  # (700, 10, 10) 分别对应三代计数器的阈值
      gc.set_threshold(threshold0=800, threshold0=10, threshold0=10)  # 当threshold0设置为0时，禁用循环GC
      ```
 
-     ​		在写程序时，可以通过将调试标志设置为`gc.DEBUG_SAVEALL`，从而将所有unreachable对象添加到`gc.garbage` 中，帮助提升程序质量:
+     
 
-     ```python
+      在写程序时，可以通过将调试标志设置为`gc.DEBUG_SAVEALL`，从而将所有unreachable对象添加到`gc.garbage` 中，帮助提升程序质量:
+
+     ```
      import gc
      
      gc.set_debug(gc.DEBUG_SAVEALL)
@@ -673,31 +690,31 @@ execute __ge__
 
      
 
-- **GIL  Global Interpreter Lock(全局解释器锁)**
+- **GIL Global Interpreter Lock(全局解释器锁)**
 
   由于线程之间数据是共享的，也就意味着如果多个线程同时操作某一内存中的数据，就会有严重的数据安全问题。为了解决这个问题就有了GIL，本质上就是一个全局线程互斥锁。
-  
+
   - 在GIL的作用下，单个进程下同一时间只能执行一个线程，即便有多个CPU，多个线程也只会同执行一个。
   - 多线程下，每个线程的执行方式：
     - 获取GIL。
     - 执行代码。
     - 释放GIL。
   - 释放GIL的条件：
-    - 执行python2虚拟机运行1000字节指令  或者  执行python3虚拟机运行时间15ms。类似于时间片。
+    - 执行python2虚拟机运行1000字节指令 或者 执行python3虚拟机运行时间15ms。类似于时间片。
     - 线程遇到阻塞时，主动释放GIL（例如：sleep或者IO操作）。
     - 把线程设置为睡眠状态（等待状态）。
   - python下的多线程对CPU密集型代码(各种循环处理、计数等等)并不友好，对IO密集型代码(文件处理、网络爬虫等)比较友好。
   - 每个进程有各自独立的GIL，互不干扰，所以CPU密集型代码在python中开启多进程更适合。
 
-
-
 ### 11、字节码分析
+
+
 
 > 1. Python 代码是先被编译为字节码后，再由Python虚拟机来执行字节码， Python的字节码是一种类似汇编指令的中间语言，一个Python 语句会对应若干字节码指令，虚拟机一条一条执行字节码指令，从而完成程序执行。
 > 2. Python dis 模块支持对Python代码进行反汇编，生成字节码指令。
-> 3. 所有的字节码指令是解释器规定好的一组解释器能识别的编码指令，内置模块 dis 中，opname 属性的值是一个列表，其中就保存了当前所有的字节码指令，共 256 个。 
+> 3. 所有的字节码指令是解释器规定好的一组解释器能识别的编码指令，内置模块 dis 中，opname 属性的值是一个列表，其中就保存了当前所有的字节码指令，共 256 个。
 
-``` python
+```
 import dis
 
 
@@ -755,7 +772,9 @@ if __name__ == '__main__':
 '''
 ```
 
-``` python
+
+
+```
 import dis
 
 
@@ -793,6 +812,8 @@ def func():
 
 ### 12、迭代器和生成器
 
+
+
 迭代是Python中常用且非常强大的一个功能，它可以用于访问集合、列表、字符串、字典等数据结构的元素。
 
 - **可迭代对象**
@@ -812,7 +833,7 @@ def func():
 
   迭代器是可迭代对象的一个子集，它是一个可以记住遍历的位置的对象，它与列表、元组、集合、字符串这些可迭代对象的区别就在于next方法的实现，其他列表、元组、集合、字符串这些可迭代对象可以很简单的转化成迭代器，通过Python内置的**iter**函数能够轻松把可迭代对象转化为迭代器。
 
-  ```python
+  ```
   X = [1,2,3,4,5]
   print(type(X))
   Y = iter(X)
@@ -829,9 +850,11 @@ def func():
   3
   ```
 
+  
+
   通过实现**`__iter__`**和**`__next__`**方法来定义迭代器：
 
-  ```python
+  ```
   class Iterator(object):
     def __init__(self, array: list):
       self.arr = array
@@ -870,6 +893,8 @@ def func():
   2
   ```
 
+  
+
 - **生成器**
 
   生成器是迭代器的子集，换句话说，生成器一定是迭代器，但是迭代器不全是生成器对象。
@@ -878,7 +903,7 @@ def func():
 
   return返回值的普通函数：
 
-  ```python
+  ```
   def generator(array):
       for i in array:
           return i
@@ -894,9 +919,11 @@ def func():
   <class 'int'>
   ```
 
+  
+
   yield返回值的生成器函数：
 
-  ```python
+  ```
   def generator(array):
     for i in array:
       yield (i)
@@ -918,13 +945,15 @@ def func():
 
 ### 12、yield、 yield from
 
+
+
 > `yield from` 是在Python3.3才出现的语法。所以这个特性在Python2中是没有的。
 >
 > `yield from` 后面需要加的是可迭代对象，它可以是普通的可迭代对象，也可以是迭代器，甚至是生成器。
 
 **yield 和 yield from 用法比较**
 
-``` python
+```
 # 一个拼接可迭代对象的例子
 alist = [1, 2, 3, 4]
 astr = 'ABC'
@@ -973,7 +1002,7 @@ if __name__ == '__main__':
 >
 > `子生成器`：yield from后面加的生成器对象（包含yeild关键字的函数实例）
 
-``` python
+```
 # 一个求平均数的例子
 
 # 子生成器
@@ -1056,11 +1085,13 @@ if __name__ == '__main__':
 
 ### 13、高效使用字典
 
+
+
 - **用 in 关键字检查 key 是否存在**
 
 > Python2 中判断某个 key 是否存在字典中可使用 has_key 方法，另外一种方式是使用 in 关键字。但是强烈推荐使用后者，因为 in 的处理速度更快，另外一个原因是 has_key 这个方法在 Python3 被移除了，要想同时兼容py2和py3两个版本的代码，用 in 是最好的选择。
 
-``` python
+```
 dic = {
     "name": 'yang',
     "age": 16,
@@ -1071,11 +1102,13 @@ if "name" in dic:
     pass
 ```
 
+
+
 - **用 get 获取字典中的值**
 
 > 关于获取字典中的值，一种简单的方式就是用d[x]访问该元素，但是这种情况在 key 不存在的情况下会报 KeyError 错误。
 
-``` python
+```
 dic = {
     "name": 'yang',
     "age": 16,
@@ -1087,6 +1120,8 @@ b = dic.get('sex', 'default')  # 当获取的key不存在时，则返回默认�
 print(b)  # default
 ```
 
+
+
 - **用 setdefault 为字典中不存在的 key 设置缺省值**
 
 > 普通的方式就是先判断 key 是否已经存在，如果不存在则要先用列表对象进行初始化，再执行后续操作。而更好的方式就是使用字典中的 setdefault 方法。
@@ -1097,7 +1132,7 @@ print(b)  # default
 > 	2.如果 key 不存在字典中，则会创建该key，并用 setdefault 中的第二个参数作为该 key 的值，再返回该值
 > ```
 
-``` python
+```
 groups = {}
 data = [('name', 'xiaozhang'), ('name', 'xiaoli'), ('name', 'xiaolong')]
 '''
@@ -1115,11 +1150,13 @@ for (key, value) in data:
     groups.setdefault(key, []).append(value)
 ```
 
+
+
 - **用 defaultdict 初始化字典对象**
 
 > 如果不希望 d[x] 在 x 不存在时报错，除了在获取元素时使用 get 方法之外，另外一种方式是用 collections 模块中的 defaultdict，在初始化字典的时候指定一个函数，其实 defaultdit 是 dict 的子类。
 
-``` python
+```
 from collections import defaultdict
 
 data = [('name', 'xiaozhang'), ('name', 'xiaoli'), ('name', 'xiaolong'), ('age', 18), ('age', 20)]
@@ -1132,9 +1169,11 @@ for key, value in data:
 print(dic)  # defaultdict(<class 'list'>, {'name': ['xiaozhang', 'xiaoli', 'xiaolong'], 'age': [18, 20]})
 ```
 
+
+
 - **用 fromkeys 将列表转换成字典**
 
-``` python
+```
 # keys = {'a', 'e', 'i', 'o', 'u'}
 # keys = ['a', 'e', 'i', 'o', 'u']
 keys = 'aeiou'  
@@ -1151,11 +1190,13 @@ d = dict.fromkeys(keys, vals)
 print(d)  # {'name': [1, 2, 3], 'age': [1, 2, 3], 'weight': [1, 2, 3]}
 ```
 
+
+
 - **用字典实现 switch … case 语句**
 
 > Python 中没有 switch … case 语句，这个问题Python之父龟叔表示这个语法过去没有，现在没有，以后也不会有。因为Python简洁的语法完全可以用 if … elif 实现。如果有太多的分支判断，还可以使用字典来代替。
 
-``` python
+```
 # if...else...
 if arg == 0:
     return 'zero'
@@ -1175,13 +1216,15 @@ data = {
 data.get(arg, "nothing")
 ```
 
+
+
 - **使用 items 迭代字典中的元素**
 
 > Python2中，items 方法返回的是（key ,value）二元元组 组成的列表对象，这种方式的弊端是迭代超大字典的时候，内存瞬间会扩大两倍，因为列表对象会一次性把所有元素加载到内存，更好的方式是使用 iteritems。
 >
 > iteritems 返回的是迭代器对象，迭代器对象具有惰性加载的特性，只有真正需要的时候才生成值，这种方式在迭代过程中不需要额外的内存来装载这些数据。**注意 Python3 中，只有 items 方法了，它等价于 Python2 中的 iteritems，而 iteritems 这个方法名被移除了。**
 
-``` python
+```
 d = {
     0: "zero",
     1: "one",
@@ -1192,11 +1235,13 @@ for k, v in d.items():
     print(k, v)
 ```
 
+
+
 - **使用字典推导式**
 
 > 推导式是个绝妙的东西，列表推导式一出，map、filter等函数黯然失色，自 Python2.7以后的版本，此特性扩展到了字典和集合身上，构建字典对象无需调用 dict 方法。
 
-``` python
+```
 # 字典推到式
 keys = ('a', 'b', 'c')
 values = [1, 2, 3]
@@ -1209,15 +1254,14 @@ print(d)  # {'a': 1, 'b': 2, 'c': 3}
 
 ### 14、继承和super关键字
 
-> super 是一个继承自 object 的类，调用super函数（super()）即可获得 super类的实例。
-> 根据官方文档的解释 super() 函数返回的对象` super object`是一个代理对象。
-> super() 有四种参数的组合形式。
-> super() 适用于类的静态方法。
+
+
+> super 是一个继承自 object 的类，调用super函数（super()）即可获得 super类的实例。 根据官方文档的解释 super() 函数返回的对象` super object`是一个代理对象。 super() 有四种参数的组合形式。 super() 适用于类的静态方法。
 
 **语法格式：**
 
 - super([type[, object-or-type]])
--  Python 3 可以使用直接使用 **super().xxx** 代替 **super(Class, self).xxx** 
+- Python 3 可以使用直接使用 **super().xxx** 代替 **super(Class, self).xxx**
 
 **函数描述：**
 
@@ -1225,24 +1269,21 @@ print(d)  # {'a': 1, 'b': 2, 'c': 3}
 
 **参数说明：**
 
-- **type：**类，可选参数，默认值是**当前类**。调用方法时，从当前类的MRO中找到传入的 type， 再从type后面的类中依次查找调用的方法（ super 调用的方法，一定是type父类或兄弟类的方法）。
+- **type：类，可选参数，默认值是当前类**。调用方法时，从当前类的MRO中找到传入的 type， 再从type后面的类中依次查找调用的方法（ super 调用的方法，一定是type父类或兄弟类的方法）。
   - Method Resolution Order（方法解析顺序），即在调用方法时，会对当前类以及所有的基类进行一个搜索，以确定该方法之所在，而这个搜索的顺序就是MRO。只要搜索到调用的方法，便不在继续向后搜索。
   - 一个类的 MRO 列表就是合并所有父类的 MRO 列表，并遵循以下三条原则：
     - 子类永远在父类前面
     - 如果有多个父类，会根据它们在列表中的顺序被检查
     - 如果对下一个类存在两个合法的选择，选择第一个父类
-
-- **object-or-type：**被代理的对象或类，默认是 self实例自身，可选参数。super()返回值是一个代理对象，就是说 super().func() 调用函数时，其实是以 *<u>被代理的对象或类</u>*  的身份来调用 func 函数。func 函数体 是MRO中解析到对应类中的函数体，因此，我们通过super调用父类方法时，方法内部的 `self/cls` 对象其实就是当前类/当前类实例，使用到的属性也都是当前类的属性。
+- **object-or-type：**被代理的对象或类，默认是 self实例自身，可选参数。super()返回值是一个代理对象，就是说 super().func() 调用函数时，其实是以 *被代理的对象或类* 的身份来调用 func 函数。func 函数体 是MRO中解析到对应类中的函数体，因此，我们通过super调用父类方法时，方法内部的 `self/cls` 对象其实就是当前类/当前类实例，使用到的属性也都是当前类的属性。
 
 **返回值：**
 
 - **super object：** 代理对象。就是提供一个代理，让当前类或对象能够调用到父类(基类)中的方法。
 
+**示例一：单继承**
 
-
-**<font size=4>示例一：单继承</font>**
-
-``` python
+```
 class A:
     def func(self):
         print(self)  # <__main__.B object at 0x100f05d30>
@@ -1278,9 +1319,11 @@ b.func()
 '''
 ```
 
-**<font size=4>示例二：多继承</font>**
 
-``` python
+
+**示例二：多继承**
+
+```
 class A:
     def __init__(self):
         self.n = 2
@@ -1378,11 +1421,13 @@ print(d.n)
 
 ### 15、Py的Get和Set方法
 
-> 相关方法：property、`__getattr__`、`__setattr__`、`__getattribute__`、`setattr`、`getattr`
+
+
+> 相关方法：property、`__getattr__`、`__setattr__`、`__getattribute__`、`setattr`、`getattr`、`__getitem__`、`__setitem__`
 
 - **property 作为方法使用**
 
-  ``` python
+  ```
   class Person:
       def __init__(self):
           self.__age = None
@@ -1423,7 +1468,7 @@ print(d.n)
 
 - **property 作为装饰器使用**
 
-  ``` python
+  ```
   class Person:
       def __init__(self):
           # __为私有属性
@@ -1471,7 +1516,7 @@ print(d.n)
 
     - 拦截点号运算。当对未定义的属性名称和实例进行点号运算时，就会用属性名作为字符串调用这个方法。如果继承树可以找到该属性，则不调用此方法。
 
-      ``` python
+      ```
       class Person:
           def __init__(self):
               self.name = 'xiaozhang'
@@ -1497,11 +1542,13 @@ print(d.n)
       '''
       ```
 
+      
+
   - `__setattr__`
 
     - 会拦截所有属性的的赋值语句。当在`__setattr__`方法内对属性进行赋值时，不可使用self.attr = value，因为他会再次调用self.`__setattr__`("attr", value)，则会形成无穷递归循环，最后导致堆栈溢出异常。应该通过对属性字典做索引运算来赋值任何实例属性，也就是使用self.`__dict__`['name'] = value。
 
-      ``` python
+      ```
       class Person:
           def __init__(self):
             	# 即便是在初始化方法中，给对象赋值，已经开始 调用 __setattr__ 方法了
@@ -1523,6 +1570,7 @@ print(d.n)
           18
       '''
       ```
+
       
 
 - **`__getattribute__`**
@@ -1535,7 +1583,7 @@ print(d.n)
 
   - 重写`__getattribute__`时，注意规避死循环，方法内部用object获取属性值
 
-    ```python
+    ```
     class A:
         name = "jack"
     
@@ -1576,14 +1624,15 @@ print(d.n)
     实例调用属性啦 - __dict__
     None
     ```
+
     
 
 - **`getattr`和`setattr`**
 
-  >1. 这两个方法适用于实例对象或者类，不局限于实例对象；
-  >2. `getattr` 可给定一个默认值，当对象中没有该属性时，返回默认值
+  > 1. 这两个方法适用于实例对象或者类，不局限于实例对象；
+  > 2. `getattr` 可给定一个默认值，当对象中没有该属性时，返回默认值
 
-  ```python
+  ```
       class A:
           name = "jack"
   
@@ -1628,9 +1677,11 @@ print(d.n)
   中国
   ```
 
+  
+
 - **`__getattribute__`、`__getattr__`、`__setattr__` 都是实例方法，本质上操作的数据都是 `__dict__` 中的键值，实例的 `__dict__` 中没有，就会到所属类及父类的 `__dict__` 中查找**
 
-  ```python
+  ```
   class A:
       name = "along"
       age = 18
@@ -1648,22 +1699,72 @@ print(d.n)
   print(a.province)  # sichuan
   print(a.name)  # along
   ```
+
+- **`__getitem__`和`__setitem__`**
+
+  实现了这两个魔法方法的类，其实例可以使用 x[y] 的形式获取和设置实例属性。python内置dict类就是通过这两个魔法方法，使得我们可以便捷的操作字典实例。
+
+  示例：
+
+  ```python
+  class A:
+      def __init__(self):
+          # 实例属性访问权限
+          # 以 单下划线开头 表示受保护的属性（同 java protected），ide不会提示，但可以强制访问
+          # 以 双下划线开头 表示私有属性（同 java private），不允许外部访问
+          # 没有下划线开头的属性，则是 public 性质
+          self.__items = []
   
+      def __getitem__(self, item):
+          # 这里演示一下 for-else 语法
+          # for-else: 如果for过程被break或异常或return，那么将不走else逻辑，否则执行else
+          for k, v in self.__items:
+              if k == item:
+                  return v
+          else:
+              raise KeyError("no such key")
+  
+      def __setitem__(self, key, value):
+          for index, item in enumerate(self.__items):
+              k, v = item
+              # 存在相同key，就更新
+              if k == key:
+                  self.__items[index] = (k, value)
+                  break
+          else:
+              self.__items.append((key, value))
+  
+  
+  if __name__ == '__main__':
+      a = A()
+  
+      a["name"] = "seeker"
+      a["age"] = 18
+  
+      print(a["name"])  # "seeker"
+      print(a["age"])  # 18
+  
+      a["age"] = 22
+  
+      print(a["age"])  # 22
+      print(a["sex"])  # KeyError: 'no such key'
+  ```
+
   
 
 ### 16、弱引用
 
-- **强引用**
+- 强引用
   - 普通变量名和对象的关联是强引用的关系，会增加对象的引用计数，进而影响目标对象的生命周期。
--  **弱引用**
-  - 弱引用就是在保留引用的前提下，不增加引用计数，也不阻止目标被回收。
-  -  基本的 int 、 list 、 tuple 、string 、dict 实例不能作为弱引用的目标。
-  - set 实例可以作为所指对象。
-  - str 、 dict 、list 的子类实例 和 用户自定义的类型实例 可以作为弱引用所指对象。
-  - int 、 tuple 的子类实例 也不能作为弱引用对象.
+- **弱引用**
+- 弱引用就是在保留引用的前提下，不增加引用计数，也不阻止目标被回收。
+- 基本的 int 、 list 、 tuple 、string 、dict 实例不能作为弱引用的目标。
+- set 实例可以作为所指对象。
+- str 、 dict 、list 的子类实例 和 用户自定义的类型实例 可以作为弱引用所指对象。
+- int 、 tuple 的子类实例 也不能作为弱引用对象.
 - **弱引用和强引用代码演示**
 
-``` python
+```
 import sys
 import weakref
 
@@ -1704,11 +1805,13 @@ print(sys.getrefcount(id(a)))  # 1 弱引用不增加引用计数，所以该对
 '''
 ```
 
+
+
 - **weakref 模块**
 
 > 弱引用在缓存应用中很有用，因为不想仅因为被缓存引用着而始终保存缓存对象。
 >
->  `weakref.ref` 实例可以获取所指对象。如果对象存在，调用弱引用可以获取对象；否则返回 `None` 。
+> `weakref.ref` 实例可以获取所指对象。如果对象存在，调用弱引用可以获取对象；否则返回 `None` 。
 >
 > `weakref.ref` 类其实是低层接口，供高级用途使用，多数程序最好使用 **weakref 工具集** 和 `finalize` 。
 >
@@ -1721,7 +1824,7 @@ print(sys.getrefcount(id(a)))  # 1 弱引用不增加引用计数，所以该对
 >
 > **示例一：普通集合**
 >
-> ``` python
+> ```
 > import sys
 > import weakref
 > 
@@ -1743,9 +1846,11 @@ print(sys.getrefcount(id(a)))  # 1 弱引用不增加引用计数，所以该对
 > print(ref())  # None
 > ```
 >
+> 
+>
 > **示例二：值为弱引用的字典**
 >
-> ``` python
+> ```
 > import weakref
 > 
 > 
@@ -1771,7 +1876,9 @@ print(sys.getrefcount(id(a)))  # 1 弱引用不增加引用计数，所以该对
 
 ### 17、数据库连接池
 
-``` python
+
+
+```
 import pymysql
 from dbutils.pooled_db import PooledDB
 from pymysql.cursors import DictCursor
@@ -1917,6 +2024,8 @@ class DBPool:
 
 ### 18、装饰器
 
+
+
 > - **装饰器(Decorator)的定义：**
 >
 >   装饰器本质上就是一个python函数，它可以让其它函数在不需要做任何代码改动的前提下增加额外的功能，装饰器的返回值也是一个函数。
@@ -1933,7 +2042,7 @@ class DBPool:
 
    - 无参装饰器
 
-     ```python
+     ```
      def wrapper(func):
          def inner(*args, **kwargs):
              print('in inner function')
@@ -1948,11 +2057,13 @@ class DBPool:
      index('william')
      ```
 
+     
+
    - 带参装饰器
 
      当带参数的装饰器被打在某个函数上时，比如@outter('critical')，它其实就是一个函数且被调用了，会被马上执行，只要这个函数返回的结果是一个装饰器，就没有问题。直白一点，就是在装饰器外再套一层函数用来传递参数。
 
-     ```python
+     ```
      def outter(level):
          def wrapper(func):
              def inner(*args, **kwargs):
@@ -1972,11 +2083,13 @@ class DBPool:
      index('william')
      ```
 
+     
+
 2. 基于类实现装饰器
 
    装饰器函数有一个接口约束，它必须接受一个`__call__`对象作为参数，然后返回一个callable对象，在python中一般callable对象都是函数，但是也有例外的，只要某个对象重新加载了`__call__()`方法，那么这个对象就是callable的。
 
-   ```python
+   ```
    class Wrapper:
    
        def __init__(self):
@@ -2025,13 +2138,15 @@ class DBPool:
    my name is william
    ```
 
-
+   
 
 ### 19、上下文
 
+
+
 基于类实现：**在一个类里，实现了`__enter__`和`__exit__`的方法，这个类的实例就是一个上下文管理器。**
 
-``` python
+```
 class Context:
     def __enter__(self):
         return self
@@ -2054,9 +2169,11 @@ with Context() as context:
 '''
 ```
 
+
+
 基于装饰器：**在一个函数里面使用关键字yield，结合装饰器@contextlib.contextmanager，也可以创建一个上下文管理器。**
 
-``` python
+```
 from contextlib import contextmanager
 
 @contextmanager  # 该装饰器原理同上面的类实现的上下文，就是把被装饰的函数 封装成了一个实现了__enter__\__exit__的类
@@ -2083,11 +2200,13 @@ with context() as f:
 
 ### 20、偏函数
 
+
+
 > 函数在执行时，要带上所有必要的参数进行调用。但是，有时参数可以在函数被调用之前提前获知。这种情况下，一个函数有一个或多个参数预先就能用上，以便函数能用更少的参数进行调用。
 >
 > 偏函数是将所要承载的函数作为partial()函数的第一个参数，原函数的各个参数依次作为partial()函数后续的参数，除非使用关键字参数。
 
-``` python
+```
 from functools import partial
 
 print(type(partial))  # <class 'type'>  # partial 本身是一个类
@@ -2118,9 +2237,11 @@ print(type(get_sum_by_b))  # <class 'functools.partial'>  partial 返回值是�
 '''
 ```
 
+
+
 手动实现一个偏函数的类：
 
-```python
+```
 class partial:
 
     def __init__(self, func, *args, **kwargs):
@@ -2144,11 +2265,13 @@ print(p(4, 5))  # 13
 
 ### 21、threading.local
 
+
+
 > threading.local()这个方法的特点用来保存一个全局变量，但是这个全局变量只有在当前线程才能访问，如果你在开发多线程应用的时候 需要每个线程保存一个单独的数据供当前线程操作，可以考虑使用这个方法，简单有效。
 
 - 使用threading.local()
 
-  ``` python
+  ```
   import random
   import threading
   from threading import local
@@ -2171,9 +2294,11 @@ print(p(4, 5))  # 13
   就是在实例中通过使用上线文管理器，在每次进行 get/set 操作时，都根据 id(thread) 切换实例的 __dict__ 属性，该属性的值就是一个字典。这样就区分开了各个线程之间的数据。 
   ```
 
+  
+
 - 实现原理
 
-  ``` python
+  ```
   import random
   import time
   import threading
@@ -2216,15 +2341,17 @@ print(p(4, 5))  # 13
       t.start()
   ```
 
-
+  
 
 ### 22、`__dict__`、`__slots__`
+
+
 
 - `__dict__`
 
   - `__dict__`函数是用来存储对象属性的一个字典，其键为属性名，值为属性的值。许多内建类型就没有`__dict__`属性，如list，此时就需要用dir()来列出对象的所有属性。
 
-    ``` python
+    ```
     class Apple(object):
         'fruit'
         color = 'red'
@@ -2259,6 +2386,8 @@ print(p(4, 5))  # 13
     print(GreenApple.__dict__)  # {'__module__': '__main__', 'color': 'green', '__init__': <function GreenApple.__init__ at 0x1029e63a0>, '__doc__': None}
     ```
 
+    
+
   - 结论
 
     - 实例的`__dict__`仅存储与该实例相关的实例属性，正是因为实例的`__dict__`属性，每个实例的实例属性才会互不影响。
@@ -2268,54 +2397,55 @@ print(p(4, 5))  # 13
 
 - dir 方法
 
-  -  dir() 是 Python 提供的一个 API 函数，会自动寻找一个对象的所有属性，返回一个列表。从第一节可知，一个实例对象的`__dict__`里只有实例属性，没有包含其他的有效属性。因此如果想获取一个对象所有有效属性，可以使用dir。
+  - dir() 是 Python 提供的一个 API 函数，会自动寻找一个对象的所有属性，返回一个列表。从第一节可知，一个实例对象的`__dict__`里只有实例属性，没有包含其他的有效属性。因此如果想获取一个对象所有有效属性，可以使用dir。
 
-    ``` python
-    class Apple(object):
-        'fruit'
-        color = 'red'
-    
-        def __init__(self):
-            self.weight = '300'
-            self.smell = 'good'
-    
-        @property
-        def price(self):
-            return self.weight * 10
-    
-        def taste(self):
-            pass
-    
-    
-    class GreenApple(Apple):
-        color = 'green'
-    
-        def __init__(self):
-            super().__init__()
-            self.origin = 'sichuan'
-    
-    
-    apple = Apple()
-    green_apple = GreenApple()
-    
-    print(dir(apple))  # 实例的dir比所属类的dir多，多出来的就是 只属于实例属性，通过dir可以获取到实例所有可用的属性
-    print(dir(Apple))
-    print(dir(green_apple))
-    print(dir(GreenApple))
-    
-    '''
-    ['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'color', 'price', 'smell', 'taste', 'weight']
-    
-    ['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'color', 'price', 'taste']
-    
-    ['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'color', 'origin', 'price', 'smell', 'taste', 'weight']
-    
-    ['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'color', 'price', 'taste']
-    '''
-    ```
+  ```
+  class Apple(object):
+      'fruit'
+      color = 'red'
+  
+      def __init__(self):
+          self.weight = '300'
+          self.smell = 'good'
+  
+      @property
+      def price(self):
+          return self.weight * 10
+  
+      def taste(self):
+          pass
+  
+  
+  class GreenApple(Apple):
+      color = 'green'
+  
+      def __init__(self):
+          super().__init__()
+          self.origin = 'sichuan'
+  
+  
+  apple = Apple()
+  green_apple = GreenApple()
+  
+  print(dir(apple))  # 实例的dir比所属类的dir多，多出来的就是 只属于实例属性，通过dir可以获取到实例所有可用的属性
+  print(dir(Apple))
+  print(dir(green_apple))
+  print(dir(GreenApple))
+  
+  '''
+  ['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'color', 'price', 'smell', 'taste', 'weight']
+  
+  ['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'color', 'price', 'taste']
+  
+  ['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'color', 'origin', 'price', 'smell', 'taste', 'weight']
+  
+  ['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'color', 'price', 'taste']
+  '''
+  ```
+
+  
 
   - 结论
-
     - dir( )在对象中自动搜索到了 包括类中的所有属性（如：`__new__`）。
     - dir(类) 不会收集`__init__`中定义的属性，因为这个属性只属于具体的实例。
 
@@ -2325,7 +2455,7 @@ print(p(4, 5))  # 13
 
   - 一个普通对象使用一个 `__dict__` 来保存它自己的属性，你可以动态地向其中添加或删除属性，但是如果使用 `__slots__ `属性，那么该对象用来保存其自身属性的结构一旦创建则不能再进行任何修改。
 
-  - 在缺少` __weakref__ `属性的情况下，定义了 `__slots__ `的类不支持对其实例的弱引用。如果需要，请将字符串 `__weakref__` 纳入 `__slots__ `声明中。（本条Python 2.3及其以后有效)。
+  - 在缺少`__weakref__`属性的情况下，定义了 `__slots__ `的类不支持对其实例的弱引用。如果需要，请将字符串 `__weakref__` 纳入 `__slots__ `声明中。（本条Python 2.3及其以后有效)。
 
   - `__slots__`类变量可以是 string，iterable 或者是被实例使用的一连串 string。
 
@@ -2333,7 +2463,7 @@ print(p(4, 5))  # 13
 
   - 当你事先知道class的attributes的时候，建议使用slots来节省memory以及获得更快的attribute access。
 
-    ``` python
+    ```
     class Apple(object):
         __slots__ = ('color', 'weight', 'name')  # 静态类属性
     
@@ -2362,16 +2492,20 @@ print(p(4, 5))  # 13
     print(apple.origin)  # chongqing  实例没有该属性，到所属类（以及父类/兄弟类）中去找，查找顺序就是继承里面讲的MRO
     apple.origin = 'sichuan'  # AttributeError: 'Apple' object has no attribute 'origin'
     ```
-    
+
     
 
 ### 23、元类 和 抽象基类
 
+
+
 > ## 理解元类
+>
+> 
 >
 > 相信大家都有去五金店配钥匙的经历，我们要参照原来的钥匙（模具），再打造一把新的钥匙。**这里所说的模具，即是父类**，而打出来的**新钥匙即是子类**，我们可以在新钥匙（子类）上加一些装饰品，即子类自定属性或方法。那么在这里，什么是元类呢？**那部打造钥匙的机器就是元类**。
 
-``` python
+```
 class MyType(type):  # 继承 内建元类type 创建一个自定义元类
     def __new__(mcs, name, bases, attrs):  # mcs 表示元类 metaclass
         t = super().__new__(mcs, name, bases, attrs)
@@ -2426,7 +2560,11 @@ print(b.__class__)  # 实例b 由类B 创建，按照上面的逻辑，那么 b 
 '''
 ```
 
+
+
 > ### 抽象基类：
+>
+> 
 >
 > - 抽象基类是用来继承的，abc 模块提供一个元类（ABCMeta）和两个装饰器（@abstractmethod 、 @abstractproperty）来自定义抽象基类
 > - 使用了上面两个装饰器的基类不可实例化，并且被继承的时候必须在子类里覆盖这些抽象方法（非抽象方法、属性可以不用覆盖）
@@ -2442,12 +2580,14 @@ print(b.__class__)  # 实例b 由类B 创建，按照上面的逻辑，那么 b 
 >     Returns the subclass, to allow usage as a class decorator.
 > ```
 >
+> 
+>
 > - 容器和迭代器类被ABCs化，数值类型也被ABCs化了。这些基类可以在 collections 和 numbers 模块里找到。
 > - 基类的单继承和多继承 见 **15、super 类 详解**
 
-
-
 ### 24、`is` 和 `==`
+
+
 
 在Python中一切都是对象。
 
@@ -2459,13 +2599,12 @@ Python中对象包含的三个基本要素，分别是：
 
 对象之间比较是否相等可以用 == ，也可以用 is 。
 
-**`is`和` == `都是对对象进行比较判断作用的，但对对象比较判断的内容并不相同。**
+**`is`和`==`都是对对象进行比较判断作用的，但对对象比较判断的内容并不相同。**
 
 - `is`比较的是两个对象的id值是否相等，也就是比较两个对象是否为同一个实例对象，是否指向同一个内存地址。
-
 - `==`比较的是两个对象的值是否相等，默认会调用对象的`__eq__`魔法方法。
 
-```python
+```
 a = [1, 2, 3]
 b = [1, 2, 3]
 c = a
@@ -2480,6 +2619,8 @@ print(a is c)  # True   变量a 和 变量c 都指向内存中同一个列表对
 
 
 ### 25、值传递和引用传递
+
+
 
 > 首先还是应该科普下函数参数传递机制*，*传值和传引用是什么意思？
 >
@@ -2496,7 +2637,7 @@ Python不允许用户主动选择传值还是传引用。Python中的参数传�
 
 示例：
 
-```python
+```
 # 值传递。需要注意的是元组是不可变对象，所以传参时也是值传递
 def demo(b):
     print(b)  # 20
@@ -2532,7 +2673,7 @@ if __name__ == '__main__':
 
 因此，字典就要求其中的键，是一个可哈希的不可变对象。
 
-```python
+```
 if __name__ == '__main__':
     a = {
         "key": "精英",
@@ -2562,6 +2703,8 @@ if __name__ == '__main__':
 
 ### 26、栈和堆
 
+
+
 **栈内存：**
 
 栈内存主要用来执行程序用的，存储的是局部变量和对象的引用，凡是定义在方法中的都是局部变量，for循环内部定义的也是局部变量，是先加载函数才能进行局部变量的定义，所以方法先进栈，然后再定义变量，一旦离开作用域，变量就会被释放。栈内存更新的速度很快，因为局部变量的生命周期很短。
@@ -2571,8 +2714,6 @@ if __name__ == '__main__':
 栈的存储速度比堆要快，仅次于寄存器，栈数据是可以共享，但是缺点是，存在栈中的数据大小和生存必须是确定的，缺乏灵活性
 
 栈内存可以称为一级缓存，由垃圾回收器自动回收。
-
-
 
 **堆内存：**
 
@@ -2584,27 +2725,19 @@ if __name__ == '__main__':
 
 堆内存可以称为二级缓存，堆中的对象不会随时释放，一般需要开发人员自己回收它
 
- 
-
 **堆和栈的区别：**
 
 1. 栈内存 存储的是**局部变量和对象引用**，而堆内存存储的是**实例对象**。
-
 2. 栈的更新速度要快于堆内存，因为局部变量的生命周期很短。
-
 3. 栈内存存放的变量生命周期一结束就立即被释放，而堆内存存放的实例会被垃圾回收机制不定时的回收。
-
 4. 共享性不同，栈内存是线程私有的，堆内存是所有线程共有的。
-
 5. 栈使用一级缓存，通常是被调用时处于存储空间，调用完立即释放；堆存放在二级缓存中，生命周期由虚拟机的垃圾回收算法决定。
-
 6. 堆是先进先出，后进后出；栈是先进后出，后进先出。
-
 7. 栈的空间远远小于堆的空间，因此栈内存往往是连续的，而堆内存通常不是连续的地址空间。
 
-
-
 ### 27、内存池
+
+
 
 **背景：**
 
@@ -2614,13 +2747,9 @@ if __name__ == '__main__':
 >
 > Python 中的内存管理机制为Pymalloc
 
-
-
 **作用：**
 
 作用就是预先在内存中申请一定数量的，大小相等的内存块留作备用，当有新的内存需求时，就先从内存池中分配内存给这个需求，不够之后再申请新的内存。这样做最显著的优势就是能够减少内存碎片，提升效率。
-
-
 
 **内存池架构**
 
@@ -2638,11 +2767,9 @@ Python的内存池机制，可以看作一个金字塔，分为6层（-2 ～ 3�
 
   > 如果内存池中内存不足，还是会调用 malloc 分配内存，但每次会分配一块大小为256k的大块内存，并由python内存池登记。
   >
-  > 经由内存池登记的内存，回收时同样回收到内存池，并不会调用 C 的 free 释放掉，而是保留以便下次再分配。<font color='red'>因此也带来一个问题，Py中不断申请的小内存释放后，占用的内存不会归还给操作系统，如果有大量的小块内存同时持有，那释放后，这部分内存都将一直放在Py内存池中，导致在监控上看到Py进程内存一直是高百分比的占用。</font>
+  > 经由内存池登记的内存，回收时同样回收到内存池，并不会调用 C 的 free 释放掉，而是保留以便下次再分配。因此也带来一个问题，Py中不断申请的小内存释放后，占用的内存不会归还给操作系统，如果有大量的小块内存同时持有，那释放后，这部分内存都将一直放在Py内存池中，导致在监控上看到Py进程内存一直是高百分比的占用。
 
 - 3 层，对于python内置的对象（比如int、dict等）都有独立的私有内存池，对象之间的内存池不共享，即int释放的内存，不会被分配给float使用。
-
-
 
 从上面内存池架构中，我们可以看到Py在管理内存分成了大内存和小内存，以 256byte 为界限。但其实很多时候，对象的大小就是小于256byte 的，但大量小内存重复的创建回收，也会产生很多内存碎片，因此又诞生了 **整数缓冲池** 和 **字符串驻留**
 
@@ -2652,7 +2779,7 @@ Python的内存池机制，可以看作一个金字塔，分为6层（-2 ～ 3�
 
    那么有多少整数被缓存了呢？这个范围其实不大，只有[-5, 257]。当然如果你想扩大这个范围，你可以选择修改python源码来解决。在`python`交互式解释器里来验证：
 
-   ```shell
+   ```
    >>> a = 12
    >>> b = 12
    >>> id(a)
@@ -2668,6 +2795,8 @@ Python的内存池机制，可以看作一个金字塔，分为6层（-2 ～ 3�
    >>> id(b)
    2389141537904
    ```
+
+   
 
 2. **字符串驻留**
 
@@ -2688,7 +2817,7 @@ Python的内存池机制，可以看作一个金字塔，分为6层（-2 ～ 3�
 
    1. 编译时发生驻留，运行时不驻留
 
-      ```python
+      ```
       s1 = 'py' + 'thon'  
       print(s1 is 'python')
       
@@ -2703,9 +2832,11 @@ Python的内存池机制，可以看作一个金字塔，分为6层（-2 ～ 3�
       # s1值是在编译阶段就计算出来的，因此会驻留，而a+b只有在运行阶段才会计算，因此没有发生驻留
       ```
 
+      
+
    2. 只含大小写字母、数字、下划线时发生驻留
 
-      ```python
+      ```
       # 仅有字母发生驻留
       s1 = 'python'
       s2 = 'python'
@@ -2721,13 +2852,15 @@ Python的内存池机制，可以看作一个金字塔，分为6层（-2 ～ 3�
       # False
       ```
 
+      
+
    3. 字符串长度为0或1
 
       空字符串和长度为1的字符串默认都会驻留，`python`认为这样的字符串都是经常被使用的字符串
 
    4. 被`sys.intern`指定驻留
 
-      ```python
+      ```
       from sys import intern
        
       s1 = intern('python!')
@@ -2735,6 +2868,8 @@ Python的内存池机制，可以看作一个金字塔，分为6层（-2 ～ 3�
       
       print(s1 is s2)  # True
       ```
+
+      
 
    5. 用乘法`(*)`得到的字符串
 
@@ -2744,12 +2879,14 @@ Python的内存池机制，可以看作一个金字塔，分为6层（-2 ～ 3�
 
          2. 字符串长度小于等于1，默认驻留
 
-            ```shell
+            ```
             >>> s1 = "hello"
             >>> s2 = s1*1
             >>> s1 is s2
             True
             ```
+
+            
 
       2. 乘数大于2
 
@@ -2757,7 +2894,7 @@ Python的内存池机制，可以看作一个金字塔，分为6层（-2 ～ 3�
 
          2. 含有其它字符时，不论长度是多少，都不驻留
 
-            ```shell
+            ```
             >>> s1 = "pythonpythonpython"
             >>> s2 = "python"*3
             >>> s1 is s2
@@ -2772,28 +2909,33 @@ Python的内存池机制，可以看作一个金字塔，分为6层（-2 ～ 3�
 
 ### 28、Python -m
 
+
+
 > -m: run library module as a script（将模块当作脚本运行）
 
 在 python 中，所谓的模块，其实也是一个由代码组成的普通脚本文件。这些文件通常会提供一些有用的东西，例如函数或者类，然后我们通过 import < module > 导入使用，而且当我们引入模块的时候，不会产生副作用。但实际上如果我们在 shell 中直接运行这个脚本文件，很有可能会看到有副作用产生。在文件内部，我们一般通过下面的代码来区分当前脚本，是作为模块导入，还是作为脚本直接运行。
 
-```python
+```
 if __name__ == '__main__':
     print('模块直接运行');
 ```
 
-当文件作为脚本直接运行时，这段代码会产生副作用，输出字符串“模块直接运行”；
-当文件作为模块被导入时，不会产生副作用，不输出字符串“模块直接运行”；
+
+
+当文件作为脚本直接运行时，这段代码会产生副作用，输出字符串“模块直接运行”； 当文件作为模块被导入时，不会产生副作用，不输出字符串“模块直接运行”；
 
 回到正题，当我们知道一个模块的名字，但不知道它的路径时，我们可以通过 -m 参数，在 shell 中将该模块当作脚本运行，例如：
 
-```python
+```
 # 在 -m 参数后面写出模块名即可，不需要写 .py
 python -m module_name
 ```
 
+
+
 事实上，如果我们知道模块的完整路径（此处假设为"/path/to/module.py"），上述命令的效果，以下面的命令等同
 
-```python
+```
 python /path/to/module.py
 ```
 
@@ -2801,11 +2943,11 @@ python /path/to/module.py
 
 ### 29、脚本参数传递
 
+
+
 在运行py文件时，尤其是作为一些脚本运行时，需要向py文件内部传递一些参数。
 
 下面直接通过示例，演示两种参数传递的方式。
-
-
 
 **示例一：传递位置参数**
 
@@ -2815,7 +2957,7 @@ python /path/to/module.py
 
 注意：该列表 索引0 处的值是当前运行脚本的名称（可能包含路径，看执行该脚本时是否有路径），与shell脚本 $0 的作用相同，因此命令行参数是从 索引1 处开始的。
 
-```python
+```
 # demo.py
 if __name__ == '__main__':
     import sys
@@ -2839,7 +2981,7 @@ if __name__ == '__main__':
 
 因此需要脚本内部对参数进行二次解析，这里使用`argparse`系统模块，先注册参数的键，以此来解析键值。
 
-```python
+```
 # demo.py
 if __name__ == '__main__':
     import argparse
@@ -2864,17 +3006,17 @@ if __name__ == '__main__':
 
 ### 30、离线安装依赖
 
+
+
 在实际业务需求中，往往会需要到客户现场部署环境，且没有外网。那么这时候就需要提前把依赖包准备好。
 
 我们可以通过以下三步实现项目中的依赖安装。
 
 > pip install 时，更改到国内镜像仓库，速度更快
 >
-> pip3 install gevent 
->
-> 
+> pip3 install gevent
 
-```python
+```
 # 前两步需要在有网的开发环境下进行
 
 # 1. 先生成当前项目依赖库的文档
@@ -2887,18 +3029,19 @@ pip3 wheel --wheel-dir packges  -i https://pypi.tuna.tsinghua.edu.cn/simple -r r
 # 3. 到客户现场时，执行离线安装即可
 #    --no-index 配合 --find-links 使用，--find-links 赋值 .whl 文件所在的文件夹路径
 pip3 install --no-index --find-links=packages -r requirements.txt
-
 ```
 
 
 
 ### 31、切片
 
+
+
 在Python中，**切片**(slice)是对序列型对象(如list、 string、 tuple)的一种高级索引方法。 普通索引只取出序列中 一个下标 对应的元素，而切片取出序列中 一个范围 对应的元素，这里的范围不是狭义上的连续片段。
 
 表达式：
 
-```python
+```
 object[start:end:step]
 
 # start：切片的起始位置（包含），不填值则默认从 索引0 出开始；
@@ -2911,9 +3054,11 @@ object[start:end:step]
 #		3、切片操作返回值是一个新的列表对象，原列表不受影响。
 ```
 
+
+
 示例：
 
-```python
+```
 a = [1, 2, 3, 4, 5, 6, 7]
 
 print(a[:3])  # [1, 2, 3] 从索引0处开始切片
@@ -2931,6 +3076,8 @@ print(a[-2:-5:-2])  # [6, 4]
 
 ### 32、`__init__.py`和`__main__.py`
 
+
+
 > 1. 如果你希望 python 将一个文件夹作为 Package 对待，那么这个文件夹中必须包含一个名为 `__init__.py` 的文件，即使它是空的。
 > 2. 如果你需要 python 将一个文件夹作为 Package 执行，那么这个文件夹中必须包含一个名为 `__main__.py` 的文件。
 
@@ -2940,13 +3087,15 @@ print(a[-2:-5:-2])  # [6, 4]
 
   `__init__.py`里的 `__all__`属性，可以声明定义允许用户可以调用的方法，以在 `__all__` 中限定用户调用的范围。
 
-  ```python
+  ```
   from TestPy.Test import *
   
   # 这里就限定了，从当前包只能导入A
   __all__ = ['A']
   ```
 
+  
+
 - `__main__.py`
 
-  在命令行直接输入python -m package_name 就可以执行`__main__.py`文件，`__main__.py`让当前文件夹变成一个可执行的模块。
+  在命令行直接输入python -m package_name 就可以执行`__main__.py`文件，`__main__.py`让当前文件夹变成一个可执行的模块
