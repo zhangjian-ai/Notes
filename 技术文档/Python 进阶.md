@@ -646,17 +646,17 @@ execute __ge__
 
 
      **扩展：**
-
+    
      ​		为了决定何时进行一轮垃圾回收，每一代都有一个单独的计数器和阈值。计数器存储自上次收集以来的对象分配数减去释放数的差值。每次分配新的容器对象时，CPython 都会检查第0代的计数器是否超过阈值（通过`gc.get_count()`获得三代对象计数器存储的数值）。如果超过阈值，Python 将触发垃圾回收。我们可以通过`gc.get_threshold()`和`gc.set_threshold()`查看、设置阈值：
-
+    
      ```python
      import gc
      gc.get_threshold()  # (700, 10, 10) 分别对应三代计数器的阈值
      gc.set_threshold(threshold0=800, threshold0=10, threshold0=10)  # 当threshold0设置为0时，禁用循环GC
      ```
-
+    
      ​		在写程序时，可以通过将调试标志设置为`gc.DEBUG_SAVEALL`，从而将所有unreachable对象添加到`gc.garbage` 中，帮助提升程序质量:
-
+    
      ```python
      import gc
      
@@ -672,7 +672,8 @@ execute __ge__
          print(item)
      ```
 
-     
+
+​     
 
 - **GIL  Global Interpreter Lock(全局解释器锁)**
 
@@ -1650,7 +1651,7 @@ print(d.n)
 
 - **`__getitem__`和`__setitem__`**
 
-  实现了这两个魔法方法的类，其实例可以使用 x[y] 的形式获取和设置实例属性。python内置dict类就是通过这两个魔法方法，使得我们可以便捷的操作字典实例。
+  实现了这两个魔法方法的类，其实例可以使用 x[y] 的形式获取和设置实例属性。python内置dict类就是通过这两个魔法方法，使得我们可以便捷的操作字典实例；同样道理，python内置的序列类型（list、tuple...）也是通过实现这两个魔法方法，让我们得以使用索引便捷的操作序列元素。
 
   示例：
 
