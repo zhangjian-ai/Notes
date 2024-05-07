@@ -972,3 +972,651 @@ print(result)  # [6]
 
 
 
+## xdist
+
+xdist是pytest的一个三方插件库，由于实现分布式测试。同许多其他的pytest插件一样，pytest-xdist 在安装时通过将自身的入口文件添加到entry_points的 `pytest11` 组中，是在pytest在开始执行时，可以成功扫描到插件并运行其对应的hook。
+
+再看一下`PytestPluginManager`中的入口文件，就可以发现pytest做了收集三方插件的动作。
+
+```python
+# coding=utf-8
+import sys
+
+import pytest
+from _pytest.config import get_plugin_manager
+
+from pkg_resources import iter_entry_points
+
+from _jb_runner_tools import jb_patch_separator, jb_doc_args, JB_DISABLE_BUFFERING, start_protocol, parse_arguments, \
+    set_parallel_mode
+from teamcity import pytest_plugin
+
+if __name__ == '__main__':
+    path, targets, additional_args = parse_arguments()
+    sys.argv += additional_args
+    joined_targets = jb_patch_separator(targets, fs_glue="/", python_glue="::", fs_to_python_glue=".py::")
+    joined_targets = [t + ".py" if ":" not in t else t for t in joined_targets]
+    sys.argv += [path] if path else joined_targets
+		
+    # 就是这里通过获取entry_points中的pytest11组中的entry，拿到其他三方插件的入口文件
+    plugins_to_load = []
+    if not get_plugin_manager().hasplugin("pytest-teamcity"):
+        if "pytest-teamcity" not in map(lambda e: e.name, iter_entry_points(group='pytest11', name=None)):
+            plugins_to_load.append(pytest_plugin)
+
+    args = sys.argv[1:]
+    if JB_DISABLE_BUFFERING and "-s" not in args:
+        args += ["-s"]
+
+    jb_doc_args("pytest", args)
+
+    class Plugin:
+        @staticmethod
+        def pytest_configure(config):
+            if getattr(config.option, "numprocesses", None):
+                set_parallel_mode()
+            start_protocol()
+
+		# 执行入口
+    sys.exit(pytest.main(args, plugins_to_load + [Plugin]))
+```
+
+
+
+xdist是三方库中的热门库，分布式的执行可以大大节省测试的时间。下面从xdist入口来分析一下。
+
+1. `xdist.plugin.py`   这个文件主要是通过pytest内置的hook完成一些必要的工作，比如 xdist命令行参数注册、xdist的hook注册，以及初始化工作。
+
+   ```python
+   # xdist.plugin.py
+   
+   # 注册命令行
+   @pytest.hookimpl
+   def pytest_addoption(parser):
+       group = parser.getgroup("xdist", "distributed and subprocess testing")
+       # 这是分布式执行时，开启的进程数
+       group._addoption(
+           "-n",
+           "--numprocesses",
+           dest="numprocesses",
+           metavar="numprocesses",
+           action="store",
+           type=parse_numprocesses,
+           help="Shortcut for '--dist=load --tx=NUM*popen'. With 'auto', attempt "
+           "to detect physical CPU count. With 'logical', detect logical CPU "
+           "count. If physical CPU count cannot be found, falls back to logical "
+           "count. This will be 0 when used with --pdb.",
+       )
+       ...
+       # 指定进程开启的方式，默认是 popen，在当前main进程下开启子进程来执行
+       group.addoption(
+           "--tx",
+           dest="tx",
+           action="append",
+           default=[],
+           metavar="xspec",
+           help=(
+               "add a test execution environment. some examples: "
+               "--tx popen//python=python2.5 --tx socket=192.168.1.102:8888 "
+               "--tx ssh=user@codespeak.net//chdir=testcache"
+           ),
+       )
+   
+   # 注册xdist独有的hook
+   @pytest.hookimpl
+   def pytest_addhooks(pluginmanager):
+       from xdist import newhooks
+   
+       pluginmanager.add_hookspecs(newhooks)
+       
+   
+   # 在其他pytest_configure执行完后，再执行xdist的
+   @pytest.hookimpl(trylast=True)
+   def pytest_configure(config):
+       config_line = (
+           "xdist_group: specify group for tests should run in same session."
+           "in relation to one another. Provided by pytest-xdist."
+       )
+       config.addinivalue_line("markers", config_line)
+   
+       # Skip this plugin entirely when only doing collection.
+       if config.getvalue("collectonly"):
+           return
+   
+       # config.getoption("dist") 拿到的是分布式调度策略，命令行传入，后续再说取值
+       if config.getoption("dist") != "no" and config.getoption("tx"):
+           from xdist.dsession import DSession
+   				
+           # 创建分布式会话对象。DSession = distributed session
+           session = DSession(config)
+           
+           # 把DSession中的hook_impl也给注册了
+           config.pluginmanager.register(session, "dsession")
+           tr = config.pluginmanager.getplugin("terminalreporter")
+           if tr:
+               tr.showfspath = False
+               
+       ...
+   
+    # 这个勾子要在其他hook_impl前面执行，这里指定了默认的并发执行方式
+   @pytest.hookimpl(tryfirst=True)
+   def pytest_cmdline_main(config):
+       usepdb = config.getoption("usepdb", False)  # a core option
+       if config.option.numprocesses in ("auto", "logical"):
+           if usepdb:
+               config.option.numprocesses = 0
+               config.option.dist = "no"
+           else:
+               auto_num_cpus = config.hook.pytest_xdist_auto_num_workers(config=config)
+               config.option.numprocesses = auto_num_cpus
+   
+       if config.option.numprocesses:
+           if config.option.dist == "no":
+               config.option.dist = "load"
+           numprocesses = config.option.numprocesses
+           if config.option.maxprocesses:
+               numprocesses = min(numprocesses, config.option.maxprocesses)
+           # 根据指定的进程数，配置 --tx 的值，列表长度表示开启worker的个数，”popen“表示使用子进程
+           config.option.tx = ["popen"] * numprocesses
+       if config.option.distload:
+           config.option.dist = "load"
+       val = config.getvalue
+       if not val("collectonly") and val("dist") != "no" and usepdb:
+           raise pytest.UsageError(
+               "--pdb is incompatible with distributing tests; try using -n0 or -nauto."
+           )  
+   ```
+   
+   ```python
+   # xdist.dsession.py
+   
+   class DSession:
+     	# 下面就是说这是一个分布式会话类，从创建 NodeManager 实例开始
+       # 然后各节点就可以通过一些事件发布实现通信，从而完成自动化的测试
+       
+       """A pytest plugin which runs a distributed test session
+   
+       At the beginning of the test session this creates a NodeManager
+       instance which creates and starts all nodes.  Nodes then emit
+       events processed in the pytest_runtestloop hook using the worker_*
+       methods.
+   
+       Once a node is started it will automatically start running the
+       pytest mainloop with some custom hooks.  This means a node
+       automatically starts collecting tests.  Once tests are collected
+       it will wait for instructions.
+       """
+   
+       def __init__(self, config):...
+       
+       
+       @pytest.hookimpl(trylast=True)
+       def pytest_sessionstart(self, session):
+           # 创建节点管理实例
+           self.nodemanager = NodeManager(self.config)
+           # 初始化节点，后面在 NodeManager类可看到实现细节
+           # 传入一个队列put方法，用于保存event
+           # >>>>> 注意，下面就是开启worker的逻辑，因此子进程开启是在 pytest_sessionstart 中完成的。
+           # 最终拿到各个工作节点
+           nodes = self.nodemanager.setup_nodes(putevent=self.queue.put)
+           self._active_nodes.update(nodes)
+           self._session = session
+           
+       @pytest.hookimpl(trylast=True)
+       def pytest_xdist_make_scheduler(self, config, log):
+         	"""
+         	这是xdist自己的hook，返回一个调度类。master节点根据调度类的实现对用例进行分发
+         	"""
+           dist = config.getvalue("dist")  # 可以看到，命令行的取值，得是下面其中之一
+           schedulers = {
+               "each": EachScheduling,  # 每个worker都把所有用例执行一遍
+               "load": LoadScheduling,  # 所有worker均分测试用例
+               "loadscope": LoadScopeScheduling,  # 根据作用域调度，将同一个文件的用例调度到同一个worker
+               "loadfile": LoadFileScheduling,  # 和上面一样的
+               "loadgroup": LoadGroupScheduling,  # 用得少。根据名称规则来分。用例名包含了@符号，@后面部分就是group名
+               "worksteal": WorkStealingScheduling,  # 就是执行的快的节点，会再被分配其他节点还没执行用例
+           }
+           return schedulers[dist](config, log)
+         
+       # 下面两个xidst hook 在NodeManager中用到
+       # 这里就是记录了每个worker（Xspec 示例）的状态
+       @pytest.hookimpl
+       def pytest_xdist_setupnodes(self, specs) -> None:
+           self._specs = specs
+           for spec in specs:
+               self.setstatus(spec, WorkerStatus.Created, tests_collected=0, show=False)
+           self.setstatus(spec, WorkerStatus.Created, tests_collected=0, show=True)
+           self.ensure_show_status()
+   
+       @pytest.hookimpl
+       def pytest_xdist_newgateway(self, gateway) -> None:
+           if self.config.option.verbose > 0:
+               rinfo = gateway._rinfo()
+               different_interpreter = rinfo.executable != sys.executable
+               if different_interpreter:
+                   version = "%s.%s.%s" % rinfo.version_info[:3]
+                   self.rewrite(
+                       f"[{gateway.id}] {rinfo.platform} Python {version} cwd: {rinfo.cwd}",
+                       newline=True,
+                   )
+           self.setstatus(gateway.spec, WorkerStatus.Initialized, tests_collected=0)
+   ```
+   
+   ```python
+   # xdist.workermanage.py
+   
+   class NodeManager:
+       EXIT_TIMEOUT = 10
+       DEFAULT_IGNORES = [".*", "*.pyc", "*.pyo", "*~"]
+   
+       def __init__(self, config, specs=None, defaultchdir="pyexecnetcache") -> None:
+         	# gateway group
+           self.group = execnet.Group()
+         ...
+           # 介绍worker创建逻辑
+           if specs is None:
+             	# 构建 Xspec 示例，默认情况下仅仅是一个特定结构的示例，还没有实际意义的赋值
+               specs = self._getxspecs()
+           self.specs = []
+           for spec in specs:
+               if not isinstance(spec, execnet.XSpec):
+                   spec = execnet.XSpec(spec)
+               # 默认会满足这个条件
+               if not spec.chdir and not spec.popen:
+                   spec.chdir = defaultchdir  # 默认传参 pyexecnetcache
+               # 这里给worker分配ID，就是 gw0 gw1 ...
+               self.group.allocate_id(spec)
+               self.specs.append(spec)
+         
+         ...
+       
+       # 使用 --tx 参数，构建了一个 Xspec实例的列表
+       def _getxspecs(self):
+           return [execnet.XSpec(x) for x in parse_spec_config(self.config)]
+       
+       # DSession 中调用这里
+       def setup_nodes(self, putevent):
+         	# 传入节点通信的配置并完成节点初始状态设置，把每个worker的id和对应状态做了记录
+           self.config.hook.pytest_xdist_setupnodes(config=self.config, specs=self.specs)
+           self.trace("setting up nodes")
+           # 
+           return [self.setup_node(spec, putevent) for spec in self.specs]
+   
+       def setup_node(self, spec, putevent):
+         	# 创建通信网关，是一个 Gateway实例，Xspec实例会作为 gw的spec属性
+           # 就是开启了一个子进程，这个网关代理了当前进程和子进程的通信
+           gw = self.group.makegateway(spec)
+           # 这里就是打印了一下 每个gw的信息，比如 id、运行的平台、python版本等
+           self.config.hook.pytest_xdist_newgateway(gateway=gw)
+           self.rsync_roots(gw)
+           # 节点管理实例，再把 gw 收纳进去，再代理一层
+           node = WorkerController(self, gw, self.config, putevent)
+           gw.node = node  # keep the node alive
+           node.setup()  # 往下看实现逻辑
+           self.trace("started node %r" % node)
+           return node
+           ...
+           
+           
+   class WorkerController:
+       ENDMARK = -1
+   
+       class RemoteHook:
+           @pytest.hookimpl(trylast=True)
+           def pytest_xdist_getremotemodule(self):
+               return xdist.remote  # 节点通信逻辑
+   
+       def __init__(self, nodemanager, gateway, config, putevent):
+         	# xdist hook 注册
+           config.pluginmanager.register(self.RemoteHook())
+           self.nodemanager = nodemanager
+           self.putevent = putevent
+           self.gateway = gateway  # 网关
+           self.config = config
+           self.workerinput = {  # worker 信息，会下发到对应的worker并设置这些信息
+               "workerid": gateway.id,
+               "workercount": len(nodemanager.specs),
+               "testrunuid": nodemanager.testrunuid,
+               "mainargv": sys.argv,
+           }
+           self._down = False
+           self._shutdown_sent = False
+           self.log = Producer(f"workerctl-{gateway.id}", enabled=config.option.debug)
+       
+       
+       def setup(self):
+           self.log("setting up worker session")
+           spec = self.gateway.spec
+           if hasattr(self.config, "invocation_params"):
+               args = [str(x) for x in self.config.invocation_params.args or ()]
+               option_dict = {}
+           else:
+               args = self.config.args
+               option_dict = vars(self.config.option)
+           if not spec.popen or spec.chdir:
+               args = make_reltoroot(self.nodemanager.roots, args)
+           if spec.popen:
+               name = "popen-%s" % self.gateway.id
+               if hasattr(self.config, "_tmp_path_factory"):
+                   basetemp = self.config._tmp_path_factory.getbasetemp()
+                   option_dict["basetemp"] = str(basetemp / name)
+           self.config.hook.pytest_configure_node(node=self)
+   				
+           # remote_module 就是需要让worker执行的脚本
+           remote_module = self.config.hook.pytest_xdist_getremotemodule()
+           # 使用代理的网关，让worker执行脚本。脚本中会接受当前进程send的信息
+           self.channel = self.gateway.remote_exec(remote_module)
+           
+           change_sys_path = _sys_path if self.gateway.spec.popen else None
+           
+           # 这里将信息下发给worker
+           self.channel.send((self.workerinput, args, option_dict, change_sys_path))
+   
+           if self.putevent:
+               self.channel.setcallback(self.process_from_remote, endmarker=self.ENDMARK)
+   ```
+   
+   ```python
+   # xdist.remote.py
+   
+   # 一部分源码
+   if __name__ == "__channelexec__":
+       channel = channel  # type: ignore[name-defined] # noqa: F821
+       
+       # 这里worker阻塞，直到拿到master下发的信息
+       workerinput, args, option_dict, change_sys_path = channel.receive()  # type: ignore[name-defined]
+   
+       if change_sys_path is None:
+           importpath = os.getcwd()
+           sys.path.insert(0, importpath)
+           os.environ["PYTHONPATH"] = (
+               importpath + os.pathsep + os.environ.get("PYTHONPATH", "")
+           )
+       else:
+           sys.path = change_sys_path
+   		
+       # 环境变量
+       os.environ["PYTEST_XDIST_TESTRUNUID"] = workerinput["testrunuid"]
+       os.environ["PYTEST_XDIST_WORKER"] = workerinput["workerid"]
+       os.environ["PYTEST_XDIST_WORKER_COUNT"] = str(workerinput["workercount"])
+   
+       if hasattr(Config, "InvocationParams"):
+         	# worker当中的config，是pytest原生的Config实例，和master中的Config有区别，这里不会注册xdist-master的hook
+           # 但是用户自定义的部分，一个不会少
+           config = _prepareconfig(args, None)
+       else:
+           config = remote_initconfig(option_dict, args)
+           config.args = args
+   
+       setup_config(config, option_dict.get("basetemp"))
+       config._parser.prog = os.path.basename(workerinput["mainargv"][0])
+       config.workerinput = workerinput  # type: ignore[attr-defined]
+       config.workeroutput = {}  # type: ignore[attr-defined]
+       
+       # 创建worker交互实例，里面提供了诸多hook_impl，以完成主从的交互
+       interactor = WorkerInteractor(config, channel)  # type: ignore[name-defined]
+       config.hook.pytest_cmdline_main(config=config)
+   ```
+   
+   ```python
+   # xdist.remote.py
+   
+   class WorkerInteractor:
+       def __init__(self, config, channel):
+           self.config = config
+           self.workerid = config.workerinput.get("workerid", "?")
+           self.testrunuid = config.workerinput["testrunuid"]
+           self.log = py.log.Producer("worker-%s" % self.workerid)
+           if not config.option.debug:
+               py.log.setconsumer(self.log._keywords, None)
+           self.channel = channel
+           
+           # 注册hook_impl
+           config.pluginmanager.register(self)
+       
+       ...
+       
+       # worker 执行用例的核心逻辑
+       @pytest.hookimpl
+       def pytest_runtestloop(self, session):
+           self.log("entering main loop")
+           torun = []
+           
+           # 要做什么动作，均由master通知，直到接收到 shutdown 信号
+           # 因为 子进程 也完成了用例收集等动作，因此执行时拿到需要执行的用例在 items 中的索引即可
+           while 1:
+               try:
+                   name, kwargs = self.channel.receive()
+               except EOFError:
+                   return True
+               self.log("received command", name, kwargs)
+               if name == "runtests":
+                   torun.extend(kwargs["indices"])
+               elif name == "runtests_all":
+                   torun.extend(range(len(session.items)))
+               self.log("items to run:", torun)
+               # only run if we have an item and a next item
+               while len(torun) >= 2:
+                   self.run_one_test(torun)
+               if name == "shutdown":
+                   if torun:
+                       self.run_one_test(torun)
+                   break
+           return True
+   ```
+   
+   
+   
+   
+
+## allure
+
+Allure是一个开源的测试报告生成框架，提供了测试报告定制化功能，相较于 pytest-html插件 生成的html格式的测试报告，通过Allure生成的报告更加规范、清晰、美观。
+
+pytest框架支持使用Allure生成测试报告，下面介绍pytest怎样结合Allure生成测试报告。
+
+1. 安装 allure-pytest：
+
+   ```shell
+   pip install allure-pytest
+   ```
+
+2. 下载Allure，Allure依赖 jdk(1.8+) 。地址：https://github.com/allure-framework/allure2/releases
+
+3. 代码演示使用方法：
+
+   > 为了方便演示，示例代码使用手动标记用例的信息，在实际工程这样编写工作量巨大，且难维护。
+   >
+   > 通常推荐使用 `allure.dynamic` 实例，实现图动态添加用例信息
+
+   ```python
+   import os
+   import allure
+   import pytest
+   
+   @allure.step("登录获取token")
+   def get_token():
+       print("请求登录接口获取token")
+   
+   @allure.step("加入购物车")
+   def add_to_shopping_trolley():
+       print("请求加入购物车接口")
+   
+   @allure.step("查询我的购物车")
+   def get_shopping_trolley_goods():
+       print("请求查询我的购物车接口")
+   
+   @allure.step("清空购物车")
+   def empty_shopping_trolley():
+       print("请求清空购物车接口")
+   
+   @allure.step("下单")
+   def place_order():
+       print("请求下单接口")
+   
+   
+   @allure.epic("xx在线购物平台接口测试")
+   @allure.feature("购物车功能模块")
+   class TestShoppingTrolley:
+   
+       @allure.story("商品加入购物车")
+       @allure.title("正向用例--将库存数>0的商品加入购物车")
+       @allure.description("校验库存数不为0的商品加入购物车是否正常")
+       @allure.severity("critical")
+       def test_add_goods(self):
+           get_token()
+           add_to_shopping_trolley()
+   
+       @allure.story("商品加入购物车")
+       @allure.title("异常用例--将库存数=0的商品加入购物车")
+       @allure.description("校验库存数为0的商品加入购物车是否提示正确的错误信息")
+       @allure.severity("normal")
+       def test_add_goods_error(self):
+           get_token()
+           add_to_shopping_trolley()
+   
+       @allure.story("查询购物车商品数量")
+       @allure.title("查询购物车所有商品的总数量")
+       @allure.description("校验查询购物车所有商品的总数量是否正常")
+       @allure.severity("critical")
+       def test_get_goods_quantity(self):
+           get_token()
+           add_to_shopping_trolley()
+           get_shopping_trolley_goods()
+   
+       @allure.story("查询购物车商品数量")
+       @allure.title("查询购物车单个商品的数量")
+       @allure.description("校验查询购物车单个商品的数量是否正常")
+       @allure.severity("critical")
+       def test_get_goods_quantity(self):
+           get_token()
+           add_to_shopping_trolley()
+           get_shopping_trolley_goods()
+   
+       @allure.story("清空购物车")
+       @allure.title("加入商品后再清空购物车")
+       @allure.description("校验清空购物车接口功能是否正常")
+       @allure.severity("normal")
+       def test_empty_shopping_trolley(self):
+           get_token()
+           add_to_shopping_trolley()
+           empty_shopping_trolley()
+   
+   
+   @allure.epic("xx在线购物平台接口测试")
+   @allure.feature("下单模块")
+   class TestPlaceOrder:
+   
+       @allure.story("购物车下单")
+       @allure.title("商品加入购物车再下单")
+       @allure.description("校验清购物车下单功能是否正常")
+       @allure.severity("critical")
+       def test_place_order(self):
+           get_token()
+           add_to_shopping_trolley()
+           place_order()
+   
+       @allure.story("立即购买下单")
+       @allure.title("选择商品不加入购物车立即购买下单")
+       @allure.description("校验立即购买下单功能是否正常")
+       @allure.severity("critical")
+       def test_order(self):
+           get_token()
+           place_order()
+   ```
+
+4. 下面对常用的allure方法做一个说明
+
+   - `@allure.epic()`，用于描述被测软件系统
+
+   - `@allure.feature()`，用于描述被测软件的某个功能模块
+
+   - `@allure.story()`，用于描述功能模块下的功能点或功能场景，也即测试需求
+
+   - `@allure.title()`，用于定义测试用例标题
+
+   - `@allure.description()`，用于测试用例的说明描述
+
+   - `@allure.link()` ，用于测试用例添加链接，传入链接和名称
+
+   - `@allure.issue()` ，用于测试用例添加缺陷，传入缺陷链接和名称，link的封装
+
+   - `@allure.testcase()` ，用于测试用例添加关联的功能用例，传入功能用例链接和名称，link的封装
+
+   - `@allure.severity()`，标记测试用例级别，由高到低分为 blocker、critical、normal、minor、trivial 五级，实际工程代码建议使用allure提供的枚举类，Dynamic 类不支持。
+
+     ```python
+     class Severity(str, Enum):
+         BLOCKER = 'blocker'
+         CRITICAL = 'critical'
+         NORMAL = 'normal'
+         MINOR = 'minor'
+         TRIVIAL = 'trivial'
+         
+     # 像这样使用
+     @allure.severity(Severity.BLOCKER)
+     ```
+
+   - `@allure.step()`，标记通用函数使之成为测试步骤，测试方法/测试函数中调用此通用函数的地方会向报告中输出步骤描述，Dynamic 类不支持。
+
+   - `@allure.attach()` ，用于测试用例添加附件，主要是针对stream类型的数据，会保存为指定的文件出现在报告中
+
+   - `@allure.attach.file() `，用于测试用例添加附件，主要是针对已有文件，展示到报告中
+
+5. 执行测试
+
+   ```python
+   pytest --alluredir temp_dir [options]
+   
+   # allure 相关参数说明
+   #       --alluredir=temp_dir		指定测试结果的目录路径，此时的文件还不是报告，是allure收集的一些统计数据
+   #       --clean-alluredir		如果已经存在报告，就先清空它
+   #       --allure-no-capture		不加载 logging/stdout/stderr 文件到报告
+   #				--allure-epics=epic名称		选择运行某些epic标记的用例
+   #       --allure-features=模块名称		选择运行某些feature标记的用例
+   #       --allure-stories=子模块名称		选择运行某些story标记的用例
+   ```
+
+6. 生成报告。这时候就需要使用Allure的命令行工具
+
+   ```shell
+   # temp_dir 上一步存放中间结果数据的目录
+   # report_dir 存放报告的目录，不能和temp_dir是一个目录
+   allure generate temp_dir -o report_dir --clean
+   ```
+
+7. 其他Allure命令
+
+   ```shell
+   # 生成报告，并启动一个服务以供外界访问
+   allure serve temp_dir
+   
+   # 使用已经生成的报告启动服务
+   allure open report_dir
+   
+   
+   # 上面两个命令都可以使用选项参数指定 ip和port
+   #   -h,-host  host
+   #   -p,-port  port
+   ```
+
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

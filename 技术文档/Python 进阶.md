@@ -1,5 +1,3 @@
-## 知识点
-
 ### 1、对象创建过程
 
 `__new__`： 对象的创建，是一个类方法，第一个参数是cls，返回一个实例对象，此时该对象还不具有实例属性，但已经有类属性了。
@@ -3169,3 +3167,156 @@ print(a[-2:-5:-2])  # [6, 4]
   Cython是一种编译型的静态类型扩展语言，它允许在Python代码中使用C语言的语法和特性，以提高性能并与C语言库进行交互。
 
   > .pyx文件需要使用cythonize命令进行编译
+
+
+
+
+
+### 35、打包
+
+在Python中，可以使用`setuptools`来创建软件包。
+
+以下是创建Python软件包的基本步骤：
+
+1. 创建项目结构：通常会有一个包含`__init__.py`文件的顶层包，以及其他支持的模块和子包。
+
+2. 创建LICENSE：用来说明你的这个项目可以被怎么使用，是不是需要声明来源，是不是可以商用等，通常我们可以根据自己需要在开源网站上复制一个license：https://opensource.org/licenses
+
+3. 编写代码：在这些模块中编写你的功能，可以使多个目录及文件，也就是本工程的具体实现。
+
+4. 创建`setup.py`：这个脚本用于定义软件包的元数据和项目信息，以及指定哪些文件应该包含在软件包中。
+
+   ```python
+   # setup.py
+   from setuptools import setup, find_packages
+    
+   setup(
+       name='mypackage',
+       version='0.1',
+       description='An example Python package',
+       packages=find_packages(),  # 查找所有的Python内容（包、模块、依赖等）
+       python_requires='>=3.6',
+     	entry_points={  # 调用接口，后面介绍
+         	# key 是分组（group）, val 是一个列表，列表的每一项都是给一个导报路径取个名字
+         	#     通过 databases，就可以在 mypackage组里，拿到 main 函数，并可以直接调用 
+          'mypackage':['databases=mypackage.api.v1.databases:main', ],   
+   )	
+   ```
+
+5. 构建软件包：使用`setuptools`提供的函数来构建软件包。
+
+   ```shell
+   # 这将创建一个源代码归档文件（sdist）和一个wheel包（bdist_wheel），它们可以用于分发。
+   # 生成的文件将放到 dist 目录中
+   python3 setup.py sdist bdist_wheel
+   ```
+
+6. 分发软件包：可以将构建的软件包分发到PyPI或其他源。
+
+   ```python
+   # 安装twine
+   pip install twine
+   
+   # 发布
+   # 注意：发布的时候是需要PYPI的账号的，没有的话需要先注册
+   twine upload dist/*
+   ```
+
+   
+
+**entry_points**
+
+setuptools允许我们在打包时，允许注册一个方便外部调用的接口，实现方式就是在 setup 中注册 entry_points。
+
+如何调用这些注册的借口呢，python也提供了诸多方式，通常使用 `pkg_resources` 模块提供的方方法来获取。
+
+> 在下方示例中，会使用一个名为 console_scripts 的group，这是python支持的特殊group，将entry注册到该group的函数，模块被安装时，python会将这个接口以 entry同名的形式安装到PATH中，这也是为什么我么可以直接在命令行运行某些库的原因，其作用等价于`python -m module_name`。
+
+```python
+"""
+获取目标库注册的所有group
+"""
+entry_map = get_entry_map("pytest")
+#  {'console_scripts': {'py.test': EntryPoint.parse('py.test = pytest:console_main'),
+#                       'pytest': EntryPoint.parse('pytest = pytest:console_main')}}
+print(entry_map)
+
+"""
+获取目标库某个group中某个具体的entry
+"""
+entry_info = get_entry_info("pytest", "console_scripts", "py.test")
+print(entry_info)  # pytest:console_main
+
+"""
+遍历某个group中的所有entry信息
+注意：不同的库可以注册相同的group，下方将打印所有注册了group为console_scripts的entry信息
+"""
+for entry in iter_entry_points("console_scripts"):
+    print(entry)
+
+"""
+导入某个具体的entry
+下方导入的是pytest的测试入口程序，调用则直接运行测试
+"""
+entry = load_entry_point("pytest", "console_scripts", "py.test")()
+```
+
+
+
+**scripts**
+
+该参数作用和entry_points类似，前面示例中没有体现。
+
+scripts 参数是一个 list，安装包时在该参数中列出的文件会被安装到系统 PATH 路径下。
+
+```python
+from setuptools import setup, find_packages
+ 
+setup(
+    name='mypackage',
+    version='0.1',
+    description='An example Python package',
+    packages=find_packages(),  
+    python_requires='>=3.6',
+  	scripts: ['bin/foo.sh', 'bar.py']  # 直接写可执行文件
+)	
+```
+
+用如下方法可以将脚本重命名，例如去掉脚本文件的扩展名(.py、.sh):
+
+```python
+from setuptools import setup, find_packages
+from setuptools.command.install_scripts import install_scripts
+
+class InstallScripts(install_scripts):
+  	# 重写run，删除文件后缀
+    def run(self):
+        setuptools.command.install_scripts.install_scripts.run(self)
+        # Rename some script files
+        for script in self.get_outputs():
+            if basename.endswith(".py") or basename.endswith(".sh"):
+                dest = script[:-3]
+            else:
+                continue
+            print("moving %s to %s" % (script, dest))
+            shutil.move(script, dest)
+            
+setup(
+    name='mypackage',
+    version='0.1',
+    description='An example Python package',
+    packages=find_packages(),  
+    python_requires='>=3.6',
+  	scripts: ['bin/foo.sh', 'bar.py'],  # 直接写可执行文件
+  	cmdclass={  # 使用自定义的安装类
+        "install_scripts": InstallScripts
+    }
+)	
+```
+
+
+
+
+
+
+
