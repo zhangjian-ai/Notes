@@ -679,7 +679,7 @@ DECIMAL 类型用于存储精确的小数。但因为CPU不支持对DECIMAL的�
 
 - 变量赋值
 
-  - = 号赋值。= 仅在关键字 set 后面才表示赋值，其他场景均作为 逻辑判断 符号。
+  - = 号赋值。= 仅在关键字 set、update 后面才表示赋值，其他场景均作为 逻辑判断 符号。
 
     ```mysql
     set @aa = 3;
@@ -4158,6 +4158,10 @@ mysql> show variables like 'innodb_lock_wait_timeout';
 
 ### 锁的分类
 
+> 乐观锁：乐观锁认为竞争不经常发生，因此不需要持有锁。而是将数据的 **比较** **和** **修改** 合并为一个 **原子操作（事物）**，去尝试修改内存中的变量，如果失败，就走对应的重置逻辑。
+>
+> 悲观锁：悲观锁认为竞争总是会发生，因此在对资源进行操作时，都要独占一个锁，此时其他线程将等待锁释放后才能重新获得锁，进行资源修改。
+
 - 从对数据操作的粒度来分：
   - 表锁：操作时，会锁定整个表；
   - 行锁：操作时，会锁定当前操作行。
@@ -6386,7 +6390,208 @@ mysql> select a.name, a.sex, a.score from Score a where (a.score, a.sex) in  (se
 
 
 
+### 7. where和having的区别
+
+本质的区别就是where筛选的是数据库表里面本来就有的字段，而having筛选的字段必须是select后显示查询的字段。
+
+在执行语句时，先执行where子句，后执行having子句。
+
+- where和having都可以使用的场景：
+
+  select goods_price,goods_name from sw_goods where goods_price>100
+
+  select goods_price,goods_name from sw_goods having goods_price>100**
+
+  **原因：goods_price作为条件也出现在了查询字段中。**
+
+  
+
+- 只可以使用where，不可以使用having的情况：
+
+  select goods_name,goods_number from sw_goods where goods_price>100
+
+  select goods_name,goods_number from sw_goods having goods_price>100(X)
+
+  **原因：goods_price作为筛选条件没有出现在查询字段中，所以就会报错。having的原理是先select 然后从select出来的进行筛选。而where是先筛选在select。**
 
 
 
+- 只可以使用having，不可以使用where的情况：
+
+  select goods_category_id,avg(good_price) as ag from sw_goods group by goods_category having ag>1000
+
+  select goods_category_id,avg(goods_price) as ag from sw_goods where ag>1000 group by goods_category(X)
+
+  **where子句会报错，因为ag实际上是 group by聚合的结果，而在执行where子句的时机是在group by 之前**
+
+
+
+### 8. char和varchar的区别
+
+1. 区别一，定长和变长
+
+   char 表示定长，长度固定，varchar表示变长，即长度可变。char如果插入的长度小于定义长度时，则用空格填充；varchar小于定义长度时，还是按实际长度存储，插入多长就存多长。
+
+   因为其长度固定，char的存取速度还是要比varchar要快得多，方便程序的存储与查找；但是char也为此付出的是空间的代价，因为其长度固定，所以会占据多余的空间，可谓是以空间换取时间效率。varchar则刚好相反，以时间换空间。
+
+   
+
+2. 区别之二，存储的容量不同
+
+   对 char 来说，最多能存放的字符个数 255，和编码无关。
+
+   而 varchar 呢，最多能存放 65532 个字符。varchar的最大有效长度由最大行大小和使用的字符集确定。整体最大长度是 65,532字节。
+
+
+
+
+
+### 9. :=和=的区别
+
+=  只有在set和update时才是和:=一样，表示给变量赋值，其它都是等于(判断是否相等)的作用。
+
+:=  不只在set和update时赋值的作用，在select也是赋值的作用。
+
+应用举例：
+
+1. set @num = 0;  # 定义一个变量，set @变量名;
+
+2.  select @num := 0; # 使用select时还可以将表中变量的值赋给定义的变量，select 出来的语句可直接当做table使用，set不可以
+
+   ```mysql
+   select @rownum := @rownum + 1 rownum,s.* from (select @rownum := 0) r,student s;   
+   # 给学生表加上一个行号
+   ```
+
+3. select @变量名  或者 select @变量名:= 字段名 from 表名 where 过滤语句;
+
+   ```mysql
+   set @name = '';
+   
+   select @name:=password from user limit 0,1; 
+   ```
+
+
+
+
+
+### 10. 常用指令
+
+**库表操作：**
+
+登录数据库：mysql -u 用户名 -p
+
+看有哪些数据库：  show databases; 
+
+进入指定数据库 ： use 数据库名;
+
+查看数据库中有哪些表：  show tables;
+
+新增数据库：create database 数据库名;
+
+创建库的时候指定默认字符集：create database 库名 default charset=utf8;
+
+修改现有库的字符集：alter database 库名 character set utf8;
+
+删除数据库：drop database 数据库名;
+
+
+
+**DDL 语句：改变表结构的操作**
+
+创建表： create table 表名(列名1(字段) 字段类型[约束条件],列名2 字段类型,...);
+
+ eg：create table students(name varchar(255),age int,gender varchar(25));
+
+修改表名： rename table 原来表名 to 新表名;
+
+删除表：drop table 表，同时删除表结构;
+
+添加字段（列）：alter table 表名 add 字段名 字段类型;
+
+修改字段（列）：alter table 表名 modify 字段名 字段类型;
+
+删除字段（列）： alter table 表名 drop 字段名;
+
+
+
+**DML语句：修改表中数据的操作**
+
+插入多条数据（行）：insert into 表名(列名1,列名2) values (列值1,列值2), (列值1,列值2),...;
+
+修改更新数据：update 表名 set 列名1=列值1,列名2=列值2,... where 条件;
+
+ 删除记录（行）：delete from 表名 where 条件;回滚能找回数据
+
+ truncate table 表名;  数据不能找回，保留表结构
+
+
+
+**DQL语句：查询语句的操作**
+
+查询指定字段：select 字段名1,字段名2,... from 表名;
+
+条件查询：=,!=,<>,<,<=,>,>=,between ... and,in(A) (在A集合中) ,is null,is not null,and,or,not
+
+eg:select * from 表名 where age in (18,17,19);
+
+模糊查询：通过关键字查询，格式为 like+通配符  通配符：_（任意一个字符），%（任意0-n个字符）
+
+eg: 查询名字中带‘李’的人  select * from 表名 like '%李%';
+
+去重：distinct：select distinct 字段名 from 表; 
+
+排序：select * from 表名 ORDER BY 字段1 ASC,字段2 DESC;
+
+查询表格中前10条数据中的最高工资：
+
+select  MAX(sal)  from  tbl  limit  10；
+
+等价于：select  MAX(sal)  from  tbl  limit  0,10;表示偏移0行，即从第1行取到第10行，上同。
+
+
+
+**多表查询**
+
+left join （左连接）：返回包括左表中的所有记录和右表中连接字段相等的记录，右表中未匹配的展示为null。
+
+right join （右连接）：返回包括右表中的所有记录和左表中连接字段相等的记录。
+
+inner join （等值连接或者叫内连接）：只返回两个表中连接字段相等的行。
+
+full join （全外连接）：返回左右表中所有的记录和左右表中连接字段相等的记录。
+
+
+
+**DCL语句：数据库控制语句**
+
+GRANT：授权。
+
+ROLLBACK [WORK] TO [SAVEPOINT]：回退到某一点。
+
+COMMIT [WORK]：提交。
+
+
+
+**索引：**
+
+创建索引：create index 索引名 on 表名(列名);
+
+alter table 表名 add index 索引名(列名1，列名2);  # 创建联合索引
+
+删除索引：drop index 索引名 on 表名;
+
+alter table 表名 drop index 索引名;
+
+
+
+**视图：**
+
+创建视图：CREATE VIEW <视图名> AS ;
+
+查看视图：DESCRIBE 视图名;
+
+修改视图：ALTER VIEW <视图名> AS ;
+
+删除视图：DROP VIEW <视图名1> [ , <视图名2> …];
 
