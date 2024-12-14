@@ -1137,5 +1137,280 @@ if __name__ == '__main__':
 
     
 
+## 四、拓展实践
 
+### 请求表单
+
+flask框架下表单，推荐使用 flask-wtf。
+
+安装模块：
+
+```shell
+pip install flask-wtf
+```
+
+实践案例：
+
+```python
+class MetaForm(Form):
+    """
+    元表单
+    增强默认表单能力
+    """
+    def __init__(self):
+        data = request.get_json()
+        args = request.args.to_dict()
+        super(MetaForm, self).__init__(data=data, **args)
+        self.request_data = dict(**data, **args)
+
+    @property
+    def valid_data(self) -> dict:
+        """
+        过滤表单中的None值
+        返回非控制的字段的一个dict
+        """
+        data = {}
+        for key, val in self.data.items():
+            if val is not None:
+                data[key] = val
+        return data
+
+    def validate(self, extra_validators=None):
+        """
+        重写父类校验方法
+        增加对请求中多余字段的校验，不允许有不相关字段
+        """
+        other = []
+        for key in self.request_data.keys():
+            if key not in self._fields:
+                other.append(key)
+        if other:
+            self.form_errors.append(f"Illegal fields: {' '.join(other)}")
+            return False
+        return super().validate(extra_validators)
+
+def validate_data(cls):
+    """
+    实现一个装饰器，作用在视图函数上
+    统一校验数据的合法性
+    cls：MetaForm的子类，实际的请求表单
+	"""
+    def outer(func):
+        @functools.wraps(func)
+        def inner(*args, **kwargs):
+            form = cls()
+            if not form.validate():
+                response = make_response({"code": -1, "msg": form.errors})
+                response.status_code = 400
+                return response
+            kwargs["form"] = form
+            return func(*args, **kwargs)
+        return inner
+    return outer
+```
+
+创建表单：
+
+```python
+from wtforms.fields.numeric import IntegerField
+from wtforms.validators import DataRequired
+
+class DemoForm(MetaForm):
+    id = IntegerField(validators=[DataRequired()])
+```
+
+
+
+### ORM框架
+
+flask开发框架下，推荐使用sqlalchemy库。
+
+安装模块：
+
+```python
+ pip install -i https://pypi.tuna.tsinghua.edu.cn/simple sqlalchemy
+```
+
+sqlalchemy是一个开源的ORM框架，已有很多优秀的实践案例。具体使用可以参照下面的一篇知乎文章。
+
+链接：https://zhuanlan.zhihu.com/p/676552345
+
+
+
+### 定时任务
+
+flask开发框架下，推荐使用apscheduler库来实现定时任务的管理。
+安装模块：
+```shell
+ pip install -i https://pypi.tuna.tsinghua.edu.cn/simple apscheduler
+```
+
+#### 基础模块
+
+##### 调度器
+
+Apscheduler提供的调度器有7种：
+
+- BlockingScheduler : 调度器在当前进程的主线程中运行，会阻塞当前线程。
+- BackgroundScheduler : 调度器在后台线程中运行，不会阻塞当前线程。
+- AsyncIOScheduler : 结合 asyncio 模块（一个异步框架）一起使用。
+- GeventScheduler : 程序中使用 gevent（高性能的Python并发框架）作为IO模型，和 GeventExecutor 配合使用。
+- TornadoScheduler : 程序中使用 Tornado（一个web框架）的IO模型，用 ioloop.add_timeout 完成定时唤醒。
+- TwistedScheduler : 配合 TwistedExecutor，用 reactor.callLater 完成定时唤醒。
+- QtScheduler : Qt 应用，需使用QTimer完成定时唤醒。
+
+##### 执行器
+
+用于设置线程池、进程池、协程池等，Apscheduler提供的执行器有6种：
+
+- ThreadPoolExecutor： 线程池执行器。
+- ProcessPoolExecutor： 进程池执行器。
+- GeventExecutor： Gevent程序执行器。
+- TornadoExecutor： Tornado程序执行器。
+-  TwistedExecutor： Twisted程序执行器。
+- AsyncIOExecutor： asyncio程序执行器。
+
+##### 任务存储器
+
+任务默认是存储在内存里的，服务重启后，内存里的任务会丢失。将任务保存在数据库中，每次启动会读取数据库的信息，可以避免服务重启丢失信息的问题。
+
+```python
+from flask import Flask
+from apscheduler.schedulers.background import BackgroundScheduler
+
+# 数据持久化至Mysql，默认table名为apscheduler_jobs
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+jobstores = {'default': SQLAlchemyJobStore(url="mysql+pymysql://root:123456@127.0.0.1:3306/work")}
+
+# 数据持久化至MongoDB
+from apscheduler.jobstores.mongodb import MongoDBJobStore
+jobstores = {'default': MongoDBJobStore(host="127.0.0.1",port=27017, database="TEST", collection="jobs")}
+
+# 数据持久化至redis
+from apscheduler.jobstores.redis import RedisJobStore
+jobstores = {'default': RedisJobStore(host="127.0.0.1",port=6379, db=0)}
+
+# 引入配置的方法，在创建类时加入配置项
+scheduler = BackgroundScheduler(jobstores=jobstores)
+def job1(a, b):  # 运行的定时任务的函数
+    print(str(a) + ' ' + str(b))
+```
+
+##### 触发器
+
+当你开始定时任务时，需要为定时策略选择一个触发器（设置  class Config 中 trigger 的值）。apscheduler 提供了三种类型的触发器。
+
+- date:  一次性指定固定时间，只执行一次
+- interval   间隔调度，隔多长时间执行一次
+- cron  指定相对时间执行，比如：每月1号、每星期一执行
+
+其他配置：
+```python
+defaults = {
+    # 不合并执行
+    'coalesce': False,
+    # 同一时间同个任务最大执行次数为3
+    'max_instances': 3,
+    # 任务错过当前时间60s内，仍然可以触发任务
+    'misfire_grace_time':60
+}
+
+# 创建类，导入配置
+scheduler = BackgroundScheduler(job_defaults=defaults)
+```
+
+#### 使用方式
+
+apscheduler有三种使用方式。
+
+##### Config配置类
+
+```python
+# 步骤一： Config定义数据
+class Config:
+    JOBS = [
+        {
+            'id': '0001',
+            'func': 'app.job.cron_job:job', # 如果需要应用其他文件的函数可以使用这种方法
+            'args': (1, 2),  # 这个是函数对应的入参，如果函数没有参数则无需增加args参数
+            'trigger': 'interval',
+            'seconds': 2
+        },
+        {
+            'id': '0002',
+            'func': 'app.job.cron_job:job_cron',
+            'trigger': 'cron',
+            # 'day': 21,
+            # "hour": 11,
+            # "minute": 44,
+            "second": 10
+        }
+    ]
+    SCHEDULER_API_ENABLE = True
+    SCHEDULER_TIMEZONE = "Asia/Shanghai"
+
+# 步骤二： python文件app/job/cron_job.py 定义方法
+def job(a, b):
+    """定时任务执行函数"""
+    print(a + b, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
+def job_cron():
+    print("====================")
+```
+
+##### 使用装饰器
+
+```python
+# 步骤一: 实例化APScheduler（一般放在app/__init__.py中）
+scheduler = APScheduler()
+# 步骤二： 修饰定时任务
+@scheduler.task('interval', id='job_1', args=(1,2),seconds=5)
+def job1(a, b):  # 运行的定时任务的函数
+    print(str(a) + ' ' + str(b))
+# 步骤三： 运行主类中启动框架
+if __name__ == '__main__':
+    app = Flask(__name__)  # 实例化flask
+    scheduler.start()  # 启动任务列表
+    app.debug=True
+    app.run(host='0.0.0.0',port= 8000)  # 启动 flask
+```
+
+##### 使用API
+
+```python
+# 步骤一： 定义后台线程中运行的调度器
+from apscheduler.schedulers.background import BackgroundScheduler
+# 调度器在后台线程中运行，不会阻塞当前线程
+# timezone 配置时区
+scheduler = BackgroundScheduler(timezone="Asia/Shanghai")
+
+# 步骤二： 定义定时任务函数
+def job1(a, b):
+    print(str(a) + ' ' + str(b))
+    
+# 步骤三： 使用API纳管
+scheduler.scheduled_job(func=job1, args=("1","2"),id="job_1", trigger="interval", seconds=5, replace_existing=False)
+'''
+func：定时任务执行的函数名称。
+args：任务执行函数的位置参数，若无参数可不填
+id：任务id，唯一标识，修改，删除均以任务id作为标识
+trigger：触发器类型，参数可选：date、interval、cron
+replace_existing：将任务持久化至数据库中时，此参数必须添加，值为True。并且id值必须有。不然当程序重新启动时，任务会被重复添加。
+'''
+
+# 步骤四： 启动定时框架
+if __name__ == '__main__':
+    app = Flask(__name__)
+    scheduler.start()
+    app.debug=True
+    app.run(host='0.0.0.0',port= 8000)
+
+# 实例对象 scheduler 拥有增、删、改、查等基本用法：
+新增任务：add_job()
+编辑任务：modify_job()
+删除任务：remove_job(id)（删除所有任务：remove_all_jobs()）
+查询任务：get_job(id)（查询所有任务：get_jobs()）
+暂停任务：pause_job(id)
+恢复任务：resume_job(id)
+运行任务：run_job(id)（立即运行，无视任务设置的时间规则）
+```
 
