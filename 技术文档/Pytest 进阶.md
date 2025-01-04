@@ -71,7 +71,7 @@ print(result)  # [6]
                return setattr_hookspec_opts
    ```
 
-2. `@hook_impl` 装饰器被调用时，本质上就是调用HookspecMarker的`__call__`方法，起作用是给被标记的function增加一个名为`project_name + '_impl'`，值为HookimplOpts实例的属性，HookimplOpts 是一个字典类，有了这个属性后，该func才能被`PluginManager.register`捕获，下面看看`HookimplMarker.__call__`方法源码
+2. `@hook_impl` 装饰器被调用时，本质上就是调用HookimplMarker的`__call__`方法，其作用是给被标记的function增加一个名为`project_name + '_impl'`，值为HookimplOpts实例的属性，HookimplOpts 是一个字典类，有了这个属性后，该func才能被`PluginManager.register`捕获，下面看看`HookimplMarker.__call__`方法源码
 
    ```python
        def __call__(self, function: _F | None = None, hookwrapper: bool = False, optionalhook: bool = False, tryfirst: bool = False, trylast: bool = False, specname: str | None = None, wrapper: bool = False
@@ -695,31 +695,6 @@ print(result)  # [6]
      				
              # 这里完成了add_hookspec
              # _pytest.hookspec 是一个模块，里面定义了内建的所有hook，并使用@hookspec标记
-             # 有部分未做标记，将不能使用HookCaller调用
-             self.add_hookspecs(_pytest.hookspec)
-             # 将自己内部的hook_impl注册
-             self.register(self)
-     ```
-
-     ```python
-     @final
-     class PytestPluginManager(PluginManager):
-     
-         def __init__(self) -> None:
-             import _pytest.assertion
-     
-             super().__init__("pytest")
-     
-             self._conftest_plugins: Set[types.ModuleType] = set()
-             self._dirpath2confmods: Dict[Path, List[types.ModuleType]] = {}
-             self._confcutdir: Optional[Path] = None
-             self._noconftest = False
-             self._get_directory = lru_cache(256)(_get_directory)
-     
-             self.skipped_plugins: List[Tuple[str, str]] = []
-     				
-             # 这里完成了add_hookspec
-             # _pytest.hookspec 是一个模块，里面定义了内建的所有hook，并使用@hookspec标记
              # 有部分未做标记，将会被提供默认的spec_opts来完成add
              self.add_hookspecs(_pytest.hookspec)
              # 将自己内部的hook_impl注册
@@ -727,7 +702,7 @@ print(result)  # [6]
      ```
 
    - 第二步看`config`实例化
-
+   
      ```python
      @final
      class Config:
@@ -792,7 +767,7 @@ print(result)  # [6]
      
                  self.cache: Optional[Cache] = None
      ```
-
+   
      ```python
        # HookCaller.call_historic
        def call_historic(
@@ -818,9 +793,9 @@ print(result)  # [6]
                  for x in res:
                      result_callback(x)
      ```
-
+   
    - 第三步看`pluginmanager.import_plugin`，导入默认插件。
-
+   
      ```python
          def import_plugin(self, modname: str, consider_entry_points: bool = False) -> None:
              """Import a plugin with ``modname``.
@@ -861,7 +836,7 @@ print(result)  # [6]
                  mod = sys.modules[importspec]
                  self.register(mod, modname)
      ```
-
+   
 4. `pytest_cmdline_main` 内建钩子函数的调用。pytest核心的逻辑就在其中。`pytest_cmdline_main`在`_pytest`多个模块中都有实现，分别处理着前置后置的一些工作，其中调用主流程的hook_impl在`_pytest.main.py`文件中。
 
    ```python
