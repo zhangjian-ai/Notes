@@ -177,8 +177,9 @@ message helloResponse {
 ```shell
 python -m grpc_tools.protoc -I../protos --python_out=. --grpc_python_out=. ../protos/greet.proto
 
-# --python_out: python 描述文件路径
-# --grpc_python_out: python grpc 文件路径
+# -I proto文件所在目录
+# --python_out: grpc消息类输出的文件路径
+# --grpc_python_out: grpc 服务相关类输出的文件路径
 
 python -m grpc_tools.protoc -I protos --python_out=. --grpc_python_out=. protos/softphone.proto
 python -m grpc_tools.protoc -I protos --python_out=grpc_python/yugao/ --grpc_python_out=grpc_python/yugao/ protos/softphone.proto
