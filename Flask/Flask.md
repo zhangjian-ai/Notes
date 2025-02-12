@@ -1231,9 +1231,76 @@ flask开发框架下，推荐使用sqlalchemy库。
  pip install -i https://pypi.tuna.tsinghua.edu.cn/simple sqlalchemy
 ```
 
-sqlalchemy是一个开源的ORM框架，已有很多优秀的实践案例。具体使用可以参照下面的一篇知乎文章。
+sqlalchemy是一个开源的ORM框架，不再过多赘诉，下面给一些实践代码。
 
-链接：https://zhuanlan.zhihu.com/p/676552345
+**工具封装**
+
+```python
+class ORMTool:
+    base = declarative_base()
+    table_extend_args = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8mb4', 'mysql_collate': 'utf8mb4_unicode_ci'}
+    engine = create_engine(f"mysql+pymysql://{username}:{password}@{host}:{port}/{database}?"charset=utf8mb4", echo=False)
+		# 创建数据库
+    if not database_exists(engine.url):
+        create_database(engine.url)
+
+    # 会话maker
+    sm = sessionmaker(bind=engine, expire_on_commit=False)
+
+    @classmethod
+    def flush_table(cls):
+        cls.base.metadata.create_all(cls.engine)
+		
+    # 配合 dataclass 可以将对象序列化为json
+    @staticmethod
+    def to_dict(row: base):
+        data = asdict(row)
+        for key, val in data.items():
+            if isinstance(val, datetime):
+                data[key] = val.strftime("%Y-%m-%d %H:%M:%S")
+        return data
+
+    class SessionContext:
+        def __init__(self, commit=True):
+            self.commit = commit
+
+        def __enter__(self):
+            self.session = scoped_session(ModelTool.sm)
+            return self.session
+
+        def __exit__(self, exc_type, exc_val, exc_tb: traceback):
+            if any([exc_type, exc_val, exc_tb]):
+                self.session.rollback()
+                raise exc_type(exc_val)
+            if self.commit:
+                self.session.commit()
+            self.s.close()
+```
+
+
+
+**定义模型**
+
+```python
+from dataclasses import dataclass
+from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, Enum, DateTime, ForeignKey, func
+
+@dataclass
+class Demo(ModelTool.base):
+    __tablename__ = "demo"
+    __table_args__ = {"comment": "示例数据表"}
+
+    id: int = Column(Integer, primary_key=True, autoincrement=True, comment="主键id 也是task_id")
+    name: str = Column(String(32), nullable=False, unique=True, comment="名称")
+    type: str = Column(Enum('0', '1', '2'), default='0')
+    sub_id: int = Column(Integer, ForeignKey("sub.id", onupdate="CASCADE", ondelete="RESTRICT"), nullable=True)
+    create_time: str = Column(DateTime, default=func.now(), comment="创建时间")
+    update_time: str = Column(DateTime, default=func.now(), onupdate=func.now(), comment="更新时间")
+    
+    # 关联关系
+    sub = relationship("Sub", backref="task")
+```
 
 
 

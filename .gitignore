@@ -6,7 +6,6 @@
 
 venv
 
-1.py
-
+*.model
 
 
