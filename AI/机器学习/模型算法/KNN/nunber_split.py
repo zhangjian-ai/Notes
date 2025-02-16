@@ -1,14 +1,11 @@
 import cv2, joblib
 import numpy as np
-from keras.datasets import mnist
 
-def show(img):
-    cv2.imshow("show", img)
-    cv2.waitKey(0)
 
 # 图片的预处理
-img = cv2.imread('../../../../../../Downloads/课程的Python源码/number.png')
+img = cv2.imread('../../images/number-6.png')
 img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
 # THRESH_BINARY_INV 反二值化后将白色背景变成黑色，与MNIST相匹配
 ret, img = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY_INV)
 

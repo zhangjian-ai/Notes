@@ -16,7 +16,7 @@ img = cv2.resize(img, (28, 28), interpolation=cv2.INTER_AREA)
 
 # 归一化处理图片并展平成一维
 img = img.astype("float32") / 255
-img = img.reshape(1, 28*28)  # 和 img.reshape(1, 28*28) 作用相同
+img = img.reshape(1, 28*28)  # 和 img.reshape(1, -1) 作用相同
 
 # 加载模型并进行预测
 knn: KNeighborsClassifier = joblib.load("knn-number.model")
