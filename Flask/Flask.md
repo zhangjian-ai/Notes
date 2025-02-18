@@ -1239,7 +1239,8 @@ sqlalchemy是一个开源的ORM框架，不再过多赘诉，下面给一些实�
 class ORMTool:
     base = declarative_base()
     table_extend_args = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8mb4', 'mysql_collate': 'utf8mb4_unicode_ci'}
-    engine = create_engine(f"mysql+pymysql://{username}:{password}@{host}:{port}/{database}?"charset=utf8mb4", echo=False)
+    engine = create_engine(f"mysql+pymysql://{username}:{password}@{host}:{port}/{database}?"charset=utf8mb4", echo=False, pool_size=20, max_overflow=10, pool_timeout=30, pool_recycle=360, pool_pre_ping=True)
+
 		# 创建数据库
     if not database_exists(engine.url):
         create_database(engine.url)
@@ -1269,12 +1270,16 @@ class ORMTool:
             return self.session
 
         def __exit__(self, exc_type, exc_val, exc_tb: traceback):
-            if any([exc_type, exc_val, exc_tb]):
-                self.session.rollback()
-                raise exc_type(exc_val)
-            if self.commit:
-                self.session.commit()
-            self.s.close()
+            try:
+              if any([exc_type, exc_val, exc_tb]):
+                  self.session.rollback()
+                  raise exc_type(exc_val)
+              if self.commit:
+                  self.session.commit()
+            except Exception as e:
+              raise e
+            finally:
+              self.s.close()
 ```
 
 
