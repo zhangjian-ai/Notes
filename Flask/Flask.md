@@ -1223,12 +1223,12 @@ class DemoForm(MetaForm):
 
 ### ORM框架
 
-flask开发框架下，推荐使用sqlalchemy库。
+flask开发框架下，推荐使用flask-sqlalchemy库。
 
 安装模块：
 
 ```python
- pip install -i https://pypi.tuna.tsinghua.edu.cn/simple sqlalchemy
+ pip install -i https://pypi.tuna.tsinghua.edu.cn/simple flask-sqlalchemy
 ```
 
 sqlalchemy是一个开源的ORM框架，不再过多赘诉，下面给一些实践代码。
@@ -1237,74 +1237,137 @@ sqlalchemy是一个开源的ORM框架，不再过多赘诉，下面给一些实�
 
 ```python
 class ORMTool:
-    base = declarative_base()
-    table_extend_args = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8mb4', 'mysql_collate': 'utf8mb4_unicode_ci'}
-    engine = create_engine(f"mysql+pymysql://{username}:{password}@{host}:{port}/{database}?"charset=utf8mb4", echo=False, pool_size=20, max_overflow=10, pool_timeout=30, pool_recycle=360, pool_pre_ping=True)
+    DB: SQLAlchemy = SQLAlchemy()
 
-		# 创建数据库
-    if not database_exists(engine.url):
-        create_database(engine.url)
+    session = DB.session
 
-    # 会话maker
-    sm = sessionmaker(bind=engine, expire_on_commit=False)
+    app: Flask = None
 
+    # init_orm
     @classmethod
-    def flush_table(cls):
-        cls.base.metadata.create_all(cls.engine)
-		
-    # 配合 dataclass 可以将对象序列化为json
+    def init_orm(cls, app: Flask, lock=False):
+        uri = (f"mysql+pymysql://{values['mysql.username']}:{values['mysql.password']}@{values['mysql.host']}:"
+               f"{values['mysql.port']}/{values['mysql.database']}?charset=utf8mb4")
+
+        app.config['SQLALCHEMY_DATABASE_URI'] = uri
+        app.config['SQLALCHEMY_POOL_PRE_PING'] = True
+        app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True  # 自动提交
+
+        app.config['SQLALCHEMY_ECHO'] = False  # 不打印 SQL 语句到控制台
+        app.config['SQLALCHEMY_POOL_SIZE'] = 20
+        app.config['SQLALCHEMY_MAX_OVERFLOW'] = 10
+        app.config['SQLALCHEMY_POOL_TIMEOUT'] = 3600
+        app.config['SQLALCHEMY_POOL_RECYCLE'] = 3600
+
+        cls.app = app
+        cls.DB.init_app(app)
+
+        # 仅在获得锁的进程尝试创建数据库表
+        if lock:
+            with app.app_context():
+                cls.DB.create_all()
+                log.info("数据库更新完成")
+
+    # 默认表扩展参数
+    default_table_args = {'mysql_engine': 'InnoDB',
+                          'mysql_charset': 'utf8mb4',
+                          'mysql_collate': 'utf8mb4_unicode_ci'}
+
+    class Context:
+        """
+        非请求内部的orm需要手动开启上下文
+        """
+
+        def __init__(self, commit=False):
+            self.app = ModelTool.app
+            self.url_adapter = self.app.create_url_adapter(None)
+            self.g = self.app.app_ctx_globals_class()
+            self._cv_tokens = []
+            self.commit = commit
+
+        def push(self):
+            self._cv_tokens.append(_cv_app.set(self))
+            appcontext_pushed.send(self.app, _async_wrapper=self.app.ensure_sync)
+
+        def pop(self, exc=_sentinel):
+            try:
+                if len(self._cv_tokens) == 1:
+                    if exc is _sentinel:
+                        exc = sys.exc_info()[1]
+                    self.app.do_teardown_appcontext(exc)
+            finally:
+                ctx = _cv_app.get()
+                _cv_app.reset(self._cv_tokens.pop())
+
+            if ctx is not self:
+                raise AssertionError(f"Popped wrong app context. ({ctx!r} instead of {self!r})")
+            appcontext_popped.send(self.app, _async_wrapper=self.app.ensure_sync)
+
+        def __enter__(self):
+            self.push()
+            return self
+
+        def __exit__(self, exc_type, exc_value, tb):
+            if exc_type or exc_value:
+                ModelTool.session.rollback()
+
+            if self.commit:
+                ModelTool.session.commit()
+
+            # 关闭会话
+            ModelTool.session.remove()
+
+            # 关闭上下文
+            self.pop(exc_value)
+
+            if exc_type or exc_value:
+                raise exc_type(exc_value)
+
     @staticmethod
-    def to_dict(row: base):
+    def deserialize(row):
+      	"""反序列化，将查询对象转为字典"""
         data = asdict(row)
+
         for key, val in data.items():
             if isinstance(val, datetime):
                 data[key] = val.strftime("%Y-%m-%d %H:%M:%S")
+
         return data
-
-    class SessionContext:
-        def __init__(self, commit=True):
-            self.commit = commit
-
-        def __enter__(self):
-            self.session = scoped_session(ModelTool.sm)
-            return self.session
-
-        def __exit__(self, exc_type, exc_val, exc_tb: traceback):
-            try:
-              if any([exc_type, exc_val, exc_tb]):
-                  self.session.rollback()
-                  raise exc_type(exc_val)
-              if self.commit:
-                  self.session.commit()
-            except Exception as e:
-              raise e
-            finally:
-              self.s.close()
 ```
-
-
 
 **定义模型**
 
 ```python
+from sqlalchemy import func
 from dataclasses import dataclass
-from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, String, Enum, DateTime, ForeignKey, func
+
+db = ORMTool.DB
 
 @dataclass
-class Demo(ModelTool.base):
+class Demo(db.ModelTool):
     __tablename__ = "demo"
     __table_args__ = {"comment": "示例数据表"}
 
-    id: int = Column(Integer, primary_key=True, autoincrement=True, comment="主键id 也是task_id")
-    name: str = Column(String(32), nullable=False, unique=True, comment="名称")
-    type: str = Column(Enum('0', '1', '2'), default='0')
-    sub_id: int = Column(Integer, ForeignKey("sub.id", onupdate="CASCADE", ondelete="RESTRICT"), nullable=True)
-    create_time: str = Column(DateTime, default=func.now(), comment="创建时间")
-    update_time: str = Column(DateTime, default=func.now(), onupdate=func.now(), comment="更新时间")
+    id: int = db.Column(db.Integer, primary_key=True, autoincrement=True, comment="主键id 也是task_id")
+    name: str = db.Column(db.String(32), nullable=False, unique=True, comment="名称")
+    type: str = db.Column(db.Enum('0', '1', '2'), default='0')
+    sub_id: int = db.Column(db.Integer, ForeignKey("sub.id", onupdate="CASCADE", ondelete="RESTRICT"), nullable=True)
+    create_time: str = db.Column(db.DateTime, default=func.now(), comment="创建时间")
+    update_time: str = db.Column(db.DateTime, default=func.now(), onupdate=func.now(), comment="更新时间")
     
     # 关联关系
-    sub = relationship("Sub", backref="task")
+    sub = db.relationship("Sub", backref="task")
+```
+
+配合Flask的hook函数，可以轻松实现session的自动提交。
+
+```python
+def after_request(response):
+    ModelTool.session.commit()
+    ModelTool.session.remove()
+
+    return response
+# 通常在请求到来时也可以先ping一下session，避免数据库链接已丢失而出现接口请求失败的情况
 ```
 
 
@@ -1316,6 +1379,8 @@ flask开发框架下，推荐使用apscheduler库来实现定时任务的管理�
 ```shell
  pip install -i https://pypi.tuna.tsinghua.edu.cn/simple apscheduler
 ```
+
+此处介绍的是独立的apscheduler模块，推荐使用`flask-apscheduler`模块，对于Flask应用更为友好。
 
 #### 基础模块
 
