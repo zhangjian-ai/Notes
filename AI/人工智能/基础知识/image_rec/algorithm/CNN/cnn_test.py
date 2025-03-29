@@ -4,10 +4,10 @@ import numpy as np
 from keras import Sequential
 from keras.models import load_model
 
-files = os.listdir("../../images/numbers/")
+files = os.listdir("../../../../images/numbers/")
 
 # 加载模型并进行预测
-model: Sequential = load_model('./cnn-number.h5')
+model: Sequential = load_model('cnn-number.h5')
 
 # 遍历图片并修改为图形并预测结果
 for file in files:

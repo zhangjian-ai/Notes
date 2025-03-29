@@ -5,7 +5,7 @@ import numpy
 from sklearn.neighbors import KNeighborsClassifier
 
 # 加载图片
-img = cv2.imread("../../images/number-5.png")
+img = cv2.imread("../../../../images/number-5.png")
 
 # 灰度化、二值化
 img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
