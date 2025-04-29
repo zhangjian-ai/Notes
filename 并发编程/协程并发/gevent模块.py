@@ -25,7 +25,7 @@ from gevent import monkey
 monkey.patch_all()
 
 # 如果项目使用的是gRPC协议，那么还需要在打标准库补丁之后，为gRPC的标准库打上补丁使其与gevent兼容
-import grpc.experimental.gevent as grpc_gevent
+import my_grpc.experimental.gevent as grpc_gevent
 grpc_gevent.init_gevent()
 
 

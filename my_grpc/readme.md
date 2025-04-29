@@ -194,7 +194,7 @@ python -m grpc_tools.protoc -I protos --python_out=grpc_python/yugao/ --grpc_pyt
 import time
 from concurrent import futures
 
-import grpc
+import my_grpc
 
 from packages.greet_pb2 import helloResponse
 from packages.greet_pb2_grpc import add_GreetServiceServicer_to_server, GreetServiceServicer
@@ -209,7 +209,7 @@ class Hello(GreetServiceServicer):
 
 def serve():
     # 这里通过thread pool来并发处理server的任务
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    server = my_grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
     # 将对应的任务处理函数添加到rpc server中
     add_GreetServiceServicer_to_server(Hello(), server)
@@ -234,7 +234,7 @@ if __name__ == '__main__':
 **编写client.py**
 
 ```python
-import grpc
+import my_grpc
 
 from packages.greet_pb2 import helloRequest
 from packages.greet_pb2_grpc import GreetServiceStub
@@ -242,7 +242,7 @@ from packages.greet_pb2_grpc import GreetServiceStub
 
 def run():
     # 使用上下文管理，自动关闭链接
-    with grpc.insecure_channel('localhost:50000') as channel:
+    with my_grpc.insecure_channel('localhost:50000') as channel:
         # 客户端通过 stub 来实现 rpc 通信
         stub = GreetServiceStub(channel)
         # 调用服务端接口
@@ -308,12 +308,12 @@ message MessageResponse {
 
 ```python
 from concurrent import futures
-from grpc.experimental import aio
+from my_grpc.experimental import aio
 
 import os
 import sys
 import json
-import grpc
+import my_grpc
 import time
 import pathlib
 
@@ -326,7 +326,6 @@ class MessageService(MessageServiceServicer):
         self.args = args
 
     def iter_message(self, request_iterator, context):
-				
         for data in request_iterator:
             yield MessageResponse(**{"code": 200, "message": "doing"})
 
@@ -339,10 +338,9 @@ class MessageService(MessageServiceServicer):
             msg_type = pb_dict["msgType"]
 
 
-
 def serve(instance: YugaoAudioService, threads):
     # 这里通过thread pool来并发处理server的任务
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=2000))
+    server = my_grpc.server(futures.ThreadPoolExecutor(max_workers=2000))
 
     add_MessageServiceServicer_to_server(instance, server)
 
@@ -350,6 +348,7 @@ def serve(instance: YugaoAudioService, threads):
     server.start()
 
     # server.wait_for_termination()
+
 
 # ==============================
 # 流式接口在python中并发性能很低
@@ -360,7 +359,6 @@ class AsyncMessageService(MessageServiceServicer):
         self.args
 
     async def iter_message(self, request_iterator, context):
-
         async for data in request_iterator:
             yield MessageResponse(**{"code": 200, "message": "doing"})
 
@@ -386,7 +384,7 @@ async def async_serve(instance, port):
     server.add_insecure_port(f'[::]:{port}')
 
     await server.start()
-    #await server.wait_for_termination(3600)
+    # await server.wait_for_termination(3600)
 
 ```
 
@@ -395,9 +393,9 @@ async def async_serve(instance, port):
 **client端**
 
 ```python
-import grpc
+import my_grpc
 
-from grpc._channel import _MultiThreadedRendezvous
+from my_grpc._channel import _MultiThreadedRendezvous
 
 from packages.message_pb2 import MessageRequest
 from packages.message_pb2_grpc import MessageServiceStub
@@ -413,7 +411,7 @@ def body():
 
 
 def run():
-    with grpc.insecure_channel('127.0.0.1:9999') as channel:
+    with my_grpc.insecure_channel('127.0.0.1:9999') as channel:
         stub = MessageServiceStub(channel)
         res = stub.iter_message(body())
 

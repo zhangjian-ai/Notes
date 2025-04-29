@@ -1,7 +1,7 @@
 import time
 from concurrent import futures
 
-import grpc
+import my_grpc
 
 from packages.greet_pb2 import helloResponse
 from packages.greet_pb2_grpc import add_GreetServiceServicer_to_server, GreetServiceServicer
@@ -16,7 +16,7 @@ class Hello(GreetServiceServicer):
 
 def serve():
     # 这里通过thread pool来并发处理server的任务
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    server = my_grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
     # 将对应的任务处理函数添加到rpc server中
     add_GreetServiceServicer_to_server(Hello(), server)
