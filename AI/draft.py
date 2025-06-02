@@ -13,7 +13,7 @@ def scale(data_set: np.ndarray, val: int):
 
 
 if __name__ == '__main__':
-    ad = pd.read_csv("./data/advertising.csv")
+    ad = pd.read_csv("人工智能/data/advertising.csv")
     x = np.array(ad["TV"]).reshape((-1, 1))
     y = np.array(ad["sales"]).reshape((-1, 1))
 
