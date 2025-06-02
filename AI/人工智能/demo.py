@@ -1,25 +1,34 @@
 import numpy as np
+import pandas as pd
 
-from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import train_test_split
 
-# 使用模型训练时，要求数据是二维的，因此这里转为 13行1列 的数据
-x = np.array([75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87]).reshape(-1, 1)
-y = np.array([640, 645, 660, 661, 673, 688, 696, 710, 726, 727, 740, 742, 757]).reshape(-1, 1)
+def scale(data_set: np.ndarray, val: int):
+    """
+    基于数据集把val做归一化处理
+    """
+    max = np.max(data_set)
+    min = np.min(data_set)
 
-# 准备训练集和测试集。test_size 表示测试集占整个数据集的比例
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
+    return (val - min) / (max - min)
 
-# 训练模型
-model = LinearRegression()
-model.fit(x_train, y_train)
 
-# 输出斜率和偏置
-print(model.coef_)  # [[10.0244898]]
-print(model.intercept_)  # [-114.99591837]
+if __name__ == '__main__':
+    ad = pd.read_csv("./data/advertising.csv")
+    x = np.array(ad["TV"]).reshape((-1, 1))
+    y = np.array(ad["sales"]).reshape((-1, 1))
 
-# 使用测试集计算准确率
-print(model.score(x_test, y_test))  # 0.995850645830478
+    # 归一化预测值
+    x_predict = 300
+    x_predict = scale(x, x_predict)
 
-# 预测88年的数据。预测数据维度要和训练数据保持一致
-print(model.predict(np.array([[88]])))  # [[767.15918367]]
+    # 预测结果，此处w和b使用我们自己计算出来的结果
+    y_predict = 0.545 * x_predict + 0.22
+
+    # 此时的 y_predict 也应该是处于 0-1 之间的值
+    print(y_predict)  # 0.7716351031450794
+
+    # 逆向归一化
+    y_real = y_predict * (np.max(y) - np.min(y)) + np.min(y)
+
+    # 真实的预测结果
+    print(y_real)  # 21.19953161988502
