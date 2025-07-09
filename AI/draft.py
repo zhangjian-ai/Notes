@@ -1,35 +1,28 @@
-import numpy as np
-
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import KFold
 from sklearn.datasets import load_iris
+from sklearn.decomposition import PCA
+from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
-
+from sklearn.preprocessing import StandardScaler
 
 x, y = load_iris(return_X_y=True, as_frame=False)
 
-# 分成五份数据
-kf = KFold(n_splits=5)
+# 数据降维  y本身就1维，就不做处理了
+# 把四维降到二维
+pca = PCA(n_components=2)
+x = pca.fit_transform(x)
+print(x.shape)  # (150, 2)
 
-# 遍历每一份数据获取评分
-scores = []
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=5)
 
-for train, test in kf.split(x, y):
-    x_train, x_test = x[train], x[test]
-    y_train, y_test = y[train], y[test]
+scaler = StandardScaler()
+scaler.fit(x_train)
 
-    # 归一化
-    scaler = StandardScaler()
-    scaler.fit(x_train)
-    x_train = scaler.transform(x_train)
-    x_test = scaler.transform(x_test)
+x_train = scaler.transform(x_train)
+x_test = scaler.transform(x_test)
 
-    # 使用sklearn模型
-    model = KNeighborsClassifier(n_neighbors=7)
-    model.fit(x_train, y_train)
+# 使用sklearn模型
+model = KNeighborsClassifier(n_neighbors=7)
+model.fit(x_train, y_train)
 
-    score = model.score(x_test, y_test)
-    scores.append(score)
-
-# 最终准确率
-print(np.mean(scores))  # 0.8800000000000001
+score = model.score(x_test, y_test)
+print(score)  # 0.9666666666666667
