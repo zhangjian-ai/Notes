@@ -3,7 +3,7 @@ import os
 import kagglehub
 
 # Download latest version
-path = kagglehub.dataset_download("ruizema123/advertising-channel-analysis")
+path = kagglehub.dataset_download("yuanzhengyi/bankcustomer")
 
 print("Path to dataset files:", path)
 
