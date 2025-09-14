@@ -1,4 +1,0 @@
-From: jenkinch@ccmail.orst.edu
-Subject: Re: Adaptec SCSI Device Driver for Win3.1
-
-

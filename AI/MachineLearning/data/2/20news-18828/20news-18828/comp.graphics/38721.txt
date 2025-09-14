@@ -1,5 +1,0 @@
-From:  Valentin E. Vulihman <vulih@ipmce.su>
-Subject: Attractive drawing on the sphere
-
-subscribe comp.graphics
-quit
