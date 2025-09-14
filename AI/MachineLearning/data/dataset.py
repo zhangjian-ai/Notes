@@ -3,8 +3,7 @@ import os
 import kagglehub
 
 # Download latest version
-path = kagglehub.dataset_download("yuanzhengyi/bankcustomer")
-
+path = kagglehub.dataset_download("mgocen/20-newsgroups")
 print("Path to dataset files:", path)
 
 # 当前目录
