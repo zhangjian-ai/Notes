@@ -8,3 +8,6 @@ venv
 
 *.model
 *.h5
+
+*.bin
+*.pth
