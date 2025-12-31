@@ -2,7 +2,7 @@
 
 此前的Seq2Seq模型通过注意力机制取得了一定提升，但由于整体结构仍依赖 RNN，依然存在计算效率低、难以建模长距离依赖等结构性限制。
 
-为了解决这些问题，Google在2017 年发表一篇论文《[Attention Is All You Need](https://arxiv.org/pdf/1706.03762)》，提出了一种全新的模型架构-Transformer。该模型完全摒弃了 RNN 结构，转而使用注意力机制直接建模序列中各位置之间的关系。通过这种方式，Transformer不仅显著提升了训练效率，也增强了模型对长距离依赖的建模能力。
+为了解决这些问题，Google在2017 年发表一篇论文《[Attention Is All You Need》，提出了一种全新的模型架构-Transformer。该模型完全摒弃了 RNN 结构，转而使用注意力机制直接建模序列中各位置之间的关系。通过这种方式，Transformer不仅显著提升了训练效率，也增强了模型对长距离依赖的建模能力。
 
 
 
@@ -174,7 +174,7 @@ $$
 
 计算过程如下：
 
-1. 计算改向量在所有特征维度上的平均值
+1. 计算该向量在所有特征维度上的平均值
    $$
    \mu=\frac{1}{N}\sum^n_{i=1}{x_i}
    $$
@@ -249,7 +249,7 @@ Transformer提出的这种编码方式不依赖任何可学习参数，数值稳
 
 Transformer 解码器的主要功能是根据编码器的输出，逐步生成目标序列中的每一个词。其生成方式采用自回归机制(autoregressive)：每一步的输入由此前已生成的所有词组成，模型将输出一个与当前输入长度相同的序列表示。我们只取最后一个位置的输出，作为当前步的预测结果。这一过程会不断重复，直到生成特殊的结束标记`<EOS>`，表示序列生成完成。
 
-编码器也由多个结构相同的解码器层堆叠组成。每个Decoder Layer都包含三个子层，分别是Masked自注意力子层、编码器-解码器注意力子层（Encoder-Decoder Attention）和前馈神经网络子层（Feed-Forward Network）。
+解码器也由多个结构相同的解码器层堆叠组成。每个Decoder Layer都包含三个子层，分别是Masked自注意力子层、编码器-解码器注意力子层（Encoder-Decoder Attention）和前馈神经网络子层（Feed-Forward Network）。
 
 <img src='../images/069.png' style='width: 100%'>
 
@@ -259,7 +259,7 @@ Transformer 解码器的主要功能是根据编码器的输出，逐步生成�
 
 该子层的主要作用是：建模目标序列中当前位置与前文之间的依赖关系，为当前词的生成提供上下文语义支持。由于 Transformer 不具备像 RNN 那样的隐藏状态传递机制，无法在序列生成过程中保留上下文信息，因此在生成每一个词时，必须将此前已生成的所有词作为输入，通过自注意力机制重新建模上下文关系，以预测下一个词。
 
-此外，从结构上看，Transformer 编解码器都具有一个典型特性：**输入多少个词，就输出多少个表示**。需要注意的是，在推理阶段，我们只使用解码器**最后一个位置的输出**作为当前步的预测结果。如果训练阶段也完全按照推理流程进行，就必须将每个目标序列拆分成多个训练样本，每个样本输入一段前文，只预测一个词。如下图所示：
+此外，从结构上看，Transformer 解解码器都具有一个典型特性：**输入多少个词，就输出多少个表示**。需要注意的是，在推理阶段，我们只使用解码器**最后一个位置的输出**作为当前步的预测结果。如果训练阶段也完全按照推理流程进行，就必须将每个目标序列拆分成多个训练样本，每个样本输入一段前文，只预测一个词。如下图所示：
 
 <img src='../images/070.png' style='width: 75%'>
 
@@ -271,7 +271,7 @@ Transformer 解码器的主要功能是根据编码器的输出，逐步生成�
 
 <img src='../images/072.png' style='width: 50%'>
 
-Mask 机制的实现非常简单：只需将注意力得分矩阵中**当前位置对其后续位置的评分设置为 −∞**，如下图所示：
+Mask 机制的实现非常简单：只需将注意力得分矩阵中**当前位置的后续位置的评分设置为 −∞**，如下图所示：
 
 <img src='../images/073.png' style='width: 70%'>
 
@@ -311,7 +311,7 @@ Mask 机制的实现非常简单：只需将注意力得分矩阵中**当前位�
 
 ## 实战
 
-基于transformer理解，继续使用中英翻译的数据集，来实现一下中英翻译。PyTorch 已提供了 nn.Transformer 模块，包含完整的编码器-解码器结构，因此我们可以直接使用其核心组件来搭建模型。
+基于对transformer理解，继续使用中英翻译的数据集，来实现一下中英翻译。PyTorch 已提供了 nn.Transformer 模块，包含完整的编码器-解码器结构，因此我们可以直接使用其核心组件来搭建模型。
 
 
 
@@ -374,7 +374,7 @@ class PositionEncoding(nn.Module):
         # pos_index 需要改以一下形状，让每个位置信息，逐个除以每个分母，最后一维必须只有一个元素，参能像下面代码这样操作，省去手动遍历
         div_result = pos_index.reshape(-1, 1) / div_term  # shape (length, dim/2)
 
-        # 对上面的结果分别进行sin、cos运算，就可以得到击输位置和偶数位置的编码
+        # 对上面的结果分别进行sin、cos运算，就可以得到奇数位置和偶数位置的编码
         sin_result = torch.sin(div_result)
         cos_result = torch.cos(div_result)
 
@@ -440,7 +440,7 @@ class TranslateModel(nn.Module):
         self.train_dl = DataLoader(self.dataset, batch_size=self.batch_size, shuffle=True, drop_last=False)
 
     def encoder(self, src_inputs):
-        # 获得编码器输入序列中的元素是否是填充字符的遮蔽矩阵
+        # 获得编码器输入序列中的元素是否是填充字符的矩阵
         src_pad_mask = (src_inputs == self.src_embedding.padding_idx)  # 矩阵中每个元素与idx做逻辑运算，得到相同形状的bool矩阵
 
         # 词向量
@@ -461,10 +461,10 @@ class TranslateModel(nn.Module):
             tgt_embedded = self.tgt_embedding(tgt_inputs)
             tgt_embedded = self.pos_encoding(tgt_embedded)
 
-            # 获得解码器输入序列中的元素是否是填充字符的遮蔽矩阵
+            # 获得解码器输入序列中的元素是否是填充字符的矩阵
             tgt_pad_mask = (tgt_inputs == self.tgt_embedding.padding_idx)
 
-            # 训练时要生成解码输入的遮盖矩阵，即只让当前token关注它和它之前的token的之前的词
+            # 训练时要生成解码输入的遮盖矩阵，即只让当前token关注它和它之前的词
             tgt_mask = self.transformer.generate_square_subsequent_mask(tgt_inputs.size(1))
 
             # 解码器预测
@@ -509,7 +509,7 @@ class TranslateModel(nn.Module):
                 decoder_outputs.append(outputs[:, -1, :])
 
             # 把收集到的推理结果转成tensor，并处理成以批次开头
-            # 将每个时间步的预测结果，沿新的第一维拼接诚心的张量
+            # 将每个时间步的预测结果，沿新的第一维拼接成新的张量
             decoder_outputs = torch.stack(decoder_outputs, dim=0)
             # 交换两个维度的位置，和 permute 类似，(batch_size, token_num, vocab_size)
             decoder_outputs = decoder_outputs.transpose(0, 1)

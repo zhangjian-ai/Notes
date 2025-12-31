@@ -672,7 +672,7 @@ if __name__ == '__main__':
 
 
 
-# 生成故事
+# 生成古诗
 
 
 
@@ -703,7 +703,7 @@ if __name__ == '__main__':
 
 ```python
 class PoemDataset(Dataset):
-    def __init__(self, window_size=6):  # 五言诗加上符号龚六个字符
+    def __init__(self, window_size=6):  # 五言诗加上符号共六个字符
         # 从csv加载数据
         data = pandas.read_csv("./data/chinese_poems.csv")
         sentences = data.values  # 因为只有1列，所有直接取values就可以了
@@ -842,7 +842,7 @@ class Poem(nn.Module):
             # 计算损失
             # 交叉熵会对最后一维应用softmax，第一个参数是预测值，预测值的最后一维就是各个词出现的概率，其大小是vocab_size
             # 所以预测结果通常会比实际值多一维，多出来的那一维应用softmax后和实际值计算损失
-            # 交叉熵又最多只能接受二维的参数，所以预测结果必须是二维，预测结果则必须是一维，所以这里进行一下reshape
+            # 交叉熵又最多只能接受二维的参数，所以预测结果必须是二维，实际结果则必须是一维，所以这里进行一下reshape
             outputs = outputs.reshape(self.batch_size * self.dataset.window_size, -1)
             y = y.reshape(self.batch_size * self.dataset.window_size)
             loss = self.loss_func(outputs, y)
@@ -910,7 +910,7 @@ if __name__ == '__main__':
 
 ### 模型推理
 
-基于已有的模型，实现一个函数，接收起始的第一个字符，然后生成诗句。这里有一个重要的点，我们基于LSTM是具有记忆功能的，也就是说，从我们给定的首个字符开始，以及后续每次生成的心字符，在推理过程中的隐藏状态和单元状态都是需要延续下来的，而不是每生成一个字就初始化一个新的隐藏状态和单元状态，这和之前外卖评论的推理是有区别的。
+基于已有的模型，实现一个函数，接收起始的第一个字符，然后生成诗句。这里有一个重要的点，我们基于LSTM是具有记忆功能的，也就是说，从我们给定的首个字符开始，以及后续每次生成的新字符，在推理过程中的隐藏状态和单元状态都是需要延续下来的，而不是每生成一个字就初始化一个新的隐藏状态和单元状态，这和之前外卖评论的推理是有区别的。
 
 ```python
 def my_predict(model: Poem, ds: PoemDataset, start_word: str):

@@ -1171,7 +1171,7 @@ ik分词器有以下两种模式：
 
 > es 7.x  版本开始，默认安装了 x-pack ，需要配置权限认证，其他端才可以访问es的node信息。
 
-1. 修改 elastic search.yml 配置文件，加入如下信息
+1. 修改 elasticsearch.yml 配置文件，加入如下信息
 
    ```shell
    action.destructive_requires_name: true
@@ -1632,13 +1632,13 @@ EFK和大名鼎鼎的ELK只有一个区别，那就是 EFK 把 ELK 的 Logstash 
 
 ## 基础CRUD
 
-| 操作类型 | 示例                                                   |
-| -------- | ------------------------------------------------------ |
-| Index    | PUT my_index/_doc/1                                    |
-| Create   | PUT `my_index/_create/1` <br />POST `my_index/_create` |
-| Read     | GET my_index/_doc/1                                    |
-| Update   | POST my_index/_update/1                                |
-| Delete   | Delete my_index/_doc/1                                 |
+| 操作类型 | 示例                                                  |
+| -------- | ----------------------------------------------------- |
+| Index    | PUT my_index/_doc/1                                   |
+| Create   | PUT `my_index/_create/1` <br/>POST `my_index/_create` |
+| Read     | GET my_index/_doc/1                                   |
+| Update   | POST my_index/_update/1                               |
+| Delete   | Delete my_index/_doc/1                                |
 
 说明：
 
