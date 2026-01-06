@@ -1587,41 +1587,53 @@ from langchain_core.runnables import RunnableWithMessageHistory
 from langchain_core.tools import create_retriever_tool
 from langchain_openai import ChatOpenAI
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from transformers import BertTokenizer, BertModel
+from transformers import AutoTokenizer, AutoModel
 from langchain_community.chat_message_histories import ChatMessageHistory
 
 
 class MyBertEmbeddings(Embeddings):
     # 模型相关属性
-    tokenizer: Optional[BertTokenizer] = None
-    model: Optional[BertModel] = None
+    tokenizer: Optional[AutoTokenizer] = None
+    model: Optional[AutoModel] = None
 
-    def __init__(self):
+    def __init__(self, dimensions: int = 1024, max_len: int = 512):
         super().__init__()
+        self.max_len = max_len
+        self.dimensions = dimensions
+
         # 加载分词器和模型
-        self.tokenizer = BertTokenizer.from_pretrained("google-bert/bert-base-chinese")
-        self.model = BertModel.from_pretrained("google-bert/bert-base-chinese")
+        self.tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen3-Embedding-0.6B")
+        self.model = AutoModel.from_pretrained("Qwen/Qwen3-Embedding-0.6B")
+
+        # 使用一个全连接层修改输出维度
+        self.fc = torch.nn.Linear(self.model.config.hidden_size, dimensions)
+
         self.model.eval()  # 评估模式，禁用 dropout
 
     def _get_embedding(self, text: str) -> List[float]:
         """单文本向量生成（核心逻辑）"""
         if not text.strip():
-            return [0.0] * 768  # 空文本返回全0向量（bert-base-chinese 维度768）
+            return [0.0] * self.dimensions  # 空文本返回全0向量
 
         # 分词（限制长度，避免溢出）
-        inputs = self.tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=512)
+        inputs = self.tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=self.max_len)
 
         # 推理（禁用梯度计算，提升效率）
         with torch.no_grad():
             outputs = self.model(input_ids=inputs["input_ids"], attention_mask=inputs["attention_mask"])
 
-        # 计算句子向量（token 维度取平均，压缩为一维）
-        # 在bert中文本前后回家上[cls][sep]表示开始和结束，为了降低影响这两个token的状态直接丢弃
-        token_embeddings = outputs.last_hidden_state[:, 1:-1, :]  # (1, seq_len - 2, 768)
-        sentence_embedding = token_embeddings.mean(dim=1).squeeze(dim=0)  # (768,)
+            # 计算句子向量，取最后一个token隐藏状态作为句子的向量
+            last_hidden_state: torch.Tensor = outputs.last_hidden_state  # (batch_size, seq_len, hidden_size)
+            sentence_embedding = last_hidden_state[:, -1, :].squeeze(0)  # 删掉批次维度
 
-        # 转CPU + 转列表（避免CUDA tensor序列化问题）
-        return sentence_embedding.cpu().numpy().tolist()
+            # 通过全连接层调整维度
+            sentence_embedding = self.fc(sentence_embedding)
+
+            # 归一化
+            sentence_embedding = torch.nn.functional.normalize(sentence_embedding, dim=0)
+
+            # 转CPU + 转列表（避免CUDA tensor序列化问题）
+            return sentence_embedding.cpu().numpy().tolist()
 
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
         """批量文档嵌入（Chroma 必需接口）"""
